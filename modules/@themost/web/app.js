@@ -24,6 +24,7 @@ const DefaultCacheStrategy = require('./cache').DefaultCacheStrategy;
 const LocalizationStrategy = require('./localization').LocalizationStrategy;
 const I18nLocalizationStrategy = require('./localization').I18nLocalizationStrategy;
 const DataConfigurationStrategy = require('@themost/data').DataConfigurationStrategy;
+const HttpNotFoundError = require('@themost/common').HttpNotFoundError;
 
 class HttpContextProvider extends HttpApplicationService {
     constructor(app) {
@@ -200,6 +201,11 @@ class HttpApplication extends SequentialEventEmitter {
                 })
             });
         });
+
+        context.on('processRequest', function(context, done) {
+            return done(new HttpNotFoundError());
+        });
+
         return context;
     }
 
