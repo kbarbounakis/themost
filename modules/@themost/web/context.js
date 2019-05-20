@@ -40,15 +40,24 @@ function HttpContext(httpRequest, httpResponse) {
      */
     this.application = null;
 
-    /**
-     * @type {ClientRequest}
-     */
-    this.request = httpRequest;
-    /**
-     *
-     * @type {ServerResponse}
-     */
-    this.response = httpResponse;
+    Object.defineProperty(this, 'request', {
+        value: httpRequest,
+        enumerable: false,
+        writable: false
+    });
+
+    Object.defineProperty(this, 'response', {
+        value: httpResponse,
+        enumerable: false,
+        writable: false
+    });
+
+    Object.defineProperty(httpRequest, 'context', {
+        value: this,
+        enumerable: false,
+        writable: false
+    });
+
     var __application__ = null;
     Object.defineProperty(this, 'application', {
         get: function () {

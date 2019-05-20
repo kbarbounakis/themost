@@ -7,9 +7,10 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import {HttpContext} from "./context";
+import {IncomingMessage, ServerResponse} from "http";
 
 export declare class HttpConsumer {
-    constructor(callable:(...args: any[])=> Promise<any>, params?: any);
+    constructor(callable:(req: IncomingMessage, res?: ServerResponse)=> any, params?: any);
     callable:(...args: any[])=> Promise<any>;
     params?: any;
     run(context: HttpContext, ...args: any[]);

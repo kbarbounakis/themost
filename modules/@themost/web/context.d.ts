@@ -12,6 +12,7 @@ import {HttpApplication} from "./app";
 import {HttpConfiguration} from "./config";
 import {DefaultDataContext} from '@themost/data/data-context';
 
+
 export declare class HttpContext extends DefaultDataContext {
 		
 	constructor(httpRequest : IncomingMessage, httpResponse : ServerResponse);
@@ -47,3 +48,7 @@ export declare class HttpContext extends DefaultDataContext {
 	resolveUrl(appRelativeUrl: string): string;
 }
 
+
+declare interface IncomingMessage {
+	context: HttpContext;
+}
