@@ -1,6 +1,7 @@
 import rollupBabel from 'rollup-plugin-babel';
 import rollupResolve from 'rollup-plugin-node-resolve';
 import rollupCommon from 'rollup-plugin-commonjs';
+import rollupSourceMaps from 'rollup-plugin-sourcemaps';
 import autoExternal from 'rollup-plugin-auto-external';
 
 const dist = './dist/';
@@ -12,21 +13,23 @@ module.exports = {
     output: [
         {
             file: `${dist}${name}.cjs.js`,
-            format: 'cjs'
+            format: 'cjs',
+            sourcemap: 'inline',
         },
         {
             file: `${dist}${name}.esm.js`,
-            format: 'esm'
+            format: 'esm',
+            sourcemap: 'inline',
         },
         {
             name: '@themost/web',
             file: `${dist}${name}.js`,
-            format: 'umd'
+            format: 'umd',
+            sourcemap: 'inline',
         }
     ],
     plugins: [
         rollupResolve(),
-        rollupBabel(),
         rollupCommon(),
         autoExternal()
     ]
