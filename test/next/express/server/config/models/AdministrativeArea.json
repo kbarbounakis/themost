@@ -1,0 +1,23 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "@id": "http://schema.org/AdministrativeArea",
+    "name": "AdministrativeArea",
+    "description": "A geographical region, typically under the jurisdiction of a particular government.",
+    "title": "AdministrativeAreas",
+    "abstract": false,
+    "sealed": false,
+    "inherits": "Place",
+    "version": "1.0",
+    "fields": [],
+    "privileges": [
+        {
+            "mask": 15,
+            "type": "global"
+        },
+        {
+            "mask": 15,
+            "type": "global",
+            "account": "Administrators"
+        }
+    ]
+}

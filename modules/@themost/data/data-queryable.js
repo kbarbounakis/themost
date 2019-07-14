@@ -1624,7 +1624,7 @@ DataQueryable.prototype.first = function(callback) {
         var d = Q.defer();
         firstInternal.call(this, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -1664,7 +1664,7 @@ DataQueryable.prototype.all = function(callback) {
         var d = Q.defer();
         allInternal.call(this, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -1815,7 +1815,7 @@ DataQueryable.prototype.list = function(callback) {
         var d = Q.defer();
         listInternal.call(this, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -1851,7 +1851,7 @@ DataQueryable.prototype.getItems = function() {
             if (err) {
                 return d.reject(err);
             }
-            return d.resolve(result);
+            return d.rollupResolve(result);
         });
     });
     return d.promise;
@@ -2026,7 +2026,7 @@ DataQueryable.prototype.max = function(attr, callback) {
         var d = Q.defer();
         maxInternal.call(this, attr, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2071,7 +2071,7 @@ DataQueryable.prototype.min = function(attr, callback) {
         var d = Q.defer();
         minInternal.call(this, attr, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2116,7 +2116,7 @@ DataQueryable.prototype.average = function(attr, callback) {
         var d = Q.defer();
         averageInternal_.call(this, attr, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -3175,7 +3175,7 @@ DataQueryable.prototype.value = function(callback) {
         var d = Q.defer();
         valueInternal.call(this, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -3267,7 +3267,7 @@ DataQueryable.prototype.getItem = function() {
     var self = this, d = Q.defer();
     process.nextTick(function() {
         self.first().then(function (result) {
-            return d.resolve(result);
+            return d.rollupResolve(result);
         }).catch(function(err) {
             return d.reject(err);
         });
@@ -3296,7 +3296,7 @@ DataQueryable.prototype.getTypedItems = function() {
     var self = this, d = Q.defer();
     process.nextTick(function() {
         self.getItems().then(function (result) {
-            return d.resolve(self.model.convert(result));
+            return d.rollupResolve(self.model.convert(result));
         }).catch(function(err) {
             return d.reject(err);
         });
@@ -3313,7 +3313,7 @@ DataQueryable.prototype.getTypedList = function() {
     process.nextTick(function() {
         self.list().then(function (result) {
             result.value = self.model.convert(result.value.slice(0));
-            return d.resolve(result);
+            return d.rollupResolve(result);
         }).catch(function(err) {
             return d.reject(err);
         });

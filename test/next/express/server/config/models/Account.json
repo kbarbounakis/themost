@@ -1,0 +1,32 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "@id": "https://themost.io/schemas/Account",
+    "name": "Account",
+    "description": "Accounts",
+    "title": "Account",
+    "abstract": false,
+    "sealed": false,
+    "inherits": "Thing",
+    "version": "1.0",
+    "fields": [
+        ],
+    "privileges": [
+        {
+            "mask": 15,
+            "type": "global"
+        },
+        {
+            "mask": 15,
+            "type": "global",
+            "account": "Administrators"
+        }
+    ],
+    "constraints": [
+        {
+            "type": "unique",
+            "fields": [
+                "name"
+            ]
+        }
+    ]
+}

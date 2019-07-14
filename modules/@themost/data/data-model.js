@@ -543,7 +543,7 @@ DataModel.prototype.isSilent = function() {
  * @returns {Function}
  */
 DataModel.prototype.getDataObjectType = function() {
-    return this.context.getConfiguration().getStrategy(ModelClassLoaderStrategy).resolve(this);
+    return this.context.getConfiguration().getStrategy(ModelClassLoaderStrategy).rollupResolve(this);
 };
 
 /**
@@ -1997,7 +1997,7 @@ DataModel.prototype.update = function(obj, callback)
         var d = Q.defer();
         update_.call(this, obj, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2041,7 +2041,7 @@ DataModel.prototype.insert = function(obj, callback)
         var d = Q.defer();
         insert_.call(this, obj, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2117,7 +2117,7 @@ DataModel.prototype.remove = function(obj, callback)
         var d = Q.defer();
         remove_.call(this, obj, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2881,7 +2881,7 @@ DataModel.prototype.validateForUpdate = function(obj, callback) {
         var d = Q.defer();
         validate_.call(this, obj, 2, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2903,7 +2903,7 @@ DataModel.prototype.validateForInsert = function(obj, callback) {
         var d = Q.defer();
         validate_.call(this, obj, 1, function(err, result) {
             if (err) { return d.reject(err); }
-            d.resolve(result);
+            d.rollupResolve(result);
         });
         return d.promise;
     }
@@ -2951,7 +2951,7 @@ DataModel.prototype.getSubTypes = function () {
     process.nextTick(function() {
         var migrations = self.context.model("Migration");
         if (_.isNil(migrations)) {
-            return d.resolve([]);
+            return d.rollupResolve([]);
         }
         migrations.silent()
             .select("model")
@@ -2964,7 +2964,7 @@ DataModel.prototype.getSubTypes = function () {
                     arr.push(m.name);
                 }
             });
-            return d.resolve(arr);
+            return d.rollupResolve(arr);
         }).catch(function(err) {
             return d.reject(err)
         });
@@ -2984,7 +2984,7 @@ DataModel.prototype.getReferenceMappings = function (deep) {
         var referenceMappings = [], name = self.name, attributes;
         var migrations = self.context.model("Migration");
         if (_.isNil(migrations)) {
-            return d.resolve([]);
+            return d.rollupResolve([]);
         }
         migrations.silent()
             .select("model")
@@ -3009,7 +3009,7 @@ DataModel.prototype.getReferenceMappings = function (deep) {
                     }
                 });
             });
-            return d.resolve(referenceMappings);
+            return d.rollupResolve(referenceMappings);
         }).catch(function(err) {
             return d.reject(err)
         });
@@ -3038,7 +3038,7 @@ DataModel.prototype.getTypedItems = function() {
     process.nextTick(function() {
         var q = new DataQueryable(self);
         q.getTypedItems().then(function (result) {
-            return d.resolve(result);
+            return d.rollupResolve(result);
         }).catch(function(err) {
             return d.reject(err);
         });
@@ -3056,7 +3056,7 @@ DataModel.prototype.getItems = function() {
     process.nextTick(function() {
         var q = new DataQueryable(self);
         q.getItems().then(function (result) {
-            return d.resolve(result);
+            return d.rollupResolve(result);
         }).catch(function(err) {
             return d.reject(err);
         });
@@ -3074,7 +3074,7 @@ DataModel.prototype.getTypedList = function() {
     process.nextTick(function() {
         var q = new DataQueryable(self);
         q.getTypedList().then(function (result) {
-            return d.resolve(result);
+            return d.rollupResolve(result);
         }).catch(function(err) {
             return d.reject(err);
         });
@@ -3092,7 +3092,7 @@ DataModel.prototype.getList = function() {
     process.nextTick(function() {
         var q = new DataQueryable(self);
         q.list().then(function (result) {
-            return d.resolve(result);
+            return d.rollupResolve(result);
         }).catch(function(err) {
             return d.reject(err);
         });

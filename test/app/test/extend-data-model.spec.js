@@ -9,7 +9,7 @@ describe('Extend Data Model Class', () => {
      *
      * @type {HttpApplication}
      */
-    let app = new HttpApplication(path.resolve(process.cwd(), 'server'));
+    let app = new HttpApplication(path.rollupResolve(process.cwd(), 'server'));
     /**
      * @type HttpContext
      */

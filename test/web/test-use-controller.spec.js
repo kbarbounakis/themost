@@ -16,7 +16,7 @@ class TestController extends HttpBaseController {
 }
 
 describe('HttpApplication.useController()', () => {
-    const app = new HttpApplication(path.resolve(process.cwd(),'test/app/server'));
+    const app = new HttpApplication(path.rollupResolve(process.cwd(),'test/app/server'));
     it('should add controller', () => {
         // validate controllers
         const controllers = app.getConfiguration().controllers;

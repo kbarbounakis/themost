@@ -66,17 +66,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.childModel !== thisQueryable.model.name) || (mapping.associationType!=='junction')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     //get array of key values (for childs)
                     var values = arr.filter(function(x) {
@@ -112,7 +112,7 @@ var mappingExtensions = {
                                 //if result contains only one item
                                 if (arr.length === 1) {
                                     arr[0][mapping.refersTo] = parents;
-                                    return deferred.resolve();
+                                    return deferred.rollupResolve();
                                 }
                                 //otherwise loop result array
                                 arr.forEach(function(x) {
@@ -123,7 +123,7 @@ var mappingExtensions = {
                                     //filter data and set property value (a filtered array of parent objects)
                                     x[mapping.refersTo] = parents.filter(function(z) { return p.indexOf(z[mapping.parentField])>=0; });
                                 });
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function(err) {
                                 return deferred.reject(err);
                             });
@@ -141,17 +141,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.childModel !== thisQueryable.model.name) || (mapping.associationType!=='junction')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var HasParentJunction = require('./has-parent-junction').HasParentJunction;
                     var junction = new HasParentJunction(thisQueryable.model.convert({ }), mapping);
@@ -186,7 +186,7 @@ var mappingExtensions = {
                                         return false;
                                     });
                                 });
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function (err) {
                                 return deferred.reject(err);
                             });
@@ -204,17 +204,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.parentModel !== thisQueryable.model.name) || (mapping.associationType!=='junction')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var values = arr.filter(function(x) {
                         return (typeof x[mapping.parentField]!=='undefined') && (x[mapping.parentField]!=null);
@@ -232,7 +232,7 @@ var mappingExtensions = {
                                     return y.value;
                                 });
                             });
-                            return deferred.resolve();
+                            return deferred.rollupResolve();
                         }).catch(function (err) {
                             return deferred.reject(err);
                         });
@@ -270,7 +270,7 @@ var mappingExtensions = {
                                 //if result contains only one item
                                 if (arr.length === 1) {
                                     arr[0][mapping.refersTo] = childs;
-                                    return deferred.resolve();
+                                    return deferred.rollupResolve();
                                 }
                                 //otherwise loop result array
                                 arr.forEach(function(x) {
@@ -281,7 +281,7 @@ var mappingExtensions = {
                                     //filter data and set property value (a filtered array of parent objects)
                                     x[mapping.refersTo] = childs.filter(function(z) { return p.indexOf(z[mapping.childField])>=0; });
                                 });
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function(err) {
                                 return deferred.reject(err);
                             });
@@ -301,17 +301,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.parentModel !== thisQueryable.model.name) || (mapping.associationType!=='junction')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var DataObjectJunction = require('./data-object-junction').DataObjectJunction;
                     var junction = new DataObjectJunction(thisQueryable.model.convert({ }), mapping);
@@ -347,7 +347,7 @@ var mappingExtensions = {
                                         return false;
                                     });
                                 });
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function (err) {
                                 return deferred.reject(err);
                             });
@@ -365,17 +365,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.childModel !== thisQueryable.model.name) || (mapping.associationType!=='association')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     thisArg.getParentModel().migrate(function(err) {
                        if (err) { return deferred.reject(err); }
@@ -406,7 +406,7 @@ var mappingExtensions = {
                                     });
                                 };
                                 _.forEach(arr, iterator);
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function (err) {
                                 return deferred.reject(err);
                             });
@@ -424,17 +424,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.childModel !== thisQueryable.model.name) || (mapping.associationType!=='association')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     thisArg.getParentModel().migrate(function(err) {
                         if (err) { return deferred.reject(err); }
@@ -447,7 +447,7 @@ var mappingExtensions = {
                             return x.hasOwnProperty(keyField);
                             }), function (x) { return x[keyField];}));
                         if (values.length===0) {
-                            return deferred.resolve();
+                            return deferred.rollupResolve();
                         }
                         thisArg.getParentModel().filter(mapping.options, function(err, q) {
                             if (err) {
@@ -481,7 +481,7 @@ var mappingExtensions = {
                                 if (_.isArray(arr)) {
                                     arr.forEach(iterator);
                                 }
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function(err) {
                                 return deferred.reject(err);
                             });
@@ -499,17 +499,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.parentModel !== thisQueryable.model.name) || (mapping.associationType!=='association')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     thisArg.getChildModel().migrate(function(err) {
                         if (err) { return deferred.reject(err); }
@@ -522,7 +522,7 @@ var mappingExtensions = {
                             return x.hasOwnProperty(keyField);
                         }), function (x) { return x[keyField];}));
                         if (values.length===0) {
-                            return deferred.resolve();
+                            return deferred.rollupResolve();
                         }
                         //search for view named summary
                         thisArg.getChildModel().filter(mapping.options, function(err, q) {
@@ -576,9 +576,9 @@ var mappingExtensions = {
                                         x[mapping.refersTo] = items;
                                     }
                                 });
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function(err) {
-                                return deferred.resolve(err);
+                                return deferred.rollupResolve(err);
                             });
                         });
                     });
@@ -594,17 +594,17 @@ var mappingExtensions = {
                 var deferred = Q.defer();
                 process.nextTick(function() {
                     if (_.isNil(items)) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     var arr = _.isArray(items) ? items : [items];
                     if (arr.length === 0) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     if (_.isNil(thisQueryable)) {
                         return deferred.reject('The underlying data queryable cannot be empty at this context.');
                     }
                     if ((mapping.parentModel !== thisQueryable.model.name) || (mapping.associationType!=='association')) {
-                        return deferred.resolve();
+                        return deferred.rollupResolve();
                     }
                     thisArg.getChildModel().migrate(function(err) {
                         if (err) { return deferred.reject(err); }
@@ -617,7 +617,7 @@ var mappingExtensions = {
                             return x.hasOwnProperty(keyField);
                         }), function (x) { return x[keyField];}));
                         if (values.length===0) {
-                            return deferred.resolve();
+                            return deferred.rollupResolve();
                         }
                         //search for view named summary
                         thisArg.getChildModel().filter(mapping.options, function(err, q) {
@@ -654,9 +654,9 @@ var mappingExtensions = {
                                         return y[foreignKeyField] === x[keyField];
                                     });
                                 });
-                                return deferred.resolve();
+                                return deferred.rollupResolve();
                             }).catch(function(err) {
-                                return deferred.resolve(err);
+                                return deferred.rollupResolve(err);
                             });
                         });
                     });

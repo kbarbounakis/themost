@@ -12328,7 +12328,7 @@ function $HttpProvider() {
 
       var requestInterceptors = [];
       var responseInterceptors = [];
-      var promise = $q.resolve(config);
+      var promise = $q.rollupResolve(config);
 
       // apply interceptors
       forEach(reversedInterceptors, function(interceptor) {
@@ -17574,7 +17574,7 @@ function qFactory(nextTick, exceptionHandler, errorOnUnhandledRejections) {
     var deferred = defer();
 
     forEach(promises, function(promise) {
-      when(promise).then(deferred.resolve, deferred.reject);
+      when(promise).then(deferred.rollupResolve, deferred.reject);
     });
 
     return deferred.promise;

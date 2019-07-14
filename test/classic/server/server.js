@@ -6,9 +6,9 @@ import {LocalizationStrategy, I18nLocalizationStrategy} from "@themost/web/local
 import {DataCacheStrategy} from "@themost/data";
 import {MemcachedCacheStrategy} from "@themost/memcached";
 //initialize app
-let app = new HttpApplication(path.resolve(__dirname));
+let app = new HttpApplication(path.rollupResolve(__dirname));
 //set static content
-app.useStaticContent(path.resolve('./app'));
+app.useStaticContent(path.rollupResolve('./app'));
 //use i18n localization strategy
 app.useStrategy(LocalizationStrategy, I18nLocalizationStrategy);
 //use angular server module

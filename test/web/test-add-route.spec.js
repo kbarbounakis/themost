@@ -22,7 +22,7 @@ describe('HttpConfiguration.routes', () => {
      */
     let app;
     beforeEach(() => {
-        app = new HttpApplication(path.resolve(process.cwd(),'test/app/server'));
+        app = new HttpApplication(path.rollupResolve(process.cwd(),'test/app/server'));
         /**
          * @type DataConfigurationStrategy
          */
@@ -71,7 +71,7 @@ describe('HttpConfiguration.routes', () => {
             action: 'hello',
             controller: 'test',
             format: 'html',
-            path: path.resolve(__dirname, 'views')
+            path: path.rollupResolve(__dirname, 'views')
         });
         const response = await new Promise((resolve, reject) => {
             app.executeRequest({ url: '/hello/' }, (err, response) => {

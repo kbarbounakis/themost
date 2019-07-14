@@ -29,7 +29,7 @@ describe('test many-to-many associations', function() {
     let context;
 
     before((done) => {
-        const config = new DataConfiguration(path.resolve(__dirname, "../config"));
+        const config = new DataConfiguration(path.rollupResolve(__dirname, "../config"));
         context = new TestDataContext(config);
         return done();
     });

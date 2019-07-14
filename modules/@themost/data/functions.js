@@ -151,7 +151,7 @@ FunctionContext.prototype.newid = function() {
         if (err) {
             return deferred.reject(err);
         }
-        deferred.resolve(result);
+        deferred.rollupResolve(result);
     });
     return deferred.promise;
 };
@@ -183,7 +183,7 @@ FunctionContext.prototype.newGuid = function() {
     var deferred = Q.defer();
     process.nextTick(function() {
         try {
-            deferred.resolve(newGuidInternal());
+            deferred.rollupResolve(newGuidInternal());
         }
         catch(err) {
             deferred.reject(err)
@@ -202,12 +202,12 @@ FunctionContext.prototype.int = function(min, max) {
     var deferred = Q.defer();
     process.nextTick(function() {
         try {
-            return deferred.resolve(_.random(min, max));
+            return deferred.rollupResolve(_.random(min, max));
         }
         catch (err) {
             deferred.reject(err);
         }
-        deferred.resolve((new Date()).getDate());
+        deferred.rollupResolve((new Date()).getDate());
     });
     return deferred.promise;
 };
@@ -233,7 +233,7 @@ FunctionContext.prototype.numbers = function(length) {
             _.times(times, function() {
                  res += _.random(1000000000, 9000000000)
             });
-            return deferred.resolve(res.substr(0,length));
+            return deferred.rollupResolve(res.substr(0,length));
         }
         catch (err) {
             deferred.reject(err);
@@ -257,7 +257,7 @@ FunctionContext.prototype.chars = function(length) {
             for(var i = 0; i < length; i++) {
                 str += chars.substr(_.random(0, chars.length-1),1);
             }
-            deferred.resolve(str);
+            deferred.rollupResolve(str);
         }
         catch (err) {
             return deferred.reject(err);
@@ -279,7 +279,7 @@ FunctionContext.prototype.password = function(length) {
             for(var i = 0; i < length; i++) {
                 str += chars.substr(_.random(0, chars.length-1),1);
             }
-            deferred.resolve('{clear}' + str);
+            deferred.rollupResolve('{clear}' + str);
         }
         catch (err) {
             return deferred.reject(err);
@@ -295,7 +295,7 @@ FunctionContext.prototype.user = function() {
     var user = context.interactiveUser || context.user || { };
     process.nextTick(function() {
         if (typeof user.id !== 'undefined') {
-            return deferred.resolve(user.id);
+            return deferred.rollupResolve(user.id);
         }
         var userModel = context.model('User'), parser, undefinedUser = null;
         userModel.where('name').equal(user.name).silent().select('id').first(function(err, result) {
@@ -310,7 +310,7 @@ FunctionContext.prototype.user = function() {
                 if (_.isNil(context.user)) {
                     context.user = user;
                 }
-                return deferred.resolve(undefinedUser);
+                return deferred.rollupResolve(undefinedUser);
             }
             else if (_.isNil(result)) {
                 //try to get undefined user
@@ -322,12 +322,12 @@ FunctionContext.prototype.user = function() {
                 if (_.isNil(context.user)) {
                     context.user = user;
                 }
-                return deferred.resolve(undefinedUser);
+                return deferred.rollupResolve(undefinedUser);
             }
             else {
                 //set id for next calls
                 user.id = result.id;
-                return deferred.resolve(result.id);
+                return deferred.rollupResolve(result.id);
             }
         });
     });

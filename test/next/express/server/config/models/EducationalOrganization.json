@@ -1,0 +1,32 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "@id": "http://schema.org/EducationalOrganization",
+    "name": "EducationalOrganization",
+    "description": "An educational organization.",
+    "title": "EducationalOrganizations",
+    "abstract": false,
+    "sealed": false,
+    "inherits": "Organization",
+    "version": "1.0",
+    "fields": [
+        {
+            "@id": "http://schema.org/alumni",
+            "name": "alumni",
+            "title": "alumni",
+            "description": "Alumni of an organization.",
+            "type": "Person",
+            "many": true
+        }
+    ],
+    "privileges": [
+        {
+            "mask": 15,
+            "type": "global"
+        },
+        {
+            "mask": 15,
+            "type": "global",
+            "account": "Administrators"
+        }
+    ]
+}

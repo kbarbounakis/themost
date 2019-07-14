@@ -4,9 +4,9 @@ import {ODataModelBuilderConfiguration} from '@themost/web/odata';
 import {TraceUtils} from '@themost/common/utils';
 import {HttpServiceController} from "@themost/web";
 //initialize app
-let app = new HttpApplication(path.resolve(__dirname));
+let app = new HttpApplication(path.rollupResolve(__dirname));
 //set static content
-app.useStaticContent(path.resolve('./app'));
+app.useStaticContent(path.rollupResolve('./app'));
 //configure api
 ODataModelBuilderConfiguration.config(app).then((builder)=> {
     // set service root

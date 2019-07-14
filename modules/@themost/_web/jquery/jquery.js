@@ -3019,7 +3019,7 @@ jQuery.extend({
 								var returned = fn && fn.apply( this, arguments );
 								if ( returned && jQuery.isFunction( returned.promise ) ) {
 									returned.promise()
-										.done( newDefer.resolve )
+										.done( newDefer.rollupResolve )
 										.fail( newDefer.reject )
 										.progress( newDefer.notify );
 								} else {
