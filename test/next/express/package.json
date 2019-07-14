@@ -18,7 +18,7 @@
     "nodemon": "^1.19.1"
   },
   "dependencies": {
-    "@themost/web": "file:../../../modules/@themost/web",
+    "@themost/web": "file:../../../modules/@themost/web3",
     "express": "~4.16.0"
   },
   "nodemonConfig": {

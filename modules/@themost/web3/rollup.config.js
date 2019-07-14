@@ -13,22 +13,20 @@ module.exports = {
     output: [
         {
             file: `${dist}${name}.cjs.js`,
-            format: 'cjs',
-            sourcemap: 'inline',
+            format: 'cjs'
         },
         {
             file: `${dist}${name}.esm.js`,
-            format: 'esm',
-            sourcemap: 'inline',
+            format: 'esm'
         },
         {
             name: '@themost/web',
             file: `${dist}${name}.js`,
-            format: 'umd',
-            sourcemap: 'inline',
+            format: 'umd'
         }
     ],
     plugins: [
+        rollupBabel(),
         rollupResolve(),
         rollupCommon(),
         autoExternal()
