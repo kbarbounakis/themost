@@ -1,0 +1,50 @@
+{
+  "name": "@themost/web",
+  "version": "3.0.1-dev.1",
+  "description": "MOST Web Framework 3.0 Zero Gravity - Application Middleware",
+  "main": "dist/themost_web.js",
+  "peerDependencies": {
+    "@themost/common": "^2.3.1",
+    "@themost/query": "^2.3.1",
+    "@themost/xml": "^2.3.1",
+    "@themost/data": "^2.3.1",
+    "@themost/client": "^2.0.5",
+    "@themost/node": "^2.0.5"
+  },
+  "engines": {
+    "node": "^6.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themost-framework/themost.git"
+  },
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/themost-framework/themost/issues"
+  },
+  "scripts": {
+    "build": "rollup -c ./rollup.config.js -m",
+    "watch": "rollup -c ./rollup.config.js -m -w"
+  },
+  "homepage": "https://github.com/themost-framework/themost#readme",
+  "dependencies": {},
+  "devDependencies": {
+
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true,
+      "jquery": true
+    },
+    "globals": {
+      "Promise": true,
+      "describe": false,
+      "it": false,
+      "angular": true
+    },
+    "extends": "eslint:recommended"
+  }
+}
