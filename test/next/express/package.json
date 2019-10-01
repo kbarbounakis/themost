@@ -26,13 +26,17 @@
       "server",
       "bin"
     ],
+    "ignore": [
+        "./node_modules/**/*"
+    ],
     "verbose": true,
     "legacy-watch": true,
     "execMap": {
       "js": "node --require @babel/register"
     },
     "env": {
-      "NODE_ENV": "development"
+      "NODE_ENV": "development",
+      "IP": "0.0.0.0"
     },
     "ext": "js,json"
   },

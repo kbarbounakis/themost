@@ -2,6 +2,9 @@ import express from 'express';
 import {HttpApplication} from '@themost/web';
 
 let app = express();
+// serve static files
+app.use(express.static('public'));
+
 let httpApplication = new HttpApplication();
 
 app.get('/', (req, res) => {
@@ -10,7 +13,7 @@ app.get('/', (req, res) => {
 });
 app.use(httpApplication.runtime());
 // error handler
-app.use((req, res, next, err) => {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

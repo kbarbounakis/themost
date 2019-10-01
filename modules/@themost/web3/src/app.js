@@ -9,6 +9,7 @@
 import {Args} from "@themost/common";
 import {HttpContext} from "./context";
 import {HttpContextProvider} from "./types";
+import {HttpHandler} from "./handler";
 
 export class HttpApplication {
     /**
@@ -22,6 +23,17 @@ export class HttpApplication {
            configurable: false
         });
 
+        Object.defineProperty(this, 'handlers', {
+           value: [],
+           enumerable: false,
+           configurable: false
+        });
+        // set executionPath
+        this.executionPath = executionPath || process.cwd();
+        // set development mode
+        this.development = process.env.NODE_ENV === 'development';
+        // build configuration from execution path
+
     }
 
     createContext(req, res) {
@@ -32,7 +44,7 @@ export class HttpApplication {
         else {
             context = new HttpContext(req, res);
         }
-        context.application = this;
+        context.application = this;application
         return context;
     }
 
@@ -68,15 +80,6 @@ export class HttpApplication {
     }
 
     /**
-     * @param {Function} strategyCtor
-     * @returns {boolean}
-     */
-    hasStrategy(strategyCtor) {
-        Args.notFunction(strategyCtor,"Strategy constructor");
-        return this.services.hasOwnProperty(strategyCtor.name);
-    }
-
-    /**
      * @param {Function} serviceCtor
      * @returns {*}
      */
@@ -94,6 +97,33 @@ export class HttpApplication {
         return this.services[strategyCtor.name];
     }
 
+    use(handler) {
+        if (handler instanceof HttpHandler) {
+            // append consumer to collection
+            this.handlers.push(handler);
+            return this;
+        }
+        if (typeof handler === 'function') {
+            // append function as consumer to collection
+            this.handlers.push(new HttpHandler(handler));
+        }
+        throw new Error('An http handler must be either an instance of HttpHandler class or a function.');
+    }
+
+    /**
+    * @private
+    * @param {HttpContext} context
+    */
+    async _execute(context) {
+        let handler;
+        let result;
+        for(let i=0; i<=this.handlers.length; i++) {
+            handler = this.handlers[i];
+            // execute handler
+            result = await handler.run(context);
+        }
+    }
+
     /**
      * @returns RequestHandler
      */
@@ -102,13 +132,29 @@ export class HttpApplication {
         // noinspection JSValidateTypes
         return function runtimeMiddleware(req, res, next) {
             const context = self.createContext(req, res);
+            // set req.context property
+            Object.defineProperty(req, 'context', {
+                enumerable: false,
+                writable: false,
+                value: context
+            });
+            // set req.context property
+            Object.defineProperty(res, 'context', {
+                enumerable: false,
+                writable: false,
+                value: context
+            });
             req.on('close', ()=> {
                 // finalize context
                 context.finalize(() => {
                     //
                 });
             });
-            return next();
+            return self._execute(context).then(_result => {
+                return next();
+            }).catch(err => {
+                return next(err);
+            });
         }
     }
 }

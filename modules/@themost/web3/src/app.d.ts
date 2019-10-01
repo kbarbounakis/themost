@@ -17,6 +17,7 @@ export declare interface HttpControllerConfiguration {
 
 export declare class HttpApplication extends SequentialEventEmitter {
     constructor (executionPath?:string);
+    development: boolean;
     getConfiguration():ConfigurationBase;
     getExecutionPath(): string;
     mapExecutionPath(arg: string): string;
@@ -25,7 +26,6 @@ export declare class HttpApplication extends SequentialEventEmitter {
     useController(name: string, controllerCtor: Function);
     useStrategy(serviceCtor: Function, strategyCtor: Function);
     useService(serviceCtor: Function);
-    hasStrategy(serviceCtor: Function);
     hasService(serviceCtor: Function);
     getStrategy(serviceCtor: Function);
     getService(serviceCtor: Function);

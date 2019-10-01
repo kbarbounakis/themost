@@ -24,13 +24,15 @@
     "url": "https://github.com/themost-framework/themost/issues"
   },
   "scripts": {
-    "build": "rollup -c ./rollup.config.js -m",
-    "watch": "rollup -c ./rollup.config.js -m -w"
+    "build": "../../../node_modules/.bin/rollup -c ./rollup.config.js -m",
+    "watch": "../../../node_modules/.bin/rollup -c ./rollup.config.js -m -w"
   },
   "homepage": "https://github.com/themost-framework/themost#readme",
-  "dependencies": {},
+  "dependencies": {
+    "stream": "0.0.2"
+  },
   "devDependencies": {
-
+    "@types/node": "^12.7.5"
   },
   "eslintConfig": {
     "env": {
