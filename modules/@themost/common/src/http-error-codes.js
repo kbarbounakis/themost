@@ -1,4 +1,12 @@
-var Errors = exports.Errors = [{
+/**
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2019, THEMOST LP All rights reserved
+ *
+ * Use of this source code is governed by an BSD-3-Clause license that can be
+ * found in the LICENSE file at https://themost.io/license
+ */
+ 
+const Errors = [{
     statusCode: 400,
     title: "Bad Request",
     message: "The request cannot be fulfilled due to bad syntax."
@@ -96,6 +104,4 @@ var Errors = exports.Errors = [{
     message: "The server is currently unavailable (because it is overloaded or down for maintenance)."
 }];
 
-if (typeof exports !== 'undefined') {
-    module.exports.Errors = Errors;
-}
+module.exports.Errors = Errors;

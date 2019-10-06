@@ -13,7 +13,7 @@ export interface ICodeError {
  * @class
  * @augments TypeError
  */
-export declare class AbstractMethodError extends TypeError {
+export declare class AbstractMethodError extends Error {
     constructor(message?: string);
 }
 /**
@@ -203,6 +203,19 @@ export declare class HttpForbiddenError extends HttpError {
  * @augments HttpError
  */
 export declare class HttpServerError extends HttpError {
+    /**
+     * @constructor
+     * @param {string=} message
+     * @param {string=} innerMessage
+     */
+    constructor(message?: string, innerMessage?: string);
+}
+/**
+ * @classdesc HTTP 503 Service Unavailable
+ * @class
+ * @augments HttpError
+ */
+export declare class HttpServiceUnavailable extends HttpError {
     /**
      * @constructor
      * @param {string=} message

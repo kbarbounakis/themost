@@ -145,7 +145,7 @@ export declare class LangUtils {
      * @param {Function} fn
      * @returns {Array}
      */
-    static getFunctionParams(fn: any): any[] | RegExpMatchArray;
+    static getFunctionParams(fn: any): any[];
     /**
      * Parses HTTP form formatted values (e.g. "user[name]", user[password], user[options][rememberMe] etc ) and returns the equivalent native object
      * @param {*} form
@@ -295,7 +295,6 @@ export declare class TraceUtils {
 
 /**
  * @class
- * @augments TypeError
  */
 export declare class ArgumentError extends TypeError {
     /**
