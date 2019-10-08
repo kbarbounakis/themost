@@ -78,6 +78,7 @@
     "rollup-plugin-dts": "^1.1.10",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "supertest": "^3.4.2"
+    "supertest": "^3.4.2",
+    "typescript": "^3.6.3"
   }
 }

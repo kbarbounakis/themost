@@ -30,8 +30,7 @@ module.exports = [{
         rollupBabel(),
         rollupResolve(),
         rollupCommon(),
-        autoExternal(),
-        dts()
+        autoExternal()
     ]
 }, {
     input: './src/index.d.ts',

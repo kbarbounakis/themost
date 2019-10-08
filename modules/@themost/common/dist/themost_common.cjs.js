@@ -1,7 +1,13 @@
-import { EventEmitter } from 'events';
-import { applyEachSeries } from 'async';
-import { sprintf } from 'sprintf';
-import _ from 'lodash';
+'use strict';
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var events = require('events');
+var async = require('async');
+var sprintf = require('sprintf');
+var _ = _interopDefault(require('lodash'));
 
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -213,12 +219,12 @@ function (_EventEmitter) {
       } //apply each series
 
 
-      return applyEachSeries.apply(this, [listeners].concat(argsAndCallback));
+      return async.applyEachSeries.apply(this, [listeners].concat(argsAndCallback));
     }
   }]);
 
   return SequentialEventEmitter;
-}(EventEmitter);
+}(events.EventEmitter);
 
 /**
  * MOST Web Framework 3.0 Codename Zero Gravity
@@ -1941,7 +1947,7 @@ function () {
       }
 
       if (args.length > 1) {
-        return this.write("info", sprintf.apply(null, args));
+        return this.write("info", sprintf.sprintf.apply(null, args));
       }
 
       this.write("info", data);
@@ -1969,7 +1975,7 @@ function () {
       }
 
       if (args.length > 1) {
-        return this.write("info", sprintf.apply(null, args));
+        return this.write("info", sprintf.sprintf.apply(null, args));
       }
 
       this.write("info", data);
@@ -1997,7 +2003,7 @@ function () {
       }
 
       if (args.length > 1) {
-        return this.write("error", sprintf.apply(null, args));
+        return this.write("error", sprintf.sprintf.apply(null, args));
       }
 
       this.write("error", data);
@@ -2025,7 +2031,7 @@ function () {
       }
 
       if (args.length > 1) {
-        return this.write("warn", sprintf.apply(null, args));
+        return this.write("warn", sprintf.sprintf.apply(null, args));
       }
 
       this.write("warn", data);
@@ -2053,7 +2059,7 @@ function () {
       }
 
       if (args.length > 1) {
-        return this.write("verbose", sprintf.apply(null, args));
+        return this.write("verbose", sprintf.sprintf.apply(null, args));
       }
 
       this.write("verbose", data);
@@ -2081,7 +2087,7 @@ function () {
       }
 
       if (args.length > 1) {
-        return this.write("debug", sprintf.apply(null, args));
+        return this.write("debug", sprintf.sprintf.apply(null, args));
       }
 
       this.write("debug", data);
@@ -3062,5 +3068,47 @@ function (_IApplication) {
   return ApplicationService;
 }(IApplication);
 
-export { AbstractClassError, AbstractMethodError, AccessDeniedError, ApplicationService, Args, ArgumentError, Base26Number, CodedError, ConfigurationBase, ConfigurationStrategy, DataError, DataNotFoundError, DefaultModuleLoaderStrategy, FileNotFoundError, Guid, HtmlWriter, HttpBadRequestError, HttpConflictError, HttpError, HttpForbiddenError, HttpMethodNotAllowedError, HttpNotAcceptableError, HttpNotFoundError, HttpRequestTimeoutError, HttpServerError, HttpServiceUnavailable, HttpTokenExpiredError, HttpTokenRequiredError, HttpUnauthorizedError, IApplication, IApplicationService, LangUtils, ModuleLoaderStrategy, NotNullError, NumberUtils, PathUtils, RandomUtils, SequentialEventEmitter, TextUtils, TraceLogger, TraceUtils, UniqueConstraintError, UnknownPropertyDescriptor };
+exports.AbstractClassError = AbstractClassError;
+exports.AbstractMethodError = AbstractMethodError;
+exports.AccessDeniedError = AccessDeniedError;
+exports.ApplicationService = ApplicationService;
+exports.Args = Args;
+exports.ArgumentError = ArgumentError;
+exports.Base26Number = Base26Number;
+exports.CodedError = CodedError;
+exports.ConfigurationBase = ConfigurationBase;
+exports.ConfigurationStrategy = ConfigurationStrategy;
+exports.DataError = DataError;
+exports.DataNotFoundError = DataNotFoundError;
+exports.DefaultModuleLoaderStrategy = DefaultModuleLoaderStrategy;
+exports.FileNotFoundError = FileNotFoundError;
+exports.Guid = Guid;
+exports.HtmlWriter = HtmlWriter;
+exports.HttpBadRequestError = HttpBadRequestError;
+exports.HttpConflictError = HttpConflictError;
+exports.HttpError = HttpError;
+exports.HttpForbiddenError = HttpForbiddenError;
+exports.HttpMethodNotAllowedError = HttpMethodNotAllowedError;
+exports.HttpNotAcceptableError = HttpNotAcceptableError;
+exports.HttpNotFoundError = HttpNotFoundError;
+exports.HttpRequestTimeoutError = HttpRequestTimeoutError;
+exports.HttpServerError = HttpServerError;
+exports.HttpServiceUnavailable = HttpServiceUnavailable;
+exports.HttpTokenExpiredError = HttpTokenExpiredError;
+exports.HttpTokenRequiredError = HttpTokenRequiredError;
+exports.HttpUnauthorizedError = HttpUnauthorizedError;
+exports.IApplication = IApplication;
+exports.IApplicationService = IApplicationService;
+exports.LangUtils = LangUtils;
+exports.ModuleLoaderStrategy = ModuleLoaderStrategy;
+exports.NotNullError = NotNullError;
+exports.NumberUtils = NumberUtils;
+exports.PathUtils = PathUtils;
+exports.RandomUtils = RandomUtils;
+exports.SequentialEventEmitter = SequentialEventEmitter;
+exports.TextUtils = TextUtils;
+exports.TraceLogger = TraceLogger;
+exports.TraceUtils = TraceUtils;
+exports.UniqueConstraintError = UniqueConstraintError;
+exports.UnknownPropertyDescriptor = UnknownPropertyDescriptor;
 //# sourceMappingURL=themost_common.cjs.js.map

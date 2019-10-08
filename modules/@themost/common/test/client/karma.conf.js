@@ -18,7 +18,7 @@ module.exports = function (config) {
     ],
  
     //executes the tests whenever one of watched files changes
-    autoWatch: true,
+    autoWatch: false,
     //if true, Karma will run tests and then exit browser
     singleRun: true,
     //if true, Karma fails on running empty test-suites
@@ -34,7 +34,7 @@ module.exports = function (config) {
     reporters: [ 'progress', 'kjhtml' /*'mocha', 'kjhtml','dots','progress','spec'*/],
  
     //address that the server will listen on, '0.0.0.0' is default
-    listenAddress: '127.0.0.1',
+    listenAddress: '0.0.0.0',
     //hostname to be used when capturing browsers, 'localhost' is default
     hostname: 'localhost',
     //the port where the web server will be listening, 9876 is default
@@ -66,7 +66,7 @@ module.exports = function (config) {
       require('karma-jasmine'),
       require('karma-webpack'),
       require('karma-jasmine-html-reporter'),
-      require('karma-phantomjs-launcher')
+      require('karma-phantomjs-launcher'),
     ],
     /* karma-webpack config
        pass your webpack configuration for karma
