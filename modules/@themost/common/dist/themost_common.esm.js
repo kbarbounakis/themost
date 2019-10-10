@@ -943,7 +943,7 @@ function () {
     function Animal() {
         //
     }
-     function Dog() {
+      function Dog() {
         Dog.super_.bind(this)();
     }
     LangUtils.inherits(Dog,Animal);
@@ -1002,7 +1002,7 @@ function () {
       if (typeof fn === 'function') return [];
       var fnStr = fn.toString().replace(STRIP_COMMENTS, '');
       var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
-      if (result === null) result = (_readOnlyError("result"), []);
+      if (result === null) result = [];
       return result;
     }
     /**
@@ -1541,6 +1541,230 @@ function () {
 }();
 /**
  * @class
+ * @param {*} options
+ * @constructor
+ */
+
+var TraceLogger =
+/*#__PURE__*/
+function () {
+  function TraceLogger(options) {
+    _classCallCheck(this, TraceLogger);
+
+    this.options = {
+      colors: false,
+      level: "info"
+    };
+
+    if (typeof options === "undefined" && options !== null && IS_NODE) {
+      if (IS_NODE && process.env.NODE_ENV === "development") {
+        this.options.level = "debug";
+      }
+    }
+
+    if (typeof options !== "undefined" && options !== null) {
+      this.options = options; //validate logging level
+
+      Args.check(LOG_LEVELS.hasOwnProperty(this.options.level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
+    }
+  }
+  /**
+   * @param {string} level
+   * @returns {*}
+   */
+
+
+  _createClass(TraceLogger, [{
+    key: "level",
+    value: function level(_level) {
+      Args.check(LOG_LEVELS.hasOwnProperty(_level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
+      this.options.level = _level;
+      return this;
+    }
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+
+  }, {
+    key: "log",
+    value: function log(data) {
+      var args = Array.prototype.slice.call(arguments);
+
+      if (typeof data === 'undefined' || data === null) {
+        return;
+      }
+
+      if (data instanceof Error) {
+        return writeError.bind(this)("info", data);
+      }
+
+      if (typeof data !== 'string') {
+        return this.write("info", data.toString());
+      }
+
+      if (args.length > 1) {
+        return this.write("info", sprintf.apply(null, args));
+      }
+
+      this.write("info", data);
+    }
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+
+  }, {
+    key: "info",
+    value: function info(data) {
+      var args = Array.prototype.slice.call(arguments);
+
+      if (typeof data === 'undefined' || data === null) {
+        return;
+      }
+
+      if (data instanceof Error) {
+        return writeError.bind(this)("info", data);
+      }
+
+      if (typeof data !== 'string') {
+        return this.write("info", data.toString());
+      }
+
+      if (args.length > 1) {
+        return this.write("info", sprintf.apply(null, args));
+      }
+
+      this.write("info", data);
+    }
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+
+  }, {
+    key: "error",
+    value: function error(data) {
+      var args = Array.prototype.slice.call(arguments);
+
+      if (typeof data === 'undefined' || data === null) {
+        return;
+      }
+
+      if (data instanceof Error) {
+        return writeError.bind(this)("error", data);
+      }
+
+      if (typeof data !== 'string') {
+        return this.write("error", data.toString());
+      }
+
+      if (args.length > 1) {
+        return this.write("error", sprintf.apply(null, args));
+      }
+
+      this.write("error", data);
+    }
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+
+  }, {
+    key: "warn",
+    value: function warn(data) {
+      var args = Array.prototype.slice.call(arguments);
+
+      if (typeof data === 'undefined' || data === null) {
+        return;
+      }
+
+      if (data instanceof Error) {
+        return writeError.bind(this)("warn", data);
+      }
+
+      if (typeof data !== 'string') {
+        return this.write("warn", data.toString());
+      }
+
+      if (args.length > 1) {
+        return this.write("warn", sprintf.apply(null, args));
+      }
+
+      this.write("warn", data);
+    }
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+
+  }, {
+    key: "verbose",
+    value: function verbose(data) {
+      var args = Array.prototype.slice.call(arguments);
+
+      if (typeof data === 'undefined' || data === null) {
+        return;
+      }
+
+      if (data instanceof Error) {
+        return writeError.bind(this)("verbose", data);
+      }
+
+      if (typeof data !== 'string') {
+        return this.write("verbose", data.toString());
+      }
+
+      if (args.length > 1) {
+        return this.write("verbose", sprintf.apply(null, args));
+      }
+
+      this.write("verbose", data);
+    }
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+
+  }, {
+    key: "debug",
+    value: function debug(data) {
+      var args = Array.prototype.slice.call(arguments);
+
+      if (typeof data === 'undefined' || data === null) {
+        return;
+      }
+
+      if (data instanceof Error) {
+        return writeError.bind(this)("debug", data);
+      }
+
+      if (typeof data !== 'string') {
+        return this.write("debug", data.toString());
+      }
+
+      if (args.length > 1) {
+        return this.write("debug", sprintf.apply(null, args));
+      }
+
+      this.write("debug", data);
+    }
+  }, {
+    key: "write",
+    value: function write(level, text) {
+      if (LOG_LEVELS[level] > LOG_LEVELS[this.options.level]) {
+        return;
+      } // eslint-disable-next-line no-console
+
+
+      console.log(timestamp() + " [" + level.toUpperCase() + "] " + text);
+    }
+  }]);
+
+  return TraceLogger;
+}();
+/**
+ * @class
  * @constructor
  */
 
@@ -1558,8 +1782,8 @@ function () {
     }
   }, {
     key: "level",
-    value: function level(_level) {
-      TraceUtils._logger.level(_level);
+    value: function level(_level2) {
+      TraceUtils._logger.level(_level2);
     }
     /**
      * @static
@@ -1876,234 +2100,10 @@ function writeError(level, err) {
   }
 }
 /**
- * @class
- * @param {*} options
- * @constructor
- */
-
-
-var TraceLogger =
-/*#__PURE__*/
-function () {
-  function TraceLogger(options) {
-    _classCallCheck(this, TraceLogger);
-
-    this.options = {
-      colors: false,
-      level: "info"
-    };
-
-    if (typeof options === "undefined" && options !== null && IS_NODE) {
-      if (IS_NODE && process.env.NODE_ENV === "development") {
-        this.options.level = "debug";
-      }
-    }
-
-    if (typeof options !== "undefined" && options !== null) {
-      this.options = options; //validate logging level
-
-      Args.check(LOG_LEVELS.hasOwnProperty(this.options.level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
-    }
-  }
-  /**
-   * @param {string} level
-   * @returns {*}
-   */
-
-
-  _createClass(TraceLogger, [{
-    key: "level",
-    value: function level(_level2) {
-      Args.check(LOG_LEVELS.hasOwnProperty(_level2), "Invalid logging level. Expected error, warn, info, verbose or debug.");
-      this.options.level = _level2;
-      return this;
-    }
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-
-  }, {
-    key: "log",
-    value: function log(data) {
-      var args = Array.prototype.slice.call(arguments);
-
-      if (typeof data === 'undefined' || data === null) {
-        return;
-      }
-
-      if (data instanceof Error) {
-        return writeError.bind(this)("info", data);
-      }
-
-      if (typeof data !== 'string') {
-        return this.write("info", data.toString());
-      }
-
-      if (args.length > 1) {
-        return this.write("info", sprintf.apply(null, args));
-      }
-
-      this.write("info", data);
-    }
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-
-  }, {
-    key: "info",
-    value: function info(data) {
-      var args = Array.prototype.slice.call(arguments);
-
-      if (typeof data === 'undefined' || data === null) {
-        return;
-      }
-
-      if (data instanceof Error) {
-        return writeError.bind(this)("info", data);
-      }
-
-      if (typeof data !== 'string') {
-        return this.write("info", data.toString());
-      }
-
-      if (args.length > 1) {
-        return this.write("info", sprintf.apply(null, args));
-      }
-
-      this.write("info", data);
-    }
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-
-  }, {
-    key: "error",
-    value: function error(data) {
-      var args = Array.prototype.slice.call(arguments);
-
-      if (typeof data === 'undefined' || data === null) {
-        return;
-      }
-
-      if (data instanceof Error) {
-        return writeError.bind(this)("error", data);
-      }
-
-      if (typeof data !== 'string') {
-        return this.write("error", data.toString());
-      }
-
-      if (args.length > 1) {
-        return this.write("error", sprintf.apply(null, args));
-      }
-
-      this.write("error", data);
-    }
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-
-  }, {
-    key: "warn",
-    value: function warn(data) {
-      var args = Array.prototype.slice.call(arguments);
-
-      if (typeof data === 'undefined' || data === null) {
-        return;
-      }
-
-      if (data instanceof Error) {
-        return writeError.bind(this)("warn", data);
-      }
-
-      if (typeof data !== 'string') {
-        return this.write("warn", data.toString());
-      }
-
-      if (args.length > 1) {
-        return this.write("warn", sprintf.apply(null, args));
-      }
-
-      this.write("warn", data);
-    }
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-
-  }, {
-    key: "verbose",
-    value: function verbose(data) {
-      var args = Array.prototype.slice.call(arguments);
-
-      if (typeof data === 'undefined' || data === null) {
-        return;
-      }
-
-      if (data instanceof Error) {
-        return writeError.bind(this)("verbose", data);
-      }
-
-      if (typeof data !== 'string') {
-        return this.write("verbose", data.toString());
-      }
-
-      if (args.length > 1) {
-        return this.write("verbose", sprintf.apply(null, args));
-      }
-
-      this.write("verbose", data);
-    }
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-
-  }, {
-    key: "debug",
-    value: function debug(data) {
-      var args = Array.prototype.slice.call(arguments);
-
-      if (typeof data === 'undefined' || data === null) {
-        return;
-      }
-
-      if (data instanceof Error) {
-        return writeError.bind(this)("debug", data);
-      }
-
-      if (typeof data !== 'string') {
-        return this.write("debug", data.toString());
-      }
-
-      if (args.length > 1) {
-        return this.write("debug", sprintf.apply(null, args));
-      }
-
-      this.write("debug", data);
-    }
-  }, {
-    key: "write",
-    value: function write(level, text) {
-      if (LOG_LEVELS[level] > LOG_LEVELS[this.options.level]) {
-        return;
-      } // eslint-disable-next-line no-console
-
-
-      console.log(timestamp() + " [" + level.toUpperCase() + "] " + text);
-    }
-  }]);
-
-  return TraceLogger;
-}();
-/**
  * @param {number} value
  * @constructor
  */
+
 
 var Base26Number =
 /*#__PURE__*/
@@ -2204,7 +2204,7 @@ function () {
     Object.defineProperty(this, '_value', {
       enumerable: false,
       configurable: true,
-      value: test
+      value: _value
     });
   }
 
@@ -2222,6 +2222,19 @@ function () {
     key: "toString",
     value: function toString() {
       return this._value;
+    }
+  }, {
+    key: "equals",
+    value: function equals(b) {
+      if (b instanceof Guid) {
+        return this._value.toLowerCase() === b._value.toLowerCase();
+      }
+
+      if (typeof b === 'string') {
+        return this._value.toLowerCase() === b.toLowerCase();
+      }
+
+      return this._value === b;
     }
     /**
      * @param {string|*} s
@@ -2268,14 +2281,14 @@ function (_TypeError) {
 
     _classCallCheck(this, ArgumentError);
 
-    _this.message = msg;
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ArgumentError).call(this, msg));
     _this.code = code || "ERR_ARG";
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(_assertThisInitialized(_this), _this.constructor);
     }
 
-    return _possibleConstructorReturn(_this);
+    return _this;
   }
 
   return ArgumentError;

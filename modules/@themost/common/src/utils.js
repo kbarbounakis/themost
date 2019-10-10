@@ -50,7 +50,6 @@ export class UnknownPropertyDescriptor {
     }
 }
 
-
 /**
  * @class
  * @constructor
@@ -121,7 +120,7 @@ export class LangUtils {
         if (typeof fn === 'function')
             return [];
         const fnStr = fn.toString().replace(STRIP_COMMENTS, '');
-        const result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
+        let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
         if(result === null)
             result = [];
         return result;
@@ -131,7 +130,7 @@ export class LangUtils {
      * @param {string} value
      */
     static convert(value) {
-        var result;
+        let result;
         if ((typeof value === 'string'))
         {
             if (value.length===0) {
@@ -177,7 +176,7 @@ export class LangUtils {
 
         options = options || { convertValues:false };
         //find base notation
-        var match = /(^\w+)\[/.exec(expr), name, descriptor, expr1;
+        let match = /(^\w+)\[/.exec(expr), name, descriptor, expr1;
         if (match) {
             //get property name
             name = match[1];
@@ -201,7 +200,7 @@ export class LangUtils {
         }
         else if (expr.indexOf('[')===0) {
             //get property
-            var re = /\[(.*?)\]/g;
+            const re = /\[(.*?)\]/g;
             match = re.exec(expr);
             if (match) {
                 name = match[1];
@@ -216,7 +215,7 @@ export class LangUtils {
                     if (origin.value instanceof LangUtils) {
                         origin.value = {};
                     }
-                    var typedValue;
+                    let typedValue;
                     //convert string value
                     if ((typeof value === 'string') && options.convertValues) {
                         typedValue = LangUtils.convert(value);
@@ -367,7 +366,7 @@ export class Args {
      */
     static check(expr, err) {
         Args.notNull(expr,"Expression");
-        var res;
+        let res;
         if (typeof expr === 'function') {
             res = !(expr.call());
         }
@@ -477,7 +476,7 @@ export class TextUtils {
             return;
         }
         //browser implementation
-        var md5, md5module;
+        let md5, md5module;
         if (typeof window !== 'undefined') {
             md5module = 'blueimp-md5';
             md5 = require(md5module);
@@ -493,7 +492,7 @@ export class TextUtils {
         }
         //node.js implementation
         md5module = 'crypto';
-        var crypto = require(md5module);
+        const crypto = require(md5module);
         md5 = crypto.createHash('md5');
         if (typeof value === 'string') {
             md5.update(value);
@@ -515,16 +514,16 @@ export class TextUtils {
      */
     static toSHA1(value) {
 
-        var cryptoModule = 'crypto';
+        const cryptoModule = 'crypto';
         if (typeof window !== 'undefined') {
             throw new Error('This method is not implemented for this environment')
         }
 
-        var crypto = require(cryptoModule);
+        const crypto = require(cryptoModule);
         if (typeof value === 'undefined' || value === null) {
             return;
         }
-        var sha1 = crypto.createHash('sha1');
+        const sha1 = crypto.createHash('sha1');
         if (typeof value === 'string') {
             sha1.update(value);
         }
@@ -545,16 +544,16 @@ export class TextUtils {
      */
     static toSHA256(value) {
 
-        var cryptoModule = 'crypto';
+        const cryptoModule = 'crypto';
         if (typeof window !== 'undefined') {
             throw new Error('This method is not implemented for this environment')
         }
 
-        var crypto = require(cryptoModule);
+        const crypto = require(cryptoModule);
         if (typeof value === 'undefined' || value === null) {
             return;
         }
-        var sha256 = crypto.createHash('sha256');
+        const sha256 = crypto.createHash('sha256');
         if (typeof value === 'string') {
             sha256.update(value);
         }
@@ -573,23 +572,192 @@ export class TextUtils {
      * @returns {string}
      */
     static newUUID() {
-        var chars = UUID_CHARS;
-        var uuid = [];
+        const chars = UUID_CHARS;
+        const uuid = [];
         // rfc4122, version 4 form
-        var r = void 0;
+        let r = void 0;
         // rfc4122 requires these characters
         uuid[8] = uuid[13] = uuid[18] = uuid[23] = "-";
         uuid[14] = "4";
 
         // Fill in random data.  At i==19 set the high bits of clock sequence as
         // per rfc4122, sec. 4.1.5
-        for (var i = 0; i < 36; i++) {
+        for (let i = 0; i < 36; i++) {
             if (!uuid[i]) {
                 r = 0 | Math.random() * 16;
                 uuid[i] = chars[i === 19 ? r & 0x3 | 0x8 : r];
             }
         }
         return uuid.join("");
+    }
+}
+
+/**
+ * @class
+ * @param {*} options
+ * @constructor
+ */
+export class TraceLogger {
+    constructor(options) {
+        this.options = {
+            colors:false,
+            level:"info"
+        };
+        if (typeof options === "undefined" && options !== null && IS_NODE) {
+            if (IS_NODE && process.env.NODE_ENV === "development") {
+                this.options.level = "debug";
+            }
+        }
+        if (typeof options !== "undefined" && options !== null ) {
+            this.options = options;
+            //validate logging level
+            Args.check(LOG_LEVELS.hasOwnProperty(this.options.level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
+        }
+    }
+
+    /**
+     * @param {string} level
+     * @returns {*}
+     */
+    level(level) {
+        Args.check(LOG_LEVELS.hasOwnProperty(level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
+        this.options.level = level;
+        return this;
+    }
+
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    log(data) {
+        const args = Array.prototype.slice.call(arguments);
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        if (data instanceof Error) {
+            return writeError.bind(this)("info",data);
+        }
+        if (typeof data !== 'string') {
+            return this.write("info", data.toString());
+        }
+        if (args.length>1) {
+            return this.write("info", sprintf.apply(null, args));
+        }
+        this.write("info", data);
+    }
+
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    info(data) {
+        const args = Array.prototype.slice.call(arguments);
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        if (data instanceof Error) {
+            return writeError.bind(this)("info",data);
+        }
+        if (typeof data !== 'string') {
+            return this.write("info", data.toString());
+        }
+        if (args.length>1) {
+            return this.write("info", sprintf.apply(null, args));
+        }
+        this.write("info", data);
+    }
+
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    error(data) {
+        const args = Array.prototype.slice.call(arguments);
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        if (data instanceof Error) {
+            return writeError.bind(this)("error",data);
+        }
+        if (typeof data !== 'string') {
+            return this.write("error", data.toString());
+        }
+        if (args.length>1) {
+            return this.write("error", sprintf.apply(null, args));
+        }
+        this.write("error", data);
+    }
+
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    warn(data) {
+        const args = Array.prototype.slice.call(arguments);
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        if (data instanceof Error) {
+            return writeError.bind(this)("warn",data);
+        }
+        if (typeof data !== 'string') {
+            return this.write("warn", data.toString());
+        }
+        if (args.length>1) {
+            return this.write("warn", sprintf.apply(null, args));
+        }
+        this.write("warn", data);
+    }
+
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    verbose(data) {
+        const args = Array.prototype.slice.call(arguments);
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        if (data instanceof Error) {
+            return writeError.bind(this)("verbose",data);
+        }
+        if (typeof data !== 'string') {
+            return this.write("verbose", data.toString());
+        }
+        if (args.length>1) {
+            return this.write("verbose", sprintf.apply(null, args));
+        }
+        this.write("verbose", data);
+    }
+
+    /**
+     * @param {...*} data
+     */
+    // eslint-disable-next-line no-unused-vars
+    debug(data) {
+        const args = Array.prototype.slice.call(arguments);
+        if (typeof data === 'undefined' || data === null) {
+            return;
+        }
+        if (data instanceof Error) {
+            return writeError.bind(this)("debug",data);
+        }
+        if (typeof data !== 'string') {
+            return this.write("debug", data.toString());
+        }
+        if (args.length>1) {
+            return this.write("debug", sprintf.apply(null, args));
+        }
+        this.write("debug", data);
+
+    }
+
+    write(level, text) {
+        if (LOG_LEVELS[level]>LOG_LEVELS[this.options.level]) {
+            return;
+        }
+        // eslint-disable-next-line no-console
+        console.log(timestamp() + " [" + level.toUpperCase() + "] " + text);
     }
 }
 
@@ -682,9 +850,9 @@ export class RandomUtils {
      */
     static randomChars(length) {
         length = length || 8;
-        var chars = "abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ";
-        var str = "";
-        for(var i = 0; i < length; i++) {
+        const chars = "abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ";
+        let str = "";
+        for(let i = 0; i < length; i++) {
             str += chars.substr(this.randomInt(0, chars.length-1),1);
         }
         return str;
@@ -707,8 +875,8 @@ export class RandomUtils {
      */
     static randomHex(length) {
         length = (length || 8)*2;
-        var str = "";
-        for(var i = 0; i < length; i++) {
+        let str = "";
+        for(let i = 0; i < length; i++) {
             str += HEX_CHARS.substr(this.randomInt(0, HEX_CHARS.length-1),1);
         }
         return str;
@@ -727,12 +895,12 @@ export class NumberUtils {
      * @return {number} The equivalent integer value
      */
     static fromBase26(s) {
-        var num = 0;
+        let num = 0;
         if (!/[a-z]{8}/.test(s)) {
             throw new Error('Invalid base-26 format.');
         }
-        var a = 'a'.charCodeAt(0);
-        for (var i = 7; i >=0; i--) {
+        const a = 'a'.charCodeAt(0);
+        for (let i = 7; i >=0; i--) {
             num = (num * 26) + (s[i].charCodeAt(0) - a);
         }
         return num;
@@ -753,9 +921,9 @@ export class NumberUtils {
         if (num>208827064575) {
             throw new Error('A positive integer bigger than 208827064575 cannot be converted to base-26 format.');
         }
-        var out = "";
-        var length= 1;
-        var a = 'a'.charCodeAt(0);
+        let out = "";
+        let length = 1;
+        const a = 'a'.charCodeAt(0);
         while(length<=8)
         {
             out += String.fromCharCode(a + (num % 26));
@@ -778,20 +946,20 @@ export class PathUtils {
      */
     // eslint-disable-next-line no-unused-vars
     static join(_part) {
-        var pathModule = "path";
+        const pathModule = "path";
         if (IS_NODE) {
-            var path = require(pathModule);
+            const path = require(pathModule);
             return path.join.apply(null, Array.prototype.slice.call(arguments));
         }
         // Split the inputs into a list of path commands.
-        var parts = [], i, l;
+        let parts = [], i, l;
         for (i = 0, l = arguments.length; i < l; i++) {
             parts = parts.concat(arguments[i].split("/"));
         }
     // Interpret the path commands to get the new resolved path.
-        var newParts = [];
+        const newParts = [];
         for (i = 0, l = parts.length; i < l; i++) {
-            var part1 = parts[i];
+            const part1 = parts[i];
             // Remove leading and trailing slashes
             // Also remove "." segments
             if (!part1 || part1 === ".") continue;
@@ -823,8 +991,8 @@ function timestamp() {
  */
 function writeError(level, err) {
 
-    var keys = Object.keys(err).filter( x => {
-        return err.hasOwnProperty(x) && x!=='message' && typeof err[x] !== 'undefined' && err[x] != null;
+    const keys = Object.keys(err).filter(x => {
+        return err.hasOwnProperty(x) && x !== 'message' && typeof err[x] !== 'undefined' && err[x] != null;
     });
     if (err instanceof Error) {
         if (err.hasOwnProperty('stack')) {
@@ -844,174 +1012,6 @@ function writeError(level, err) {
     }
 }
 
-/**
- * @class
- * @param {*} options
- * @constructor
- */
-export class TraceLogger {
-    constructor(options) {
-        this.options = {
-            colors:false,
-            level:"info"
-        };
-        if (typeof options === "undefined" && options !== null && IS_NODE) {
-            if (IS_NODE && process.env.NODE_ENV === "development") {
-                this.options.level = "debug";
-            }
-        }
-        if (typeof options !== "undefined" && options !== null ) {
-            this.options = options;
-            //validate logging level
-            Args.check(LOG_LEVELS.hasOwnProperty(this.options.level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
-        }
-    }
-
-    /**
-     * @param {string} level
-     * @returns {*}
-     */
-    level(level) {
-        Args.check(LOG_LEVELS.hasOwnProperty(level), "Invalid logging level. Expected error, warn, info, verbose or debug.");
-        this.options.level = level;
-        return this;
-    }
-
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-    log(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (typeof data === 'undefined' || data === null) {
-            return;
-        }
-        if (data instanceof Error) {
-            return writeError.bind(this)("info",data);
-        }
-        if (typeof data !== 'string') {
-            return this.write("info", data.toString());
-        }
-        if (args.length>1) {
-            return this.write("info", sprintf.apply(null, args));
-        }
-        this.write("info", data);
-    }
-
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-    info(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (typeof data === 'undefined' || data === null) {
-            return;
-        }
-        if (data instanceof Error) {
-            return writeError.bind(this)("info",data);
-        }
-        if (typeof data !== 'string') {
-            return this.write("info", data.toString());
-        }
-        if (args.length>1) {
-            return this.write("info", sprintf.apply(null, args));
-        }
-        this.write("info", data);
-    }
-
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-    error(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (typeof data === 'undefined' || data === null) {
-            return;
-        }
-        if (data instanceof Error) {
-            return writeError.bind(this)("error",data);
-        }
-        if (typeof data !== 'string') {
-            return this.write("error", data.toString());
-        }
-        if (args.length>1) {
-            return this.write("error", sprintf.apply(null, args));
-        }
-        this.write("error", data);
-    }
-
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-    warn(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (typeof data === 'undefined' || data === null) {
-            return;
-        }
-        if (data instanceof Error) {
-            return writeError.bind(this)("warn",data);
-        }
-        if (typeof data !== 'string') {
-            return this.write("warn", data.toString());
-        }
-        if (args.length>1) {
-            return this.write("warn", sprintf.apply(null, args));
-        }
-        this.write("warn", data);
-    }
-
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-    verbose(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (typeof data === 'undefined' || data === null) {
-            return;
-        }
-        if (data instanceof Error) {
-            return writeError.bind(this)("verbose",data);
-        }
-        if (typeof data !== 'string') {
-            return this.write("verbose", data.toString());
-        }
-        if (args.length>1) {
-            return this.write("verbose", sprintf.apply(null, args));
-        }
-        this.write("verbose", data);
-    }
-
-    /**
-     * @param {...*} data
-     */
-    // eslint-disable-next-line no-unused-vars
-    debug(data) {
-        var args = Array.prototype.slice.call(arguments);
-        if (typeof data === 'undefined' || data === null) {
-            return;
-        }
-        if (data instanceof Error) {
-            return writeError.bind(this)("debug",data);
-        }
-        if (typeof data !== 'string') {
-            return this.write("debug", data.toString());
-        }
-        if (args.length>1) {
-            return this.write("debug", sprintf.apply(null, args));
-        }
-        this.write("debug", data);
-
-    }
-
-    write(level, text) {
-        if (LOG_LEVELS[level]>LOG_LEVELS[this.options.level]) {
-            return;
-        }
-        // eslint-disable-next-line no-console
-        console.log(timestamp() + " [" + level.toUpperCase() + "] " + text);
-    }
-}
 
 /**
  * @param {number} value
@@ -1020,7 +1020,7 @@ export class TraceLogger {
 export class Base26Number {
 
     constructor(value) {
-        var thisValue = value;
+        const thisValue = value;
         this.toString = () => {
             return Base26Number.toBase26(thisValue);
         }
@@ -1032,16 +1032,16 @@ export class Base26Number {
      * @returns {string}
      */
     static toBase26(x) {
-        var num = Math.floor(x | 0);
+        let num = Math.floor(x | 0);
         if (num<0) {
             throw new Error("A non-positive integer cannot be converted to base-26 format.");
         }
         if (num>208827064575) {
             throw new Error("A positive integer bigger than 208827064575 cannot be converted to base-26 format.");
         }
-        var out = "";
-        var length= 1;
-        var a = "a".charCodeAt(0);
+        let out = "";
+        let length = 1;
+        const a = "a".charCodeAt(0);
         while(length<=8) {
             out += String.fromCharCode(a + (num % 26));
             num = Math.floor(num / 26);
@@ -1056,12 +1056,12 @@ export class Base26Number {
      * @returns {number}
      */
     static fromBase26(s) {
-        var num = 0;
+        let num = 0;
         if (!/[a-z]{8}/.test(s)) {
             throw new Error("Invalid base-26 format.");
         }
-        var a = "a".charCodeAt(0);
-        for (var i = 7; i >=0; i--) {
+        const a = "a".charCodeAt(0);
+        for (let i = 7; i >=0; i--) {
             num = (num * 26) + (s[i].charCodeAt(0) - a);
         }
         return num;
@@ -1090,7 +1090,7 @@ export class Guid {
         Object.defineProperty(this, '_value', {
                 enumerable: false,
                 configurable: true,
-                value: test
+                value: _value
             });
     }
 
@@ -1104,6 +1104,16 @@ export class Guid {
 
     toString() {
         return this._value;
+    }
+
+    equals(b) {
+        if (b instanceof Guid) {
+            return this._value.toLowerCase() === b._value.toLowerCase();
+        }
+        if (typeof b === 'string') {
+            return this._value.toLowerCase() === b.toLowerCase();
+        }
+        return this._value === b;
     }
 
     /**
@@ -1134,7 +1144,7 @@ export class ArgumentError extends TypeError {
     * @param {string} code
     */
     constructor(msg, code) {
-        this.message = msg;
+        super(msg);
         this.code = code || "ERR_ARG";
         if (typeof Error.captureStackTrace === 'function') {
             Error.captureStackTrace(this, this.constructor);

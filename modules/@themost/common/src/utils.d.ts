@@ -109,6 +109,7 @@ export declare class Guid {
      */
     valueOf(): string;
     toJSON(): string;
+    equals(b:any): boolean;
 }
 /**
  * @class
