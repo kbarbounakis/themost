@@ -1138,7 +1138,7 @@ export class Guid {
     }
 }
 
-export class ArgumentError extends TypeError {
+export class ArgumentError extends Error {
     /**
     * @param {string} msg
     * @param {string} code

@@ -5,7 +5,8 @@
   "main": "dist/themost_common.js",
   "scripts": {
     "build": "rollup -c ./rollup.config.js -m",
-    "watch": "rollup -c ./rollup.config.js -m -w"
+    "watch": "rollup -c ./rollup.config.js -m -w",
+    "test": "karma start"
   },
   "peerDependencies": {},
   "repository": {
@@ -27,8 +28,17 @@
     "sprintf": "^0.1.5"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^3.5.1"
+    "babel-loader": "^8.0.6",
+    "jasmine-core": "^3.5.0",
+    "karma": "^4.3.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^2.0.1",
+    "karma-jasmine-html-reporter": "^1.4.2",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-webpack": "^4.0.2",
+    "puppeteer-core": "^1.20.0",
+    "webpack": "^4.41.0",
+    "webpack-karma-jasmine": "^3.0.8"
   },
   "eslintConfig": {
     "env": {

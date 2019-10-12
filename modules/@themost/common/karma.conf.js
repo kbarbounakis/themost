@@ -1,5 +1,4 @@
 const process = require('process');
-process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function (config) {
     config.set({
@@ -23,7 +22,7 @@ module.exports = function (config) {
         //executes the tests whenever one of watched files changes
         autoWatch: true,
         //if true, Karma will run tests and then exit browser
-        singleRun: true,
+        singleRun: false,
         //if true, Karma fails on running empty test-suites
         failOnEmptyTestSuite: false,
         //reduce the kind of information passed to the bash
@@ -109,18 +108,14 @@ module.exports = function (config) {
                     '--enable-logging=stderr',
                     '--disable-web-security',
                     '--disable-gpu',
-                    '--no-proxy-server'
+                    '--no-proxy-server',
+                    '--remote-debugging-port=9222'
                 ]
             },
             ChromeHeadlessNoSandbox: {
                 base: 'ChromeHeadless',
                 flags: [
-                    '--no-startup-window',
-                    '--no-sandbox',
-                    '--enable-logging=stderr',
-                    '--disable-web-security',
-                    '--disable-gpu',
-                    '--no-proxy-server'
+                    '--no-sandbox'
                 ]
             }
         },

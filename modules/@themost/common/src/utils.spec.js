@@ -1,5 +1,5 @@
 import {Guid} from '@themost/common';
-describe('CommonUtils', () => {
+describe('Utils', () => {
    it('should create guid', () => {
        const a = new Guid();
        expect(a).toBeTruthy();

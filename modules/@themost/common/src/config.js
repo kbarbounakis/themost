@@ -33,7 +33,7 @@ export class ConfigurationBase {
             writable: false,
             value: configPath || PathUtils.join(process.cwd(),'config')
         });
-        TraceUtils.debug('Initializing configuration under %s.', this._configurationPath);
+        TraceUtils.debug(`Initializing configuration under ${this._configurationPath}.`);
 
         // set execution path
         Object.defineProperty(this, '_executionPath', {
@@ -41,21 +41,16 @@ export class ConfigurationBase {
             writable: false,
             value: PathUtils.join(this._configurationPath,'..')
         });
-        TraceUtils.debug('Setting execution path under %s.', this._executionPath);
+        TraceUtils.debug(`Setting execution path under ${this._executionPath}`);
 
-        // set config source
-        // set execution path
-        Object.defineProperty(this, '_config', {
-            enumerable: false,
-            configurable: false,
-            value: { }
-        });
+        
 
         //load default module loader strategy
         this.useStrategy(ModuleLoaderStrategy, DefaultModuleLoaderStrategy);
 
         //get configuration source
         let configSourcePath;
+        let _config;
         try {
             let env = 'production';
             //node.js mode
@@ -67,16 +62,16 @@ export class ConfigurationBase {
                 env = window.env['BROWSER_ENV'] || 'production';
             }
             configSourcePath = PathUtils.join(this._configurationPath, 'app.' + env + '.json');
-            TraceUtils.debug('Validating environment configuration source on %s.', configSourcePath);
-            this._config = require(configSourcePath);
+            TraceUtils.debug(`Validating environment configuration source on ${configSourcePath}.`);
+            _config = require(configSourcePath);
         }
         catch (err) {
             if (err.code === 'MODULE_NOT_FOUND') {
                 TraceUtils.log('The environment specific configuration cannot be found or is inaccesible.');
                 try {
                     configSourcePath = PathUtils.join(this._configurationPath, 'app.json');
-                    TraceUtils.debug('Validating application configuration source on %s.', configSourcePath);
-                    this._config = require(configSourcePath);
+                    TraceUtils.debug(`Validating application configuration source on ${configSourcePath}.`);
+                    _config = require(configSourcePath);
                 }
                 catch(err) {
                     if (err.code === 'MODULE_NOT_FOUND') {
@@ -87,18 +82,26 @@ export class ConfigurationBase {
                         TraceUtils.error(err);
                     }
                     TraceUtils.debug('Initializing empty configuration');
-                    this._config = { };
+                    _config = { };
                 }
             }
             else {
                 TraceUtils.error('An error occured while trying to open application configuration.');
                 TraceUtils.error(err);
                 //load default configuration
-                this._config = { };
+                _config = { };
             }
         }
+
+        // set config source
+        Object.defineProperty(this, '_config', {
+            enumerable: false,
+            configurable: false,
+            value: _config
+        });
+
         //initialize settings object
-        this._config['settings'] = this._config['settings'] || { };
+        this._config.settings = this._config.settings || { };
 
         /**
          * @name ConfigurationBase#settings
@@ -111,7 +114,6 @@ export class ConfigurationBase {
         },
             enumerable:true,
             configurable:false});
-
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -255,7 +257,7 @@ Object.defineProperty(ConfigurationBase, '_currentConfiguration', {
  */
 export class ConfigurationStrategy {
     constructor(config) {
-        Args.check(this.constructor.name !== ConfigurationStrategy, new AbstractClassError());
+        Args.check(this.constructor.name !== ConfigurationStrategy.name, new AbstractClassError());
         Args.notNull(config, 'Configuration');
         this._config = config;
     }

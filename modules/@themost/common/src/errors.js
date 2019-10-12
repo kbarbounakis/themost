@@ -17,8 +17,7 @@ export class AbstractMethodError extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg);
-        this.message = msg || 'Class does not implement inherited abstract method.';
+        super(msg || 'Class does not implement inherited abstract method.');
         if (typeof Error.captureStackTrace === 'function') {
             Error.captureStackTrace(this, this.constructor);
         }
@@ -34,7 +33,7 @@ export class AbstractClassError extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        this.message = msg || 'An abstract class cannot be instantiated.';
+        super(msg || 'An abstract class cannot be instantiated.');
         if (typeof Error.captureStackTrace === 'function') {
             Error.captureStackTrace(this, this.constructor);
         }
@@ -51,7 +50,7 @@ export class CodedError extends Error {
      * @param {string} code
      */
     constructor(msg, code) {
-        this.message = msg;
+        super(msg);
         this.code = code;
         if (typeof Error.captureStackTrace === 'function') {
             Error.captureStackTrace(this, this.constructor);
@@ -78,14 +77,14 @@ export class FileNotFoundError extends CodedError {
  * @class
  * @param {number} status
  * @param {string=} message
- * @param {string=} innerMessage
+ * @param {string=} innerMessage,
  * @constructor
  * @extends CodedError
  */
 export class HttpError extends CodedError {
     constructor(status, message, innerMessage) {
         super(message, "EHTTP");
-        const finalStatus = Number.isNumber(status) ? status : 500;
+        const finalStatus = (typeof status === 'number') ? parseInt(status, 10) : 500;
         const err = errors.find( x => {
             return x.statusCode === finalStatus;
         });
@@ -105,6 +104,7 @@ export class HttpError extends CodedError {
     }
 
     /**
+     * @deprecated This static has been deprecated and it's going to be removed. Use default constructor instead.
      * @param {Error=} err
      * @returns {HttpError}
      */
