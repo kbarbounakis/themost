@@ -70,7 +70,7 @@ export class QueryExpression {
             writable: false,
             value: { }
         });
-        
+
 
     }
 
@@ -1340,14 +1340,29 @@ QueryExpression.prototype.gte = QueryExpression.prototype.greaterOrEqual;
 
 /**
  * @class
+ * @property {string} $name - A string which represents the name of this entity
+ * @property {string} $as - A string which represents an alias for this entity
+ * @property {*} $project - A key/value pair collection of attributes of this entity
  */
 export class QueryEntity {
+
     /**
-     * @param entity
+     * @param {string=} entity
      */
     constructor(entity) {
+        if (entity) {
+            Args.notString(entity,'Entity');
+        }
         this.$name = entity || 'Table';
-        this.$project = { };
+    }
+
+    /**
+     * Returns the name of this entity (for backward compatibility issues)
+     * @deprecated This property has been deprecated and it's going to be removed in the next version
+     * @returns {*|string}
+     */
+    get name() {
+        return this.$name;
     }
 
     select(name) {

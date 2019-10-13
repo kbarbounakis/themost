@@ -129,10 +129,11 @@ export declare class QueryField {
 }
 
 export declare class QueryEntity {
-    constructor(any: any);
+    constructor(name?: string);
     $name: string;
     $as: string;
-    $project: string;
+    // noinspection JSUnusedGlobalSymbols
+    $project: any;
     select(name: string): QueryEntity;
     as(alias: string): QueryEntity;
     inner(): QueryEntity;
