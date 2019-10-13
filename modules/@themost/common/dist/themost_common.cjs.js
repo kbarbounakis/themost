@@ -160,10 +160,6 @@ function _possibleConstructorReturn(self, call) {
   return _assertThisInitialized(self);
 }
 
-function _readOnlyError(name) {
-  throw new Error("\"" + name + "\" is read-only");
-}
-
 /**
  * @classdesc SequentialEventEmitter class is an extension of node.js EventEmitter class where listeners are executing in series.
  * @class
@@ -193,9 +189,7 @@ function (_EventEmitter) {
     // eslint-disable-next-line no-unused-vars
     // tslint:disable-nex-lineb no-unused-variable
     value: function emit(event, _args) {
-      //ensure callback
-      callback = (_readOnlyError("callback"), callback || function () {}); //get listeners
-
+      //get listeners
       if (typeof this.listeners !== 'function') {
         throw new Error('undefined listeners');
       }
@@ -350,8 +344,7 @@ function (_Error) {
 
     _classCallCheck(this, AbstractMethodError);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(AbstractMethodError).call(this, msg));
-    _this.message = msg || 'Class does not implement inherited abstract method.';
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(AbstractMethodError).call(this, msg || 'Class does not implement inherited abstract method.'));
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(_assertThisInitialized(_this), _this.constructor);
@@ -380,13 +373,13 @@ function (_Error2) {
 
     _classCallCheck(this, AbstractClassError);
 
-    _this2.message = msg || 'An abstract class cannot be instantiated.';
+    _this2 = _possibleConstructorReturn(this, _getPrototypeOf(AbstractClassError).call(this, msg || 'An abstract class cannot be instantiated.'));
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(_assertThisInitialized(_this2), _this2.constructor);
     }
 
-    return _possibleConstructorReturn(_this2);
+    return _this2;
   }
 
   return AbstractClassError;
@@ -410,14 +403,14 @@ function (_Error3) {
 
     _classCallCheck(this, CodedError);
 
-    _this3.message = msg;
+    _this3 = _possibleConstructorReturn(this, _getPrototypeOf(CodedError).call(this, msg));
     _this3.code = code;
 
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(_assertThisInitialized(_this3), _this3.constructor);
     }
 
-    return _possibleConstructorReturn(_this3);
+    return _this3;
   }
 
   return CodedError;
@@ -448,7 +441,7 @@ function (_CodedError) {
  * @class
  * @param {number} status
  * @param {string=} message
- * @param {string=} innerMessage
+ * @param {string=} innerMessage,
  * @constructor
  * @extends CodedError
  */
@@ -464,7 +457,7 @@ function (_CodedError2) {
     _classCallCheck(this, HttpError);
 
     _this4 = _possibleConstructorReturn(this, _getPrototypeOf(HttpError).call(this, message, "EHTTP"));
-    var finalStatus = Number.isNumber(status) ? status : 500;
+    var finalStatus = typeof status === 'number' ? parseInt(status, 10) : 500;
     var err = Errors_1.find(function (x) {
       return x.statusCode === finalStatus;
     });
@@ -486,6 +479,7 @@ function (_CodedError2) {
     return _this4;
   }
   /**
+   * @deprecated This static has been deprecated and it's going to be removed. Use default constructor instead.
    * @param {Error=} err
    * @returns {HttpError}
    */
@@ -2275,8 +2269,8 @@ function () {
 }();
 var ArgumentError =
 /*#__PURE__*/
-function (_TypeError) {
-  _inherits(ArgumentError, _TypeError);
+function (_Error) {
+  _inherits(ArgumentError, _Error);
 
   /**
   * @param {string} msg
@@ -2298,14 +2292,24 @@ function (_TypeError) {
   }
 
   return ArgumentError;
-}(_wrapNativeSuper(TypeError));
+}(_wrapNativeSuper(Error));
 
+function cwd() {
+  //node.js mode
+  if (process && typeof process.cwd === 'function') {
+    return process.cwd();
+  } //browser mode
+  else if (window && window.location && window.location.pathname) {
+      return '.';
+    }
+}
 /**
  * @class Represents an application configuration
  * @param {string=} configPath
  * @property {*} settings
  * @constructor
  */
+
 
 var ConfigurationBase =
 /*#__PURE__*/
@@ -2322,28 +2326,23 @@ function () {
 
     Object.defineProperty(this, '_configurationPath', {
       enumerable: false,
-      writable: false,
-      value: configPath || PathUtils.join(process.cwd(), 'config')
+      writable: true,
+      value: configPath || PathUtils.join(cwd(), 'config')
     });
-    TraceUtils.debug('Initializing configuration under %s.', this._configurationPath); // set execution path
+    TraceUtils.debug("Initializing configuration under ".concat(this._configurationPath, ".")); // set execution path
 
     Object.defineProperty(this, '_executionPath', {
       enumerable: false,
-      writable: false,
+      writable: true,
       value: PathUtils.join(this._configurationPath, '..')
     });
-    TraceUtils.debug('Setting execution path under %s.', this._executionPath); // set config source
-    // set execution path
-
-    Object.defineProperty(this, '_config', {
-      enumerable: false,
-      configurable: false,
-      value: {}
-    }); //load default module loader strategy
+    TraceUtils.debug("Setting execution path under ".concat(this._executionPath)); //load default module loader strategy
 
     this.useStrategy(ModuleLoaderStrategy, DefaultModuleLoaderStrategy); //get configuration source
 
     var configSourcePath;
+
+    var _config;
 
     try {
       var env = 'production'; //node.js mode
@@ -2356,16 +2355,16 @@ function () {
         }
 
       configSourcePath = PathUtils.join(this._configurationPath, 'app.' + env + '.json');
-      TraceUtils.debug('Validating environment configuration source on %s.', configSourcePath);
-      this._config = require(configSourcePath);
+      TraceUtils.debug("Validating environment configuration source on ".concat(configSourcePath, "."));
+      _config = require(configSourcePath);
     } catch (err) {
       if (err.code === 'MODULE_NOT_FOUND') {
         TraceUtils.log('The environment specific configuration cannot be found or is inaccesible.');
 
         try {
           configSourcePath = PathUtils.join(this._configurationPath, 'app.json');
-          TraceUtils.debug('Validating application configuration source on %s.', configSourcePath);
-          this._config = require(configSourcePath);
+          TraceUtils.debug("Validating application configuration source on ".concat(configSourcePath, "."));
+          _config = require(configSourcePath);
         } catch (err) {
           if (err.code === 'MODULE_NOT_FOUND') {
             TraceUtils.log('The default application configuration cannot be found or is inaccesible.');
@@ -2375,18 +2374,24 @@ function () {
           }
 
           TraceUtils.debug('Initializing empty configuration');
-          this._config = {};
+          _config = {};
         }
       } else {
         TraceUtils.error('An error occured while trying to open application configuration.');
         TraceUtils.error(err); //load default configuration
 
-        this._config = {};
+        _config = {};
       }
-    } //initialize settings object
+    } // set config source
 
 
-    this._config['settings'] = this._config['settings'] || {};
+    Object.defineProperty(this, '_config', {
+      enumerable: false,
+      configurable: false,
+      value: _config
+    }); //initialize settings object
+
+    this._config.settings = this._config.settings || {};
     /**
      * @name ConfigurationBase#settings
      * @type {*}
@@ -2394,9 +2399,9 @@ function () {
 
     Object.defineProperty(this, 'settings', {
       get: function get() {
-        return this._config['settings'];
+        return this._config.settings;
       },
-      enumerable: true,
+      enumerable: false,
       configurable: false
     });
   } //noinspection JSUnusedGlobalSymbols
@@ -2434,7 +2439,7 @@ function () {
   }, {
     key: "hasSourceAt",
     value: function hasSourceAt(p) {
-      return _.isObject(_.at(this._config, p.replace(/\//g, '.'))[0]);
+      return typeof _.at(this._config, p.replace(/\//g, '.'))[0] !== 'undefined';
     } //noinspection JSUnusedGlobalSymbols
 
     /**
@@ -2576,7 +2581,7 @@ function () {
   function ConfigurationStrategy(config) {
     _classCallCheck(this, ConfigurationStrategy);
 
-    Args.check(this.constructor.name !== ConfigurationStrategy, new AbstractClassError());
+    Args.check(this.constructor.name !== ConfigurationStrategy.name, new AbstractClassError());
     Args.notNull(config, 'Configuration');
     this._config = config;
   }
