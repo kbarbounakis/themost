@@ -962,7 +962,7 @@ export class PathUtils {
             const part1 = parts[i];
             // Remove leading and trailing slashes
             // Also remove "." segments
-            if (!part1 || part1 === ".") continue;
+            if (!part1 ||(part1 === ".")) continue;
             // Interpret ".." to pop the last segment
             if (part1 === "..") newParts.pop();
             // Push new path segments.

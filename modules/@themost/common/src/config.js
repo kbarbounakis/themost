@@ -11,6 +11,17 @@ import {TraceUtils} from './utils';
 import {PathUtils} from './utils';
 import {AbstractClassError} from './errors';
 
+function cwd() {
+    //node.js mode
+    if (process && typeof process.cwd === 'function') {
+        return process.cwd();
+    }
+    //browser mode
+    else if (window && window.location && window.location.pathname) {
+        return '.';
+    }
+}
+
 /**
  * @class Represents an application configuration
  * @param {string=} configPath
@@ -30,15 +41,15 @@ export class ConfigurationBase {
         // set configuration path
         Object.defineProperty(this, '_configurationPath', {
             enumerable: false,
-            writable: false,
-            value: configPath || PathUtils.join(process.cwd(),'config')
+            writable: true,
+            value: configPath || PathUtils.join(cwd(),'config')
         });
         TraceUtils.debug(`Initializing configuration under ${this._configurationPath}.`);
 
         // set execution path
         Object.defineProperty(this, '_executionPath', {
             enumerable: false,
-            writable: false,
+            writable: true,
             value: PathUtils.join(this._configurationPath,'..')
         });
         TraceUtils.debug(`Setting execution path under ${this._executionPath}`);
@@ -110,10 +121,11 @@ export class ConfigurationBase {
 
         Object.defineProperty(this, 'settings',{
             get: function() {
-                return this._config['settings'];
-        },
-            enumerable:true,
-            configurable:false});
+                return this._config.settings;
+            },
+            enumerable:false,
+            configurable:false
+        });
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -142,7 +154,7 @@ export class ConfigurationBase {
      * @returns {boolean}
      */
     hasSourceAt(p) {
-        return _.isObject(_.at(this._config,p.replace(/\//g,'.'))[0]);
+        return typeof _.at(this._config,p.replace(/\//g,'.'))[0] !== 'undefined';
     }
 
     //noinspection JSUnusedGlobalSymbols

@@ -8,7 +8,7 @@
           "request": "attach",
           "name": "karma debug",
           "port": 9222,
-          "cwd": "${workspaceFolder}/test/next/karma",
+          "cwd": "${workspaceFolder}/modules/@themost/common",
           "address": "localhost",
           "timeout": 30000
       }

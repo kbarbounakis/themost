@@ -24,8 +24,6 @@ export class SequentialEventEmitter extends EventEmitter {
     // eslint-disable-next-line no-unused-vars
     // tslint:disable-nex-lineb no-unused-variable
     emit(event, _args) {
-        //ensure callback
-        callback = callback || (() => {});
         //get listeners
         if (typeof this.listeners !== 'function') {
             throw new Error('undefined listeners');
