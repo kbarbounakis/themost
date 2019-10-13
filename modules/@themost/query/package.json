@@ -1,10 +1,13 @@
 {
   "name": "@themost/query",
-  "version": "2.3.2",
-  "description": "MOST Web Framework 2.0 - query module",
-  "main": "index.js",
+  "version": "3.0.1-dev.1",
+  "description": "MOST Web Framework Codename Zero Gravity Query",
+  "main": "dist/themost_query.js",
   "peerDependencies": {
-    "@themost/common": "^2.3.1"
+    "@themost/common": "^3.0.1-dev.1"
+  },
+  "scripts": {
+    "test": "karma start"
   },
   "repository": {
     "type": "git",
@@ -24,9 +27,25 @@
     "symbol": "^0.3.1"
   },
   "devDependencies": {
-    "eslint": "^4.12.1"
+    "@types/jasmine": "^3.4.4",
+    "babel-eslint": "^10.0.3",
+    "babel-loader": "^8.0.6",
+    "eslint": "^4.12.1",
+    "jasmine": "^3.5.0",
+    "jasmine-core": "^3.5.0",
+    "jasmine-node": "^3.0.0",
+    "karma": "^4.3.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^2.0.1",
+    "karma-jasmine-html-reporter": "^1.4.2",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-webpack": "^4.0.2",
+    "puppeteer-core": "^1.20.0",
+    "webpack": "^4.41.0",
+    "webpack-karma-jasmine": "^3.0.8"
   },
   "eslintConfig": {
+    "parser": "babel-eslint",
     "env": {
       "browser": true,
       "node": true,
@@ -35,18 +54,11 @@
     },
     "globals": {
       "describe": false,
-      "it": false
+      "it": false,
+      "before": false,
+      "after": false,
+      "expect": false
     },
-    "extends": "eslint:recommended",
-    "rules": {
-      "no-console": "warn",
-      "no-invalid-this": "warn",
-      "no-undef": "error",
-      "no-unused-vars": "warn",
-      "strict": [
-        2,
-        "never"
-      ]
-    }
+    "extends": "eslint:recommended"
   }
 }
