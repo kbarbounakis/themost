@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 //
-const QueryExpression = require('./query').QueryExpression;
+import {QueryExpression} from './query';
 
 /**
  * @param {string} tz

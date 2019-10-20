@@ -11,6 +11,15 @@
           "cwd": "${workspaceFolder}/modules/@themost/common",
           "address": "localhost",
           "timeout": 30000
+      },
+      {
+          "type": "node",
+          "request": "attach",
+          "name": "query debug",
+          "port": 9222,
+          "cwd": "${workspaceFolder}/modules/@themost/query",
+          "address": "localhost",
+          "timeout": 30000
       }
   ]
 }
