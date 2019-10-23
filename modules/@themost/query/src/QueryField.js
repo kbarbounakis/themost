@@ -10,6 +10,7 @@ import { Args } from '@themost/common';
 import { REFERENCE_REGEXP, getOwnPropertyName } from './query';
 /**
  * @class
+ * @classdesc Represents a field expression that is going to be used in any query
  * @param name {string=}
  * @constructor
  */
@@ -61,9 +62,34 @@ export class QueryField {
         const isMethod = REFERENCE_REGEXP.test(thisName);
         if (isMethod) {
             // assign previous property value to new method e.g.
-            // { $min: { $day: "dateCreated" } }
-            this[method] = {};
-            Object.defineProperty(this[method], this._toReference(thisName), Object.getOwnPropertyDescriptor(this, thisName));
+            // { $min: { $day: "$dateCreated" } }
+            this[method] = { };
+            // if method has arguments
+            if (args.length > 0) {
+                // insert field as first argument e.g.
+                // validate first parameter e.g. { $multiply: [ "$price", 0.7 ] }
+                if (Array.isArray(this[thisName])) {
+                    // clone value
+                    value = {};
+                    // clone property
+                    // e.g. { $multiply: [ "$price", 0.7 ] }
+                    Object.defineProperty(value, thisName, { value: this[thisName], configurable: true, enumerable: true, writable: true });
+                    // set this value as first argument
+                    args.unshift(value);
+                }
+                else {
+                    value = this._toReference(thisName);
+                    args.unshift(value);
+                }
+                // finally wrap existing property
+                // e.g. { $add: [ { $multiply: [ "$price", 0.7 ] }, 25 ] }
+                this[method] = args;
+            }
+            else {
+                // else use only field reference
+                value = this[thisName];
+                Object.defineProperty(this[method], this._toReference(thisName), { value: value, configurable: true, enumerable: true, writable: true });
+            }
             // remove previous property reference
             delete this[thisName];
             // and finally return
@@ -167,7 +193,7 @@ export class QueryField {
      * @returns this
      */
     getMonth() {
-        return this._assignMethod('$day');
+        return this._assignMethod('$month');
     }
     /**
      * Prepares a query which returns the year of a date expression

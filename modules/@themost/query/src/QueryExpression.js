@@ -11,6 +11,13 @@ import {Args} from '@themost/common';
 import { QueryField } from './QueryField';
 import { QueryEntity } from './QueryEntity';
 import {getOwnPropertyName, isMethodOrNameReference} from './query';
+
+class InvalidLeftOperandError extends Error {
+    constructor() {
+        super('Left operand cannot be null at this context');
+    }
+}
+
 /**
  * @class
  * @constructor
@@ -55,10 +62,15 @@ export class QueryExpression {
         return _.cloneDeep(this);
     }
     /**
-     * Sets the alias of a QueryExpression instance. This alias is going to be used in sub-query operations.
+     * Sets the alias of active expression 
+     * @param {string} alias
      * @returns {QueryExpression}
      */
     as(alias) {
+        if (this.privates.left) {
+            this.privates.left.as(alias);
+            return this;
+        }
         this.$alias = alias;
         return this;
     }
@@ -232,39 +244,67 @@ export class QueryExpression {
     }
     /**
      * Initializes an insert query and sets the object that is going to be inserted.
-     * @param obj {*}
+     * @param {*} any
      * @returns {QueryExpression}
      */
-    insert(obj) {
-        if (obj == null)
-            return this;
-        if (_.isArray(obj) || _.isObject(obj)) {
-            this.$insert = { table1: obj };
-            //delete other properties (if any)
-            delete this.$delete;
-            delete this.$select;
-            delete this.$update;
-            return this;
+    insert(any) {
+        if (Array.isArray(any)) {
+            return this.insertMany(any);
         }
-        else {
-            throw new Error('Invalid argument. Object must be an object or an array of objects');
-        }
+        return this.insertOne(any);
     }
-    into(entity) {
-        if (entity == null)
-            return this;
-        if (_.isNil(this.$insert))
-            return this;
-        const prop = Object.key(this.$insert);
-        if (prop == null)
-            return this;
-        if (prop === entity)
-            return this;
-        const value = this.$insert[prop];
-        if (value == null)
-            return this;
-        this.$insert[entity] = value;
-        delete this.$insert[prop];
+
+    /**
+     * Prepares an insert query and sets the object that is going to be inserted.
+     * @param {*} any
+     * @returns {QueryExpression}
+     */
+    insertOne(any) {
+        Args.notNull(any, 'Item for insert cannot be null.');
+        // check that argument is not an array
+        Args.check(Array.isArray(any) === false, new Error('Item for insert cannot be an array. Use insertMany() instead.'));
+        // check that argument is not an array
+        Args.check( any === Object(any), new Error('Item for insert must be an object.'));
+        // set object
+        this.$insert = any;
+        //delete other properties (if any)
+        delete this.$delete;
+        delete this.$select;
+        delete this.$addFields;
+        delete this.$order;
+        delete this.$group;
+        delete this.$update;
+        return this;
+    }
+
+    /**
+     * Prepares an insert query and sets an array of objects that are going to be inserted.
+     * @param {*} any
+     * @returns {QueryExpression}
+     */
+    insertMany(any) {
+        Args.notNull(any, 'Items for insert cannot be null.');
+        // check that argument is not an array
+        Args.check(Array.isArray(any), new Error('Items for insert must be an array'));
+        // set object
+        this.$insert = any;
+        //delete other properties (if any)
+        delete this.$delete;
+        delete this.$select;
+        delete this.$addFields;
+        delete this.$order;
+        delete this.$group;
+        delete this.$update;
+        return this;
+    }
+
+    /**
+     * Defines the target collection that is going to be used in an insert query operation.
+     * @param {*} collection
+     */
+    into(collection) {
+        Args.notNull(this.$insert, 'Items to insert must be defined. Use insert() method first.');
+        this.$collection = collection;
         return this;
     }
     /**
@@ -304,56 +344,35 @@ export class QueryExpression {
         return this;
     }
     /**
-     * Prepares a SELECT statement by defining a field or an array of fields
-     * we want to select data from
-     * @param {...*} field - A param array of fields that are going to be used in select statement
-     * @returns {QueryExpression}
-     * @example
-     * const q = new QueryExpression().from('UserBase').select('id', 'name');
-     * const formatter = new SqlFormatter();
-     * console.log('SQL', formatter.formatSelect(q))
-     * // SELECT UserBase.id, UserBase.name FROM UserBase
+     * Prepares a select statement expression
      */
-    /* eslint-disable-next-line no-unused-vars */
-    select(field) {
-        // get argument
-        const arr = Array.prototype.slice.call(arguments);
-        if (arr.length === 0) {
-            return this;
-        }
-        // validate arguments
-        const fields = [];
-        arr.forEach(x => {
-            // backward compatibility
-            // any argument may be an array of fields
-            // this operation needs to be deprecated
-            if (Array.isArray(x)) {
-                fields.push.apply(fields, x);
-            }
-            else {
-                fields.push(x);
-            }
-        });
-        //if entity is already defined
-        if (this.privates.entity) {
-            //initialize $select property
-            this.$select = {};
-            //and set array of fields
-            this.$select[this.privates.entity] = fields;
-        }
-        else {
-            //otherwise store array of fields in temporary property and wait
-            this.privates.fields = fields;
-        }
-        //delete other properties (if any)
+    select() {
+        // cleanup 
         delete this.$delete;
         delete this.$insert;
         delete this.$update;
+        // get argument
+        const args = Array.prototype.slice.call(arguments);
+        if (args.length === 0) {
+            this.$select = { };
+            return this;
+        }
+        // map arguments to query fields
+        this.$select = args.filter( x => x!= null ).map( x => {
+            if (typeof x === 'string') {
+                return new QueryField(x);
+            }
+            if (x instanceof QueryField) {
+                return x;
+            }
+            return Object.assign(new QueryField(), x);
+        }).reduce( (obj, value) => {
+            return Object.assign({ }, obj, value);
+        });
         return this;
     }
     /**
      * Prepares an aggregated query which is going to count records by specifying the alias of the count attribute
-     * e.g. SELECT COUNT(*) AS `total` FROM (SELECT * FROM `Orders` WHERE `orderStatus` = 1) `c0`
      * @param {string} alias - A string which represents the alias of the count attribute
      * @returns QueryExpression
      */
@@ -476,57 +495,127 @@ export class QueryExpression {
     // noinspection JSUnusedGlobalSymbols
     /**
      * Applies an ascending ordering to a query expression
-     * @param name {string|Array}
+     * @param {*...} field
      * @returns {QueryExpression}
      */
-    orderBy(name) {
-        if (name == null)
+    orderBy() {
+        // get arguments
+        const args = Array.prototype.slice.call(arguments);
+        if (args.length === 0) {
             return this;
-        if (_.isNil(this.$order))
-            this.$order = [];
-        this.$order.push({ $asc: name });
+        }
+        // map arguments to query fields
+        this.$order = args.filter( x => x!= null ).map( x => {
+            // get field expression and try to add it in $addFields collection
+            // if it's a complex expression
+            const addField = this._testAddField(x);
+            const result = { };
+            // set property result
+            Object.defineProperty(result, addField, { 
+                value: -1,
+                configurable: true,
+                enumerable: true,
+                writable: true
+            });
+            return result;
+        }).reduce( (obj, value) => {
+            return Object.assign({ }, obj, value);
+        });
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
     /**
      * Applies a descending ordering to a query expression
-     * @param name
+     * @param {*...} field
      * @returns {QueryExpression}
      */
-    orderByDescending(name) {
-        if (name == null)
+    orderByDescending() {
+        // get arguments
+        const args = Array.prototype.slice.call(arguments);
+        if (args.length === 0) {
             return this;
-        if (_.isNil(this.$order))
-            this.$order = [];
-        this.$order.push({ $desc: name });
+        }
+        // map arguments to query fields
+        this.$order = args.filter( x => x!= null ).map( x => {
+            // get field expression and try to add it in $addFields collection
+            // if it's a complex expression
+            const addField = this._testAddField(x);
+            const result = { };
+            // set property result
+            Object.defineProperty(result, addField, { 
+                value: 1,
+                configurable: true,
+                enumerable: true,
+                writable: true
+            });
+            return result;
+        }).reduce( (obj, value) => {
+            return Object.assign({ }, obj, value);
+        });
         return this;
     }
     /**
      * Performs a subsequent ordering in a query expression
-     * @param name {string|Array}
+     * @param {*...} field
      * @returns {QueryExpression}
      */
-    thenBy(name) {
-        if (name == null)
+    thenBy() {
+        Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.')
+        // get arguments
+        const args = Array.prototype.slice.call(arguments);
+        if (args.length === 0) {
             return this;
-        if (_.isNil(this.$order))
-            //throw exception (?)
-            return this;
-        this.$order.push({ $asc: name });
+        }
+        // map arguments to query fields
+        const addOrder = args.filter( x => x!= null ).map( x => {
+            // get field expression and try to add it in $addFields collection
+            // if it's a complex expression
+            const addField = this._testAddField(x);
+            const result = { };
+            // set property result
+            Object.defineProperty(result, addField, { 
+                value: -1,
+                configurable: true,
+                enumerable: true,
+                writable: true
+            });
+            return result;
+        }).reduce( (obj, value) => {
+            return Object.assign({ }, obj, value);
+        });
+        Object.assign(this.$order, addOrder);
         return this;
     }
     /**
      * Performs a subsequent ordering in a query expression
-     * @param name {string|Array}
+     * @param {*...} field
      * @returns {QueryExpression}
      */
-    thenByDescending(name) {
-        if (name == null)
+    thenByDescending() {
+        Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.')
+        // get arguments
+        const args = Array.prototype.slice.call(arguments);
+        if (args.length === 0) {
             return this;
-        if (_.isNil(this.$order))
-            //throw exception (?)
-            return this;
-        this.$order.push({ $desc: name });
+        }
+        // map arguments to query fields
+        const addOrder = args.filter( x => x!= null ).map( x => {
+            // get field expression and try to add it in $addFields collection
+            // if it's a complex expression
+            const addField = this._testAddField(x);
+            const result = { };
+            // set property result
+            Object.defineProperty(result, addField, { 
+                value: 1,
+                configurable: true,
+                enumerable: true,
+                writable: true
+            });
+            return result;
+        }).reduce( (obj, value) => {
+            return Object.assign({ }, obj, value);
+        });
+        Object.assign(this.$order, addOrder);
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -536,26 +625,24 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     /* eslint-disable-next-line no-unused-vars */
-    groupBy(field) {
-        // get argument
-        const arr = Array.prototype.slice.call(arguments);
-        if (arr.length === 0) {
+    groupBy() {
+        // get arguments
+        const args = Array.prototype.slice.call(arguments);
+        if (args.length === 0) {
             return this;
         }
-        // validate arguments
-        const fields = [];
-        arr.forEach(x => {
-            // backward compatibility
-            // any argument may be an array of fields
-            // this operation needs to be deprecated
-            if (Array.isArray(x)) {
-                fields.push.apply(fields, x);
+        // map arguments to query fields
+        this.$group = args.filter( x => x!= null ).map( x => {
+            if (typeof x === 'string') {
+                return new QueryField(x);
             }
-            else {
-                fields.push(x);
+            if (x instanceof QueryField) {
+                return x;
             }
+            return Object.assign(new QueryField(), x);
+        }).reduce( (obj, value) => {
+            return Object.assign({ }, obj, value);
         });
-        this.$group = fields;
         return this;
     }
     /**
@@ -606,18 +693,27 @@ export class QueryExpression {
         // validate if left operand is a method reference
         const isMethod = isMethodOrNameReference(name);
         if (isMethod) {
+            let alias;
             // generate an alias for left operand
             this.$addFields = this.$addFields || { };
-            const alias = `add${Object.keys(this.$addFields).length + 1}`;
-            // add field to $addFields collection
-            Object.defineProperty(this.$addFields, alias, { 
-                    value: left[name],
-                    configurable: true,
-                    enumerable: true,
-                    writable: true
-                });
-                // set filter expression
-                filter[alias] = right;
+            const addField = Object.assign({}, left);
+            // search addFields collection
+            alias = Object.keys(this.$addFields).find( key => {
+                return _.isEqual(addField, this.$addFields[key]);
+            });
+            if (alias == null) {
+                // get alias
+                alias = `${name.replace(/\$/,'')}${Object.keys(this.$addFields).length + 1}`;
+                // add field to $addFields collection
+                Object.defineProperty(this.$addFields, alias, { 
+                        value: addField,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
+            }
+            // set filter expression
+            filter[alias] = right;
             
         } else  {
             // check if left operand is a single field expression (e.g { "dateCreated": 1 })
@@ -663,6 +759,101 @@ export class QueryExpression {
         delete this.privates.expression;
         return this;
     }
+
+    /**
+     * @private
+     * @param {*} field
+     * @returns {string}
+     */
+    _testAddField(field) {
+        if (field == null) {
+            return;
+        }
+        if (typeof field === 'string') {
+            // do nothing
+            return field;
+        }
+        // get field property
+        let name = getOwnPropertyName(field);
+        // get field expression
+        let addField = Object.assign({ }, field);
+        // field expression is a method reference { "$year": "dateCreated" }
+        if (isMethodOrNameReference(name)) {
+            // search if expression graph already exists
+            this.$addFields = this.$addFields || { };
+            let alias = Object.keys(this.$addFields).find( key => {
+                return _.isEqual(addField, this.$addFields[key]);
+            });
+            if (alias == null) {
+                // get alias 
+                // todo: validate alias index e.g. year1, year2 etc by searching $addFields collection 
+                alias = `${name.replace(/\$/,'')}${Object.keys(this.$addFields).length + 1}`;
+                // add field to $addFields collection
+                Object.defineProperty(this.$addFields, alias, { 
+                        value: addField,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
+                return alias;
+            }
+        }
+        else {
+            if (addField[name] === 1 || addField[name] === 0) {
+                // expression is simple e.g. { "dateCreated": 1 }
+                // do nothing
+                return addField[name];
+            }
+            // else try to add field expression
+            // e.g. { "yearCreated": { "$year": "$dateCreated" } }
+            this.$addFields = this.$addFields || { };
+            Object.defineProperty(this.$addFields, name, { 
+                    value: addField,
+                    configurable: true,
+                    enumerable: true,
+                    writable: true
+                });
+            return name;
+        }
+
+    }
+
+    /**
+     * @param {*} where
+     * @param {*=} addFields
+     * 
+     */
+    _concat(where, addFields) {
+        if (this.$where == null) {
+            this.$where = where;
+        }
+        else {
+            // set in-process logical operator
+            const logicalOperator ='$and';
+            //get where expression current operator
+            const currentOperator = getOwnPropertyName(this.$where);
+            if (currentOperator === logicalOperator) {
+                // push filter expression
+                this.$where[logicalOperator].push(where);
+            }
+            else {
+                // merge $where expression and current filter expression
+                const newFilter = { };
+                newFilter[logicalOperator] = [ this.$where, where ];
+                // set new filter
+                this.$where = newFilter;
+            }
+        }
+        // add fields
+        if (addFields) {
+            // ensure $addFields collection
+            this.$addFields = this.$addFields || { };
+            // add fields
+            Object.assign(this.$addFields, addFields);
+        }
+        return this;
+    }
+
     /**
      * @param {*} field
      * @returns {QueryExpression}
@@ -688,8 +879,6 @@ export class QueryExpression {
     }
     /**
      * Prepares an equal expression.
-     * @example
-     * q.where('id').equal(10) //id=10 expression
      * @param {*} value - A value that represents the right part of the prepared expression
      * @returns {QueryExpression}
      */
@@ -703,8 +892,6 @@ export class QueryExpression {
 
     /**
      * Prepares a not equal expression.
-     * @example
-     * q.where('id').notEqual(10) //id<>10 expression
      * @param {*} value - A value that represents the right part of the prepared expression
      * @returns {QueryExpression}
      */
@@ -718,96 +905,42 @@ export class QueryExpression {
 
     /**
      * Prepares an in statement expression
-     * @example
-     * q.where('id').in([10, 11, 12]) //id in (10,11,12) expression
      * @param {Array} values - An array of values that represents the right part of the prepared expression
      * @returns {QueryExpression}
      */
     in(values) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $in: values };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ $in: values });
     }
     /**
      * Prepares a not in statement expression
-     * @example
-     * q.where('id').notIn([10, 11, 12]) //id in (10,11,12) expression
      * @param {Array} values - An array of values that represents the right part of the prepared expression
      * @returns {QueryExpression}
      */
     notIn(values) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $nin: values };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], { $nin: values });
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
+        return this._append({ $nin: values });
+    }
+    /**
+     * @param {*} value The value to be compared
+     * @returns {QueryExpression}
+     */
+    mod(value) {
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.mod(value);
         return this;
     }
     /**
      * @param {*} value The value to be compared
-     * @param {Number} result The result of modulo expression
      * @returns {QueryExpression}
      */
-    mod(value, result) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $mod: [value, result] };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
-    }
-    /**
-     * @param {*} value The value to be compared
-     * @param {Number} result The result of a bitwise and expression
-     * @returns {QueryExpression}
-     */
-    bit(value, result) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $bit: [value, result] };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+    bit(value) {
+        return this.mod(value);
     }
     /**
      * @param value {*}
      * @returns {QueryExpression}
      */
     greaterThan(value) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $gt: value };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ '$gt': value });
     }
 
     gt(value) {
@@ -816,24 +949,11 @@ export class QueryExpression {
 
     // noinspection JSUnusedGlobalSymbols
     /**
-     * @param value {RegExp|*}
+     * @param value {*}
      * @returns {QueryExpression}
      */
     startsWith(value) {
-        const p0 = this.prop();
-        if (p0) {
-            if (typeof value !== 'string') {
-                throw new Error('Invalid argument. Expected string.');
-            }
-            let comparison = { $regex: '^' + value, $options: 'i' };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], { $regex: '^' + value, $options: 'i' });
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ $regex: '^' + value, $options: 'i' });
     }
     // noinspection JSUnusedGlobalSymbols
     /**
@@ -841,71 +961,25 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     endsWith(value) {
-        const p0 = this.prop();
-        if (p0) {
-            if (typeof value !== 'string') {
-                throw new Error('Invalid argument. Expected string.');
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, { $regex: value + '$', $options: 'i' });
-            this._append(expr);
-        }
-        return this;
+        return this._append({ $regex: value + '$', $options: 'i' });
     }
     /**
      * Prepares a contains expression.
-     * @example
-     * var qry = require('most-query');
-     * var q = qry.query('Person').where('first').contains('om').select(['id','first', 'last']);
-     * var formatter = new qry.classes.SqlFormatter();
-     * console.log(formatter.format(q));
-     * //returns SELECT Person.id, Person.first, Person.last FROM Person WHERE ((first REGEXP 'om')=true)
      * @param  {*} value - A value that represents the right part of the expression
      * @returns {QueryExpression}
      */
     contains(value) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $text: { $search: value } };
-            //apply aggregation if any
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ $text: { $search: value } });
     }
     notContains(value) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $text: { $search: value } };
-            //apply aggregation if any
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = { $not: QueryFieldComparer.prototype.compareWith.call(p0, comparison) };
-            this._append(expr);
-        }
-        return this;
+        return this._append({ $not: { $text: { $search: value } } });
     }
     /**
      * @param value {*}
      * @returns {QueryExpression}
      */
     lowerThan(value) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $lt: value };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ '$lt': value });
     }
 
     lt(value) {
@@ -917,17 +991,7 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     lowerOrEqual(value) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $lte: value };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ '$lte': value });
     }
 
     lte(value) {
@@ -939,21 +1003,11 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     greaterOrEqual(value) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison = { $gte: value };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            const expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this._append(expr);
-        }
-        return this;
+        return this._append({ '$gte': value });
     }
 
     gte(value) {
-        return this.greaterThan(value);
+        return this.greaterOrEqual(value);
     }
 
     /**
@@ -962,21 +1016,12 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     between(value1, value2) {
-        const p0 = this.prop();
-        if (p0) {
-            let comparison1 = { $gte: value1 }, comparison2 = { $lte: value2 };
-            if (typeof this[aggregate] === 'object') {
-                comparison1 = QueryFieldAggregator.prototype.wrapWith({ $gte: value1 });
-                comparison2 = QueryFieldAggregator.prototype.wrapWith({ $lte: value2 });
-                delete this[aggregate];
-            }
-            const comp1 = QueryFieldComparer.prototype.compareWith.call(p0, comparison1);
-            const comp2 = QueryFieldComparer.prototype.compareWith.call(p0, comparison2);
-            const expr = {};
-            expr['$and'] = [comp1, comp2];
-            this._append(expr);
-        }
-        return this;
+        // validate left operand
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        // create new query expression 
+        const q = new QueryExpression();
+        q.where(this.privates.left).greaterOrEqual(value1).and(this.privates.left).lowerOrEqual(value2);
+        return this._concat(q.$where, q.$addFields);
     }
     /**
      * Skips the specified number of objects during select.
@@ -1011,43 +1056,48 @@ export class QueryExpression {
         return res;
     }
     /**
-     * @param {number|*} x
+     * @param {*} x
      * @returns {QueryExpression}
      */
     add(x) {
-        this[aggregate] = { $add: [x, new QueryParameter()] };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.add(x);
         return this;
     }
     /**
-     * @param {number|*} x
+     * @param {*} x
      * @returns {QueryExpression}
      */
     subtract(x) {
-        this[aggregate] = { $subtract: [x, new QueryParameter()] };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.subtract(x);
         return this;
     }
     /**
-     * @param {number} x
+     * @param {anyimport('dnsAnyRecord} x
      * @returns {QueryExpression}
      */
     multiply(x) {
-        this[aggregate] = { $multiply: [x, new QueryParameter()] };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.multiply(x);
         return this;
     }
     /**
-     * @param {number} x
+     * @param {any} x
      * @returns {QueryExpression}
      */
     divide(x) {
-        this[aggregate] = { $divide: [x, new QueryParameter()] };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.divide(x);
         return this;
     }
     /**
-     * @param {number=} n
+     * @param {any=} n
      * @returns {QueryExpression}
      */
     round(n) {
-        this[aggregate] = { $round: [n, new QueryParameter()] };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.round(n);
         return this;
     }
     /**
@@ -1056,51 +1106,67 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     substr(start, length) {
-        this[aggregate] = { $substr: [start, length, new QueryParameter()] };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.substr(start, length);
         return this;
     }
     /**
-     * @param {string} s
+     * @param {any} x
+     * @param {any=} start
      * @returns {QueryExpression}
      */
-    indexOf(s) {
-        this[aggregate] = { $indexOf: [s, new QueryParameter()] };
+    indexOf(x, start) {
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.indexOf(x, start);
         return this;
     }
     /**
-     * @param {string|*} s
      * @returns {QueryExpression}
      */
-    concat(s) {
-        this[aggregate] = { $concat: [s, new QueryParameter()] };
+    concat() {
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        const args = Array.from(arguments);
+        this.privates.left.concat.apply(this.privates.left, args);
         return this;
     }
     /**
      * @returns {QueryExpression}
      */
     trim() {
-        this[aggregate] = { $trim: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.trim();
         return this;
     }
     /**
      * @returns {QueryExpression}
      */
     length() {
-        this[aggregate] = { $length: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.length();
         return this;
     }
     /**
      * @returns {QueryExpression}
      */
     getDate() {
-        this[aggregate] = { $date: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getDate();
+        return this;
+    }
+    /**
+     * @returns {QueryExpression}
+     */
+    toDate() {
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.toDate();
         return this;
     }
     /**
      * @returns {QueryExpression}
      */
     getYear() {
-        this[aggregate] = { $year: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getYear();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1108,7 +1174,8 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     getMonth() {
-        this[aggregate] = { $month: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getMonth();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1116,7 +1183,8 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     getDay() {
-        this[aggregate] = { $dayOfMonth: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getDay();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1124,7 +1192,8 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     getHours() {
-        this[aggregate] = { $hour: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getHours();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1132,7 +1201,8 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     getMinutes() {
-        this[aggregate] = { $minutes: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getMinutes();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1140,21 +1210,33 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     getSeconds() {
-        this[aggregate] = { $seconds: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.getSeconds();
         return this;
     }
     /**
      * @returns {QueryExpression}
      */
     floor() {
-        this[aggregate] = { $floor: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.floor();
         return this;
     }
     /**
      * @returns {QueryExpression}
      */
     ceil() {
-        this[aggregate] = { $ceiling: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.ceil();
+        return this;
+    }
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * @returns {QueryExpression}
+     */
+    toLowerCase() {
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.toLowerCase();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1162,7 +1244,17 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     toLocaleLowerCase() {
-        this[aggregate] = { $toLower: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.toLocaleLowerCase();
+        return this;
+    }
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * @returns {QueryExpression}
+     */
+    toUpperCase() {
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.toUpperCase();
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -1170,9 +1262,12 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     toLocaleUpperCase() {
-        this[aggregate] = { $toUpper: new QueryParameter() };
+        Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
+        this.privates.left.toLocaleUpperCase();
         return this;
     }
+    // noinspection JSUnusedGlobalSymbols
+    
     static escape(val) {
         if (val == null) {
             return 'null';
@@ -1219,6 +1314,8 @@ export class QueryExpression {
         });
         return "'" + val + "'";
     }
+
+
 }
 
 /**
