@@ -1,5 +1,6 @@
 import {QueryExpression} from './QueryExpression';
 import {QueryField} from './QueryField';
+import {QueryCollection} from './QueryCollection';
 
 describe('QueryExpression', () => {
     it('should use QueryExpression.where()', () => {
@@ -822,7 +823,9 @@ describe('QueryExpression', () => {
         expect(a).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$collection": "Person",
+            "$collection": {
+                "Person": 1
+            },
             "$insert": {
                 "familyName" : "Jones",
                 "givenName": "Tom"
@@ -844,7 +847,9 @@ describe('QueryExpression', () => {
         expect(a).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$collection": "Person",
+            "$collection": {
+                "Person": 1
+            },
             "$insert": [{
                 "familyName" : "Jones",
                 "givenName": "Tom"
@@ -853,6 +858,47 @@ describe('QueryExpression', () => {
                 "givenName": "Margaret"
             }]
         });
+        expect(a).toEqual(match);
+    });
+
+    it('should use QueryExpression.from()', () => {
+        let a = new QueryExpression().select( 'id', 'givenName', 'familyName').from('Person')
+                    .orderByDescending('familyName');
+        expect(a).toBeTruthy();
+        let match = Object.assign(new QueryExpression(), 
+        {
+            "$collection": {
+                "Person": 1
+            },
+            "$select": {
+                "id": 1,
+                "givenName": 1,
+                "familyName": 1
+            },
+            "$order": {
+                "familyName" : 1
+            }
+        });
+        expect(a).toEqual(match);
+        a = new QueryExpression().select( 'id', 'givenName', 'familyName').from({ "People": "$Person" })
+                    .orderByDescending('familyName');
+        match = Object.assign(new QueryExpression(), 
+        {
+            "$collection": {
+                "People": "$Person"
+            },
+            "$select": {
+                "id": 1,
+                "givenName": 1,
+                "familyName": 1
+            },
+            "$order": {
+                "familyName" : 1
+            }
+        });
+        expect(a).toEqual(match);
+        a = new QueryExpression().select( 'id', 'givenName', 'familyName').from(new QueryCollection('Person').as('People'))
+                    .orderByDescending('familyName');
         expect(a).toEqual(match);
     });
 

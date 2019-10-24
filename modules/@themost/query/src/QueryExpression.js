@@ -9,7 +9,7 @@
 import _ from 'lodash';
 import {Args} from '@themost/common';
 import { QueryField } from './QueryField';
-import { QueryEntity } from './QueryEntity';
+import { QueryCollection } from './QueryCollection';
 import {getOwnPropertyName, isMethodOrNameReference} from './query';
 
 class InvalidLeftOperandError extends Error {
@@ -260,7 +260,7 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     insertOne(any) {
-        Args.notNull(any, 'Item for insert cannot be null.');
+        Args.notNull(any, 'Item for insert');
         // check that argument is not an array
         Args.check(Array.isArray(any) === false, new Error('Item for insert cannot be an array. Use insertMany() instead.'));
         // check that argument is not an array
@@ -283,7 +283,7 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     insertMany(any) {
-        Args.notNull(any, 'Items for insert cannot be null.');
+        Args.notNull(any, 'Items for insert');
         // check that argument is not an array
         Args.check(Array.isArray(any), new Error('Items for insert must be an array'));
         // set object
@@ -303,44 +303,57 @@ export class QueryExpression {
      * @param {*} collection
      */
     into(collection) {
-        Args.notNull(this.$insert, 'Items to insert must be defined. Use insert() method first.');
-        this.$collection = collection;
+        Args.check(this.$insert != null, new Error('Items to insert must be defined. Use insert() method first.'));
+        Args.notString(collection, 'Target collection')
+        // clear collection
+        this.$collection = { };
+        Object.defineProperty(this.$collection, collection, { 
+                        value: 1,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
         return this;
     }
     /**
      * Initializes an update query and sets the entity name that is going to be used in this query.
-     * @param {string} entity
+     * @param {string} collection
      * @returns {QueryExpression}
      */
-    update(entity) {
-        if (entity == null)
-            return this;
-        if (typeof entity !== 'string')
-            throw new Error('Invalid argument type. Update entity argument must be a string.');
-        this.$update = {};
-        this.$update[entity] = {};
-        //delete other properties (if any)
+    update(collection) {
+        Args.notString(collection, 'Collection')
+        // clear collection
+        this.$collection = { };
+        Object.defineProperty(this.$collection, collection, { 
+                        value: 1,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
+        //cleanup
         delete this.$delete;
         delete this.$select;
         delete this.$insert;
+        delete this.$group;
+        delete this.$order;
         return this;
     }
     /**
      * Sets the object that is going to be updated through an update expression.
-     * @param {*} obj
+     * @param {*} any
      * @returns {QueryExpression}
      */
-    set(obj) {
-        if (obj == null)
-            return this;
-        if (_.isArray(obj) || !_.isObject(obj))
-            throw new Error('Invalid argument type. Update expression argument must be an object.');
-        //get entity name (by property)
-        const prop = Object.key(this.$update);
-        if (prop == null)
-            throw new Error('Invalid operation. Update entity cannot be empty at this context.');
-        //set object to update
-        this.$update[prop] = obj;
+    set(any) {
+        // check collection
+        Args.check(this.$collection != null, new Error('Target collection must be defined. Use update() method first.'));
+        // check argument
+        Args.notNull(any, 'Item for update');
+        // check that argument is not an array
+        Args.check(Array.isArray(any) === false, new Error('Item for update cannot be an array. Use insertMany() instead.'));
+        // check that argument is not an array
+        Args.check( any === Object(any), new Error('Item for update must be an object.'));
+        // set object
+        this.$update = any;
         return this;
     }
     /**
@@ -381,41 +394,33 @@ export class QueryExpression {
         return this;
     }
     /**
-     * Sets the entity of a select query expression
-     * @param entity {string|QueryEntity|*} A string that represents the entity name
+     * Sets the collection of a select query expression
+     * @param {*} collection
      * @returns {QueryExpression}
      */
-    from(entity) {
-        if (entity == null)
-            return this;
-        let name;
-        if (entity instanceof QueryEntity) {
-            name = entity.$as || entity.name;
-            this.$ref = this.$ref || {};
-            this.$ref[name] = entity;
-        }
-        else if (entity instanceof QueryExpression) {
-            name = entity.$alias || "s0";
-            this.$ref = this.$ref || {};
-            this.$ref[name] = entity;
-        }
-        else {
-            name = entity.valueOf();
-        }
-        if (this.privates.fields) {
-            //initialize $select property
-            this.$select = {};
-            //and set array of fields
-            this.$select[name] = this.privates.fields;
+    from(collection) {
+        Args.notNull(this.$select, 'Items to select must be defined. Use select() method first.');
+        Args.check( Array.isArray(collection) === false, new Error('Target collection cannot be an array.'));
+        // clear collection
+        this.$collection = { };
+        if (typeof collection === 'string') {
+            Object.defineProperty(this.$collection, collection, { 
+                        value: 1,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
         }
         else {
-            this.privates.entity = name;
+            Args.check( collection === Object(collection), new Error('Target collection must be a string or an object.'));
+            // assign collection
+            Object.assign(this.$collection, collection);
         }
-        //delete other properties (if any)
+        //clear object
         delete this.$delete;
         delete this.$insert;
         delete this.$update;
-        //and return this object
+        //and return
         return this;
     }
     /**

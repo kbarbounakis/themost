@@ -5,13 +5,13 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-export declare class QueryEntity {
+export declare class QueryCollection {
     constructor(name?: string);
     readonly name: string;
     readonly alias: string;
-    select(name: string): QueryEntity;
-    as(alias: string): QueryEntity;
-    inner(): QueryEntity;
-    left(): QueryEntity;
-    right(): QueryEntity;
+    select(name: string): QueryCollection;
+    as(alias: string): QueryCollection;
+    inner(): QueryCollection;
+    left(): QueryCollection;
+    right(): QueryCollection;
 }

@@ -9,6 +9,6 @@
 
 export * from "./formatter";
 export * from './QueryField';
-export * from './QueryEntity';
+export * from './QueryCollection';
 export * from "./query";
 export * from "./utils";
