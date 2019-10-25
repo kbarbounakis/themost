@@ -5,10 +5,10 @@ import {QueryCollection} from './QueryCollection';
 describe('QueryExpression', () => {
     it('should use QueryExpression.where()', () => {
         const a = new QueryExpression().where('id').equal(100);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "id": { "$eq": 100 }
             }
         });
@@ -16,10 +16,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.or()', () => {
         const a = new QueryExpression().where('status').equal('completed').or('status').equal('cancelled');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "$or": [
                     {
                         "status": { "$eq": "completed" }
@@ -34,10 +34,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.and()', () => {
         const a = new QueryExpression().where('status').equal('completed').and('owner').equal('user1');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "$and": [
                     {
                         "status": { "$eq": "completed" }
@@ -52,10 +52,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.equal()', () => {
         let a = new QueryExpression().where('status').equal('completed');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "status": { "$eq": "completed" }
             }
         });
@@ -65,10 +65,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.notEqual()', () => {
         let a = new QueryExpression().where('status').notEqual('completed');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "status": { "$ne": "completed" }
             }
         });
@@ -78,10 +78,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.greaterThan()', () => {
         let a = new QueryExpression().where('price').greaterThan(600);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "price": { "$gt": 600 }
             }
         });
@@ -91,10 +91,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.greaterOrEqual()', () => {
         let a = new QueryExpression().where('price').greaterOrEqual(600);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "price": { "$gte": 600 }
             }
         });
@@ -104,10 +104,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.lowerThan()', () => {
         let a = new QueryExpression().where('price').lowerThan(600);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "price": { "$lt": 600 }
             }
         });
@@ -117,10 +117,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.lowerOrEqual()', () => {
         let a = new QueryExpression().where('price').lowerOrEqual(600);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "price": { "$lte": 600 }
             }
         });
@@ -130,10 +130,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.between()', () => {
         let a = new QueryExpression().where('price').between(600, 800);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "$and": [
                     { "price": { "$gte": 600 } },
                     { "price": { "$lte": 800 } }
@@ -144,10 +144,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.contains()', () => {
         let a = new QueryExpression().where('givenName').contains('oh');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "givenName": { $text: { $search: 'oh' } }
             }
         });
@@ -155,10 +155,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.notContains()', () => {
         let a = new QueryExpression().where('givenName').notContains('oh');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "givenName": { 
                     "$not": { 
                         "$text": { 
@@ -172,10 +172,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.startsWith()', () => {
         let a = new QueryExpression().where('givenName').startsWith('Jo');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "givenName": { "$regex": "^Jo", "$options": "i" }
             }
         });
@@ -183,10 +183,10 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.endsWith()', () => {
         let a = new QueryExpression().where('givenName').endsWith('hn');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
-            "$where": {
+            "$match": {
                 "givenName": { "$regex": "hn$", "$options": "i" }
             }
         });
@@ -194,7 +194,7 @@ describe('QueryExpression', () => {
     });
     it('should use QueryExpression.getDate()', () => {
         let a = new QueryExpression().where('dateCreated').getDate().equal(10);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -202,7 +202,7 @@ describe('QueryExpression', () => {
                     "$dayOfMonth" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "dayOfMonth1": { "$eq": 10 }
             }
         });
@@ -215,7 +215,7 @@ describe('QueryExpression', () => {
                     "$dayOfMonth" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "$and": [
                     { "dayOfMonth1": { "$gte": 10 } },
                     { "dayOfMonth1": { "$lte": 19 } }
@@ -233,7 +233,7 @@ describe('QueryExpression', () => {
                     "$dayOfMonth" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "$or": [
                     { "dayOfMonth1": { "$eq": 10 } },
                     { "dayOfMonth1": { "$eq": 11 } }
@@ -245,7 +245,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.getDay()', () => {
         let a = new QueryExpression().where('dateCreated').getDay().equal(1);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -253,7 +253,7 @@ describe('QueryExpression', () => {
                     "$dayOfWeek" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "dayOfWeek1": { "$eq": 1 }
             }
         });
@@ -262,7 +262,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.getMonth()', () => {
         let a = new QueryExpression().where('dateCreated').getMonth().equal(1);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -270,7 +270,7 @@ describe('QueryExpression', () => {
                     "$month" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "month1": { "$eq": 1 }
             }
         });
@@ -279,7 +279,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.getYear()', () => {
         let a = new QueryExpression().where('dateCreated').getYear().equal(2019);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -287,13 +287,13 @@ describe('QueryExpression', () => {
                     "$year" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "year1": { "$eq": 2019 }
             }
         });
         expect(a).toEqual(match);
         a = new QueryExpression().where('dateCreated').getYear().as('yearCreated').equal(2019);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -301,7 +301,7 @@ describe('QueryExpression', () => {
                     "$year" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "yearCreated": { "$eq": 2019 }
             }
         });
@@ -316,7 +316,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.getHours()', () => {
         let a = new QueryExpression().where('dateCreated').getHours().equal(10);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -324,7 +324,7 @@ describe('QueryExpression', () => {
                     "$hour" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "hour1": { "$eq": 10 }
             }
         });
@@ -333,7 +333,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.getMinutes()', () => {
         let a = new QueryExpression().where('dateCreated').getMinutes().as('minuteCreated').between(1, 30);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -341,7 +341,7 @@ describe('QueryExpression', () => {
                     "$minute" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "$and" : [
                     {
                         "minuteCreated": {
@@ -361,7 +361,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.getSeconds()', () => {
         let a = new QueryExpression().where('dateCreated').getSeconds().between(1, 30);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -369,7 +369,7 @@ describe('QueryExpression', () => {
                     "$second" : "$dateCreated"
                 }
             },
-            "$where": {
+            "$match": {
                 "$and" : [
                     {
                         "second1": {
@@ -389,7 +389,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.substr()', () => {
         let a = new QueryExpression().where('givenName').substr(0,2).equal('Jo');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -397,7 +397,7 @@ describe('QueryExpression', () => {
                     "$substr" : [ "$givenName", 0, 2 ]
                 }
             },
-            "$where": {
+            "$match": {
                 "substr1": {
                     "$eq": 'Jo'
                 }
@@ -408,7 +408,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.indexOf()', () => {
         let a = new QueryExpression().where('givenName').indexOf('Jo').equal(0);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -416,7 +416,7 @@ describe('QueryExpression', () => {
                     "$indexOfBytes" : [ "$givenName", 'Jo' ]
                 }
             },
-            "$where": {
+            "$match": {
                 "indexOfBytes1": {
                     "$eq": 0
                 }
@@ -427,7 +427,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.length()', () => {
         let a = new QueryExpression().where('givenName').length().lowerOrEqual(8);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -435,7 +435,7 @@ describe('QueryExpression', () => {
                     "$length" : "$givenName"
                 }
             },
-            "$where": {
+            "$match": {
                 "length1": {
                     "$lte": 8
                 }
@@ -450,7 +450,7 @@ describe('QueryExpression', () => {
                     "$length" : "$givenName"
                 }
             },
-            "$where": {
+            "$match": {
                 "givenNameLength": {
                     "$lte": 8
                 }
@@ -461,7 +461,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.trim()', () => {
         let a = new QueryExpression().where('givenName').trim().equal('John');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -469,7 +469,7 @@ describe('QueryExpression', () => {
                     "$trim" : "$givenName"
                 }
             },
-            "$where": {
+            "$match": {
                 "trim1": {
                     "$eq": 'John'
                 }
@@ -480,7 +480,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.floor()', () => {
         let a = new QueryExpression().where('price').floor().equal(120);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -488,7 +488,7 @@ describe('QueryExpression', () => {
                     "$floor" : "$price"
                 }
             },
-            "$where": {
+            "$match": {
                 "floor1": {
                     "$eq": 120
                 }
@@ -499,7 +499,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.ceil()', () => {
         let a = new QueryExpression().where('price').ceil().equal(120);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -507,7 +507,7 @@ describe('QueryExpression', () => {
                     "$ceil" : "$price"
                 }
             },
-            "$where": {
+            "$match": {
                 "ceil1": {
                     "$eq": 120
                 }
@@ -518,7 +518,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.round()', () => {
         let a = new QueryExpression().where('price').round(4).lowerOrEqual(145);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -526,7 +526,7 @@ describe('QueryExpression', () => {
                     "$round" : [ "$price", 4 ]
                 }
             },
-            "$where": {
+            "$match": {
                 "round1": {
                     "$lte": 145
                 }
@@ -537,7 +537,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.add()', () => {
         let a = new QueryExpression().where('price').add(50).lowerOrEqual(145);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -545,7 +545,7 @@ describe('QueryExpression', () => {
                     "$add" : [ "$price", 50 ]
                 }
             },
-            "$where": {
+            "$match": {
                 "add1": {
                     "$lte": 145
                 }
@@ -556,7 +556,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.multiply()', () => {
         let a = new QueryExpression().where('price').multiply(1.2).lowerOrEqual(150);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -564,7 +564,7 @@ describe('QueryExpression', () => {
                     "$multiply" : [ "$price", 1.2 ]
                 }
             },
-            "$where": {
+            "$match": {
                 "multiply1": {
                     "$lte": 150
                 }
@@ -572,7 +572,7 @@ describe('QueryExpression', () => {
         });
         expect(a).toEqual(match);
         a = new QueryExpression().where('price').multiply(1.2).add(50).lowerOrEqual(150);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -585,7 +585,7 @@ describe('QueryExpression', () => {
                     ]
                 }
             },
-            "$where": {
+            "$match": {
                 "add1": {
                     "$lte": 150
                 }
@@ -596,7 +596,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.subtract()', () => {
         let a = new QueryExpression().where('price').subtract(50).as('discount').lowerOrEqual(100);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -604,7 +604,7 @@ describe('QueryExpression', () => {
                     "$subtract" : [ "$price", 50 ]
                 }
             },
-            "$where": {
+            "$match": {
                 "discount": {
                     "$lte": 100
                 }
@@ -615,7 +615,7 @@ describe('QueryExpression', () => {
 
     it('should use QueryExpression.divide()', () => {
         let a = new QueryExpression().where('price').divide(2).as('halfPrice').lowerOrEqual(100);
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -623,7 +623,7 @@ describe('QueryExpression', () => {
                     "$divide" : [ "$price", 2 ]
                 }
             },
-            "$where": {
+            "$match": {
                 "halfPrice": {
                     "$lte": 100
                 }
@@ -636,7 +636,7 @@ describe('QueryExpression', () => {
         let a = new QueryExpression().where('givenName')
             .concat(' ', '$familyName')
             .startsWith('James');
-        expect(a.$where).toBeTruthy();
+        expect(a.$match).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
         {
             "$addFields": {
@@ -644,7 +644,7 @@ describe('QueryExpression', () => {
                     "$concat" : [ "$givenName", ' ', '$familyName' ]
                 }
             },
-            "$where": {
+            "$match": {
                 "concat1": {
                     $regex: '^James', $options: 'i'
                 }
@@ -861,28 +861,12 @@ describe('QueryExpression', () => {
         expect(a).toEqual(match);
     });
 
-    it('should use QueryExpression.from()', () => {
+    it('should use QueryExpression.from() and QueryExpression.as()', () => {
         let a = new QueryExpression().select( 'id', 'givenName', 'familyName').from('Person')
+                    .as('People')
                     .orderByDescending('familyName');
         expect(a).toBeTruthy();
         let match = Object.assign(new QueryExpression(), 
-        {
-            "$collection": {
-                "Person": 1
-            },
-            "$select": {
-                "id": 1,
-                "givenName": 1,
-                "familyName": 1
-            },
-            "$order": {
-                "familyName" : 1
-            }
-        });
-        expect(a).toEqual(match);
-        a = new QueryExpression().select( 'id', 'givenName', 'familyName').from({ "People": "$Person" })
-                    .orderByDescending('familyName');
-        match = Object.assign(new QueryExpression(), 
         {
             "$collection": {
                 "People": "$Person"
@@ -897,8 +881,72 @@ describe('QueryExpression', () => {
             }
         });
         expect(a).toEqual(match);
-        a = new QueryExpression().select( 'id', 'givenName', 'familyName').from(new QueryCollection('Person').as('People'))
-                    .orderByDescending('familyName');
+    });
+
+    it('should use QueryExpression.update()', () => {
+        
+        expect(()=> {
+            let q = new QueryExpression()
+                    .set({
+                        "price": 60.5
+                    }).update('Product').where('id').equal(100);
+        }).toThrowError('Target collection must be defined. Use update() method first.');
+
+        expect(()=> {
+            let q = new QueryExpression()
+                    .update('Product').set([{
+                        "price": 60.5
+                    }]).where('id').equal(100);
+        }).toThrowError('Item for update cannot be an array.');
+
+        expect(()=> {
+            let q = new QueryExpression()
+                    .update('Product').set(null).where('id').equal(100);
+        }).toThrowError('Item for update may not be null or undefined');
+
+        let a = new QueryExpression().update('Product')
+                    .set({
+                        "price": 60.5
+                    }).where('id').equal(100);
+        expect(a).toBeTruthy();
+        let match = Object.assign(new QueryExpression(), 
+        {
+            "$collection": {
+                "Product": 1
+            },
+            "$update": {
+                "price": 60.5
+            },
+            "$match": {
+                "id" : { $eq: 100 }
+            }
+        });
+        expect(a).toEqual(match);
+    });
+
+    it('should use QueryExpression.join()', () => {
+        let a = new QueryExpression().select( 'id', 'name', 'model', 'productCategory').from('Product')
+                    .join('ProductCategory').with('productCategory', 'id');
+        expect(a).toBeTruthy();
+        let match = Object.assign(new QueryExpression(), 
+        {
+            "$collection": {
+                "Product": 1
+            },
+            "$select": {
+                "id": 1,
+                "name": 1,
+                "model": 1,
+                "productCategory": 1
+            },
+            "$expand": [{
+                "$lookup": {
+                    "from": "ProductCategory",
+                    "localField": "productCategory",
+                    "foreignField": "id"
+                }
+            }]
+        });
         expect(a).toEqual(match);
     });
 

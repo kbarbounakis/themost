@@ -6,7 +6,7 @@ import autoExternal from 'rollup-plugin-auto-external';
 import dts from "rollup-plugin-dts";
 
 const dist = './dist/';
-const name = 'themost_common';
+const name = 'themost_query';
 const production = !process.env.ROLLUP_WATCH;
 
 module.exports = [{
@@ -21,7 +21,7 @@ module.exports = [{
             format: 'esm'
         },
         {
-            name: '@themost/common',
+            name: '@themost/query',
             file: `${dist}${name}.js`,
             format: 'umd'
         }

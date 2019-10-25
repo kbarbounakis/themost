@@ -5,7 +5,6 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-//
 import {QueryExpression} from './query';
 
 /**
@@ -161,67 +160,6 @@ function format(sql, values, stringifyObjects, timeZone) {
             ? escapeId(value)
             : escape(value, stringifyObjects, timeZone);
     });
-}
-
-/**
- * @class
- * @constructor
- */
-export class QueryUtils {
-    /**
-     * Initializes a select query expression by specifying the entity name
-     * @param {string|*} entity - The name of the entity
-     */
-    static query(entity) {
-        const q = new QueryExpression();
-        return q.from(entity);
-    }
-
-    /**
-     * Initializes a select query expression
-     * @param {...*} fields
-     */
-    static select(fields) {
-        const q = new QueryExpression();
-        return q.select.apply(q,fields);
-    }
-
-    /**
-     * Initializes an insert query expression
-     * @param {*} obj - The object to insert
-     */
-    static insert(obj) {
-        const q = new QueryExpression();
-        return q.insert(obj);
-    }
-
-    /**
-     * Initializes an update query expression
-     * @param {string|*} entity - The name of the entity
-     */
-    static update(entity) {
-        const q = new QueryExpression();
-        return q.update(entity);
-    }
-
-    /**
-     * Initializes a delete query expression
-     * @param {string} entity - The name of the entity
-     */
-    static delete(entity) {
-        const q = new QueryExpression();
-        return q.delete(entity);
-    }
-
-    /**
-     * Initializes a QueryExpression instance.
-     * @returns {QueryExpression}
-     * @param  {*} obj
-     */
-    static where(obj) {
-        const q = new QueryExpression();
-        return q.where(obj);
-    }
 }
 
 /**

@@ -7,7 +7,7 @@
  */
  
 import _ from 'lodash';
-import {Args} from '@themost/common';
+import {Args, ArgumentError} from '@themost/common';
 import { QueryField } from './QueryField';
 import { QueryCollection } from './QueryCollection';
 import {getOwnPropertyName, isMethodOrNameReference} from './query';
@@ -35,20 +35,6 @@ export class QueryExpression {
         });
     }
     /**
-     * @private
-     * @param {string|*=} s
-     * @returns {string|*}
-     */
-    prop(s) {
-        if (typeof s === 'undefined') {
-            return this.privates.property;
-        }
-        if (s == null) {
-            delete this.privates.property;
-        }
-        this.privates.property = s;
-    }
-    /**
      * Clones the current expression and returns a new QueryExpression object.
      * @example
      * var q = new QueryExpression();
@@ -62,16 +48,29 @@ export class QueryExpression {
         return _.cloneDeep(this);
     }
     /**
-     * Sets the alias of active expression 
+     * Sets the alias of active expression (collection or field)
      * @param {string} alias
      * @returns {QueryExpression}
      */
     as(alias) {
+        Args.notNull(alias, 'Alias');
         if (this.privates.left) {
             this.privates.left.as(alias);
             return this;
         }
-        this.$alias = alias;
+        // change collection alias
+        Args.notNull(this.$collection != null, 'Target collection');
+        // create collection copy
+        if (this.$collection instanceof QueryCollection) {
+            // set alias and return
+            this.$collection.as(alias);
+            return this;
+        }
+        // create collection with alias
+        const collection = Object.assign(new QueryCollection(), this.$collection).as(alias);
+        // assign collection
+        this.$collection = Object.assign({ }, collection);
+        // and return
         return this;
     }
     /**
@@ -127,30 +126,30 @@ export class QueryExpression {
     }
     // noinspection JSUnusedGlobalSymbols
     /**
-     * Gets a boolean value that indicates whether query expression has a filter statement or not.
+     * Gets a boolean value that indicates whether query expression has a where statement or not.
      * @returns {boolean}
      */
     hasFilter() {
-        return _.isObject(this.$where);
+        return this.$match != null;
     }
     /**
      * @param {boolean=} useOr
      * @returns {QueryExpression}
      */
     prepare(useOr) {
-        if (typeof this.$where === 'object') {
+        if (typeof this.$match === 'object') {
             if (typeof this.$prepared === 'object') {
                 let preparedWhere = {};
                 if (useOr)
-                    preparedWhere = { $or: [this.$prepared, this.$where] };
+                    preparedWhere = { $or: [this.$prepared, this.$match] };
                 else
-                    preparedWhere = { $and: [this.$prepared, this.$where] };
+                    preparedWhere = { $and: [this.$prepared, this.$match] };
                 this.$prepared = preparedWhere;
             }
             else {
-                this.$prepared = this.$where;
+                this.$prepared = this.$match;
             }
-            delete this.$where;
+            delete this.$match;
         }
         return this;
     }
@@ -159,39 +158,14 @@ export class QueryExpression {
      * @returns {boolean}
      */
     hasFields() {
-        const self = this;
-        if (!_.isObject(self.$select))
-            return false;
-        const entity = Object.key(self.$select);
-        let joins = [];
-        if (!_.isNil(self.$expand)) {
-            if (_.isArray(self.$expand))
-                joins = self.$expand;
-            else
-                joins.push(self.$expand);
-        }
-        //search for fields
-        if (_.isArray(self.$select[entity])) {
-            if (self.$select[entity].length > 0)
-                return true;
-        }
-        let result = false;
-        //enumerate join fields
-        _.forEach(joins, x => {
-            const table = Object.key(x.$entity);
-            if (_.isArray(x.$entity[table])) {
-                if (x.$entity[table].length > 0)
-                    result = true;
-            }
-        });
-        return result;
+        return this.$select != null;
     }
     /**
      * Gets a boolean value that indicates whether query expression has paging or not.
      * @returns {boolean}
      */
     hasPaging() {
-        return !_.isNil(this.$take);
+        return this.$limit;
     }
     /**
      * @returns {QueryExpression}
@@ -212,7 +186,7 @@ export class QueryExpression {
         // set left operand
         this._where(field);
         // clear where expression
-        delete this.$where;
+        delete this.$match;
         // and finally return this;
         return this;
     }
@@ -225,7 +199,7 @@ export class QueryExpression {
     injectWhere(where) {
         if (where == null)
             return this;
-        this.$where = where;
+        this.$match = where;
     }
     /**
      * Initializes a delete query and sets the entity name that is going to be used in this query.
@@ -349,7 +323,7 @@ export class QueryExpression {
         // check argument
         Args.notNull(any, 'Item for update');
         // check that argument is not an array
-        Args.check(Array.isArray(any) === false, new Error('Item for update cannot be an array. Use insertMany() instead.'));
+        Args.check(Array.isArray(any) === false, new Error('Item for update cannot be an array.'));
         // check that argument is not an array
         Args.check( any === Object(any), new Error('Item for update must be an object.'));
         // set object
@@ -399,7 +373,7 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     from(collection) {
-        Args.notNull(this.$select, 'Items to select must be defined. Use select() method first.');
+        Args.check(this.$select != null, new ArgumentError('Items to select must be defined. Use select() method first.'));
         Args.check( Array.isArray(collection) === false, new Error('Target collection cannot be an array.'));
         // clear collection
         this.$collection = { };
@@ -424,76 +398,52 @@ export class QueryExpression {
         return this;
     }
     /**
-     * Initializes a join expression with the specified entity
-     * @param {*} entity
-     * @param {Array=} props
-     * @param {String=} alias
+     * Initializes a join expression with the specified collection
+     * @param {*} collectionOrQuery - The collection to be used in join expression.
+     * @param {*...=} select
      * @returns {QueryExpression}
      */
-    join(entity, props, alias) {
-        if (entity == null)
-            return this;
-        if (_.isNil(this.$select))
-            throw new Error('Query entity cannot be empty when adding a join entity.');
-        let obj = {};
-        if (entity instanceof QueryEntity) {
-            //do nothing (clone object)
-            obj = entity;
-        }
-        else if (entity instanceof QueryExpression) {
-            //do nothing (clone object)
-            obj = entity;
+    join(collectionOrQuery) {
+        Args.check(collectionOrQuery != null, new Error('Join collection cannot be empty'));
+        Args.check(Array.isArray(collectionOrQuery) == false, new Error('Join collection cannot be an array'));
+        // if collection is a string
+        this.privates.lookup = { };
+        if (typeof collectionOrQuery === 'string') {
+            this.privates.lookup.from = collectionOrQuery;
         }
         else {
-            obj[entity] = props || [];
-            if (typeof alias === 'string')
-                obj.$as = alias;
+            // try to convert collection to QueryCollection instance
+            const queryCollection = Object.assign(new QueryCollection(), collectionOrQuery);
+            const name = queryCollection.name;
+            // validate query collection name
+            Args.notString(name, 'Query collection name');
+            this.privates.lookup.from = name;
+            // check if collection has an alias
+            const alias = queryCollection.alias;
+            if (alias) {
+                this.privates.lookup.as = alias;
+            }
         }
-        this.privates.expand = { $entity: obj };
-        //and return this object
         return this;
     }
     /**
-     * Sets the join expression of the last join entity
-     * @param obj {Array|*}
+     * Sets a join equality expression by defining a local and a foreign field
+     * @param {*} localField - The field from current collection
+     * @param {*} foreignField - The field from joined collection
      * @returns {QueryExpression}
      */
-    with(obj) {
-        if (obj == null)
-            return this;
-        if (_.isNil(this.privates.expand))
-            throw new Error('Join entity cannot be empty when adding a join expression. Use QueryExpression.join(entity, props) before.');
-        if (obj instanceof QueryExpression) {
-            /**
-             * @type {QueryExpression}
-             */
-            const expr = obj;
-            let where = null;
-            if (expr.$where)
-                where = expr.$prepared ? { $and: [expr.$prepared, expr.$where] } : expr.$where;
-            else if (expr.$prepared)
-                where = expr.$prepared;
-            this.privates.expand.$with = where;
-        }
-        else {
-            this.privates.expand.$with = obj;
-        }
-        if (_.isNil(this.$expand)) {
-            this.$expand = this.privates.expand;
-        }
-        else {
-            if (_.isArray(this.$expand)) {
-                this.$expand.push(this.privates.expand);
-            }
-            else {
-                //get expand object
-                const expand = this.$expand;
-                //and create array of expand objects
-                this.$expand = [expand, this.privates.expand];
-            }
-        }
+    with(localField, foreignField) {
+        Args.check(this.privates.lookup != null, new Error('Join collection cannot be empty. Use join(collection) first.'));
+        // set local and foreign field
+        this.privates.lookup.localField = localField;
+        this.privates.lookup.foreignField = foreignField;
+        // add lookup to expand
+        this.$expand = this.$expand || [];
+        this.$expand.push({
+            $lookup: this.privates.lookup
+        });
         //destroy temp object
-        this.privates.expand = null;
+        delete this.privates.lookup;
         //and return QueryExpression
         return this;
     }
@@ -740,24 +690,24 @@ export class QueryExpression {
             }
         }
         
-        if (this.$where == null) {
-            this.$where = filter;
+        if (this.$match == null) {
+            this.$match = filter;
         }
         else {
             // get in-process logical operator
             const logicalOperator = this.privates.logicalOperator || '$and';
             //get where expression current operator
-            const currentOperator = getOwnPropertyName(this.$where);
+            const currentOperator = getOwnPropertyName(this.$match);
             if (currentOperator === logicalOperator) {
                 // push filter expression
-                this.$where[logicalOperator].push(filter);
+                this.$match[logicalOperator].push(filter);
             }
             else {
-                // merge $where expression and current filter expression
+                // merge $match expression and current filter expression
                 const newFilter = { };
-                newFilter[logicalOperator] = [ this.$where, filter ];
+                newFilter[logicalOperator] = [ this.$match, filter ];
                 // set new filter
-                this.$where = newFilter;
+                this.$match = newFilter;
             }
         }
         delete this.privates.left;
@@ -829,24 +779,24 @@ export class QueryExpression {
      * 
      */
     _concat(where, addFields) {
-        if (this.$where == null) {
-            this.$where = where;
+        if (this.$match == null) {
+            this.$match = where;
         }
         else {
             // set in-process logical operator
             const logicalOperator ='$and';
             //get where expression current operator
-            const currentOperator = getOwnPropertyName(this.$where);
+            const currentOperator = getOwnPropertyName(this.$match);
             if (currentOperator === logicalOperator) {
                 // push filter expression
-                this.$where[logicalOperator].push(where);
+                this.$match[logicalOperator].push(where);
             }
             else {
-                // merge $where expression and current filter expression
+                // merge $match expression and current filter expression
                 const newFilter = { };
-                newFilter[logicalOperator] = [ this.$where, where ];
+                newFilter[logicalOperator] = [ this.$match, where ];
                 // set new filter
-                this.$where = newFilter;
+                this.$match = newFilter;
             }
         }
         // add fields
@@ -1026,7 +976,7 @@ export class QueryExpression {
         // create new query expression 
         const q = new QueryExpression();
         q.where(this.privates.left).greaterOrEqual(value1).and(this.privates.left).lowerOrEqual(value2);
-        return this._concat(q.$where, q.$addFields);
+        return this._concat(q.$match, q.$addFields);
     }
     /**
      * Skips the specified number of objects during select.
@@ -1043,7 +993,7 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     take(n) {
-        this.$take = isNaN(n) ? 0 : n;
+        this.$limit = isNaN(n) ? 0 : n;
         return this;
     }
     /**

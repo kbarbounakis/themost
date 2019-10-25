@@ -7,7 +7,11 @@
  */
 
 export * from './QueryField';
-export * from './QueryEntity';
+export * from './QueryCollection';
 export * from './QueryExpression';
+export * from "./SqlUtils";
+export * from "./ODataQuery";
+export * from "./SqlFormatter"
 export * from "./query";
-export * from "./utils";
+export * from "./expressions";
+export * from "./odata";

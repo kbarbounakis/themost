@@ -12,7 +12,7 @@ import _ from 'lodash';
  * @class
  * @constructor
  */
-export class OpenDataQuery {
+export class ODataQuery {
     constructor() {
         /**
          * @private
@@ -26,7 +26,7 @@ export class OpenDataQuery {
     }
     /**
      * @private
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     append() {
         const self = this;
@@ -79,7 +79,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {...string} attr
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     select(attr) {
         const args = (arguments.length > 1) ? Array.prototype.slice.call(arguments) : attr;
@@ -93,7 +93,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {number} val
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     take(val) {
         this.$top = isNaN(val) ? 0 : val;
@@ -101,7 +101,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {number} val
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     skip(val) {
         this.$skip = isNaN(val) ? 0 : val;
@@ -110,7 +110,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {string} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     orderBy(name) {
         if (!name == null) {
@@ -121,7 +121,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     orderByDescending(name) {
         if (!name == null) {
@@ -131,7 +131,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     thenBy(name) {
         if (!name == null) {
@@ -141,7 +141,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     thenByDescending(name) {
         if (!name == null) {
@@ -151,7 +151,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     where(name) {
         this.privates.left = name;
@@ -159,7 +159,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String=} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     and(name) {
         this.privates.lop = 'and';
@@ -169,7 +169,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String=} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     or(name) {
         this.privates.lop = 'or';
@@ -179,7 +179,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {*} value
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     equal(value) {
         this.privates.op = 'eq';
@@ -189,7 +189,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     indexOf(name) {
         this.privates.left = 'indexof(' + name + ')';
@@ -199,7 +199,7 @@ export class OpenDataQuery {
     /**
      * @param {*} name
      * @param {*} s
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     endsWith(name, s) {
         this.privates.left = sprintf('endswith(%s,%s)', name, QueryExpression.escape(s));
@@ -209,7 +209,7 @@ export class OpenDataQuery {
     /**
      * @param {*} name
      * @param {*} s
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     startsWith(name, s) {
         this.privates.left = sprintf('startswith(%s,%s)', name, QueryExpression.escape(s));
@@ -219,7 +219,7 @@ export class OpenDataQuery {
     /**
      * @param {*} name
      * @param {*} s
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     substringOf(name, s) {
         this.privates.left = sprintf('substringof(%s,%s)', name, QueryExpression.escape(s));
@@ -229,7 +229,7 @@ export class OpenDataQuery {
      * @param {*} name
      * @param {number} pos
      * @param {number} length
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     substring(name, pos, length) {
         this.privates.left = sprintf('substring(%s,%s,%s)', name, pos, length);
@@ -237,7 +237,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {*} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     length(name) {
         this.privates.left = sprintf('length(%s)', name);
@@ -246,7 +246,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {*} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     toLower(name) {
         this.privates.left = sprintf('tolower(%s)', name);
@@ -255,7 +255,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {*} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     toUpper(name) {
         this.privates.left = sprintf('toupper(%s)', name);
@@ -263,7 +263,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {*} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     trim(name) {
         this.privates.left = sprintf('trim(%s)', name);
@@ -275,7 +275,7 @@ export class OpenDataQuery {
      * @param {*=} s2
      * @param {*=} s3
      * @param {*=} s4
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     concat(s0, s1, s2, s3, s4) {
         this.privates.left = 'concat(' + QueryExpression.escape(s0) + ',' + QueryExpression.escape(s1);
@@ -293,7 +293,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     day(name) {
         this.privates.left = sprintf('day(%s)', name);
@@ -301,7 +301,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     hour(name) {
         this.privates.left = sprintf('hour(%s)', name);
@@ -309,7 +309,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     minute(name) {
         this.privates.left = sprintf('minute(%s)', name);
@@ -317,7 +317,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     month(name) {
         this.privates.left = sprintf('month(%s)', name);
@@ -325,7 +325,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     second(name) {
         this.privates.left = sprintf('second(%s)', name);
@@ -333,7 +333,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     year(name) {
         this.privates.left = sprintf('year(%s)', name);
@@ -341,7 +341,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     round(name) {
         this.privates.left = sprintf('round(%s)', name);
@@ -349,7 +349,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     floor(name) {
         this.privates.left = sprintf('floor(%s)', name);
@@ -357,7 +357,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {String} name
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     ceiling(name) {
         this.privates.left = sprintf('ceiling(%s)', name);
@@ -366,7 +366,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {*} value
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     // noinspection JSUnusedGlobalSymbols
     notEqual(value) {
@@ -377,7 +377,7 @@ export class OpenDataQuery {
     // noinspection JSUnusedGlobalSymbols
     /**
      * @param {*} value
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     greaterThan(value) {
         this.privates.op = 'gt';
@@ -386,7 +386,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {*} value
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     greaterOrEqual(value) {
         this.privates.op = 'ge';
@@ -395,7 +395,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {*} value
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     lowerThan(value) {
         this.privates.op = 'lt';
@@ -404,7 +404,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {*} value
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     lowerOrEqual(value) {
         this.privates.op = 'le';
@@ -413,7 +413,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {Array} values
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     in(values) {
         this.privates.op = 'in';
@@ -422,7 +422,7 @@ export class OpenDataQuery {
     }
     /**
      * @param {Array} values
-     * @returns OpenDataQuery
+     * @returns ODataQuery
      */
     notIn(values) {
         this.privates.op = 'nin';

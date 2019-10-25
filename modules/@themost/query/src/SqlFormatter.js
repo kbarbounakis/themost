@@ -5,31 +5,13 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
-import {SqlUtils} from './utils';
-
 import {sprintf} from 'sprintf';
 import _ from 'lodash';
-import query from './query';
-const QueryExpression = query.QueryExpression;
-const QueryField = query.QueryField;
+import {SqlUtils} from './SqlUtils';
+import {getOwnPropertyName} from './query';
+import {QueryExpression} from './QueryExpression';
+import {QueryField} from './QueryField';
 
-if (typeof Object.key !== 'function') {
-    /**
-     * Gets a string that represents the name of the very first property of an object. This operation may be used in anonymous object types.
-     * @param obj {*}
-     * @returns {string|*}
-     */
-    Object.key = obj => {
-        if (typeof obj === 'undefined' || obj === null)
-            return null;
-        for(const prop in obj) {
-            if (obj.hasOwnProperty(prop))
-                return prop;
-        }
-        return null;
-    }
-}
 
 const aliasKeyword = ' AS ';
 /**
@@ -43,6 +25,12 @@ function getAliasKeyword() {
         return aliasKeyword;
     }
     return ' ';
+}
+
+function isQueryField_(obj) {
+    if (_.isNil(obj))
+        return false;
+    return (obj.constructor) && (obj.constructor.name === 'QueryField');
 }
 
 /**
@@ -133,7 +121,7 @@ export class SqlFormatter {
     }
 
     isComparison(obj) {
-        const key = Object.key(obj);
+        const key = getOwnPropertyName(obj);
         return (/^\$(eq|ne|lt|lte|gt|gte|in|nin|text|regex)$/g.test(key));
     }
 
@@ -663,7 +651,7 @@ export class SqlFormatter {
         if (_.isNil(obj.$select))
             throw new Error('Select expression cannot be empty at this context.');
         //get entity name
-        const entity = Object.key(obj.$select);
+        const entity = getOwnPropertyName(obj.$select);
         let joins = [];
         if (!_.isNil(obj.$expand))
         {
@@ -718,7 +706,7 @@ export class SqlFormatter {
                 }
                 else {
                     //get join table name
-                    var table = Object.key(x.$entity);
+                    var table = getOwnPropertyName(x.$entity);
                     //get on statement (the join comparison)
                     const joinType = (x.$entity.$join || 'inner').toUpperCase();
                     sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
@@ -743,10 +731,10 @@ export class SqlFormatter {
                     rightTable = table;
 
                     if (typeof left === 'object') {
-                        leftTable = Object.key(left);
+                        leftTable = getOwnPropertyName(left);
                     }
                     if (typeof right === 'object') {
-                        rightTable = Object.key(right);
+                        rightTable = getOwnPropertyName(right);
                     }
                     const leftFields = left[leftTable], rightFields = right[rightTable];
                     for (let i = 0; i < leftFields.length; i++)
@@ -834,7 +822,7 @@ export class SqlFormatter {
             if (obj.hasOwnProperty('$value'))
                 return this.escapeConstant(obj['$value']);
             //get table name
-            const tableName = Object.key(obj);
+            const tableName = getOwnPropertyName(obj);
             let fields = [];
             if (!_.isArray(obj[tableName])) {
                 fields.push(obj[tableName])
@@ -906,7 +894,7 @@ export class SqlFormatter {
         if (_.isNil(obj.$insert))
             throw new Error('Insert expression cannot be empty at this context.');
         //get entity name
-        const entity = Object.key(obj.$insert);
+        const entity = getOwnPropertyName(obj.$insert);
         //get entity fields
         const obj1 = obj.$insert[entity];
         const props = [];
@@ -932,7 +920,7 @@ export class SqlFormatter {
         if (!_.isObject(obj.$update))
             throw new Error('Update expression cannot be empty at this context.');
         //get entity name
-        const entity = Object.key(obj.$update);
+        const entity = getOwnPropertyName(obj.$update);
         //get entity fields
         const obj1 = obj.$update[entity];
         const props = [];
@@ -986,7 +974,7 @@ export class SqlFormatter {
         if (!isQueryField_(obj))
             throw new Error('Invalid argument. An instance of QueryField class is expected.');
         //get property
-        let prop = Object.key(obj);
+        let prop = getOwnPropertyName(obj);
         if (_.isNil(prop))
             return null;
         const useAlias = (format==='%f');
@@ -1002,7 +990,7 @@ export class SqlFormatter {
             }
             //get aggregate expression
             const alias = prop;
-            prop = Object.key(expr);
+            prop = getOwnPropertyName(expr);
             const name = expr[prop];
             let s;
             switch (prop) {
@@ -1114,9 +1102,3 @@ SqlFormatter.prototype.$subtract = SqlFormatter.prototype.$sub;
 SqlFormatter.prototype.$multiply = SqlFormatter.prototype.$mul;
 
 SqlFormatter.prototype.$divide = SqlFormatter.prototype.$div;
-
-function isQueryField_(obj) {
-    if (_.isNil(obj))
-        return false;
-    return (obj.constructor) && (obj.constructor.name === 'QueryField');
-}

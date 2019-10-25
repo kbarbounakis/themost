@@ -20,8 +20,10 @@ export declare class QueryExpression {
     $order?: any;
     $group?: any;
     $expand?: any;
-    $where?: any;
+    $match?: any;
     $fixed?: any;
+    $limit?: number;
+    $skip?: number;
 
     clone():QueryExpression;
     as(alias: string): QueryExpression;
@@ -36,15 +38,15 @@ export declare class QueryExpression {
     delete(entity: string): QueryExpression;
     insert(any: any): QueryExpression;
     insertOne(any: any): QueryExpression;
-    insertMany(any: Array<any>): QueryExpression;
-    into(collection: string): QueryExpression;
-    update(entity: string): QueryExpression;
-    set(obj: any): QueryExpression;
+    insertMany(any: any[]): QueryExpression;
+    into(collection: any): QueryExpression;
+    update(collection: any): QueryExpression;
+    set(any: any): QueryExpression;
     select(...field: any[]): QueryExpression;
     count(alias: string): QueryExpression;
     from(alias: string): QueryExpression;
-    join(entity: any, props?: any, alias?: any): QueryExpression;
-    with(obj: any): QueryExpression;
+    join(collection: any): QueryExpression;
+    with(localField: any, foreignField: any): QueryExpression;
     orderBy(...field: any[]): QueryExpression;
     orderByDescending(...field: any[]): QueryExpression;
     thenBy(...field: any[]): QueryExpression;
