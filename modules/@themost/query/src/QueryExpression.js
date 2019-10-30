@@ -331,6 +331,7 @@ export class QueryExpression {
         return this;
     }
     /**
+     * @param {*...=} any  
      * Prepares a select statement expression
      */
     select() {

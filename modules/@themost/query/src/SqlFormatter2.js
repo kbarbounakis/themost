@@ -11,6 +11,7 @@ import { Args } from '@themost/common';
 import { SqlUtils } from './SqlUtils';
 import { getOwnPropertyName, isMethodOrNameReference } from './query';
 import { QueryCollection } from './QueryCollection';
+import { QueryField } from './QueryField';
 
 class ExpectedArrayArguments extends Error {
     constructor() {
@@ -147,9 +148,12 @@ export class SqlFormatter2 {
                     if (Array.isArray(value[key])) {
                         return formatFunc.apply(this, value[key]);
                     }
-                    return formatFunc.apply(this, value[key]);
+                    return formatFunc.call(this, value[key]);
                 }
             }
+        }
+        if (typeof value === 'string' && /^\$/.test(value)) {
+            return this.escapeName(value);
         }
         if (unquoted)
             return value.valueOf();
@@ -217,10 +221,10 @@ export class SqlFormatter2 {
 
         if (query.$match != null) {
             if (query.$prepared == null) {
-                result += this.formatWhere(query.$match);
+                result += ' WHERE ' + this.formatWhere(query.$match);
             }
             else {
-                result += this.formatWhere({
+                result += ' WHERE ' + this.formatWhere({
                     $and: [
                         query.$prepared,
                         query.$match
@@ -230,13 +234,15 @@ export class SqlFormatter2 {
         }
 
         if (query.$group != null) {
-            result += this.formatOrder(query.$order);
+            result += ' GROUP BY ' + this.formatGroupBy(query.$group);
         }
 
-        if (query.$group != null) {
-            result += this.formatGroupBy(query.$group);
+        if (query.$order != null) {
+            result += ' ORDER BY ' + this.formatOrder(query.$order);
         }
 
+        // at end statement
+        result += ';'
         return result;
     }
 
@@ -295,15 +301,54 @@ export class SqlFormatter2 {
 
     formatField(expr) {
         Args.notNull(expr, 'Field expression');
-        const name = getOwnPropertyName(expr);
-        Args.check(name != null, new Error('Field name cannot be empty.'))
+        let name = getOwnPropertyName(expr);
+        Args.check(name != null, new Error('Field name cannot be empty.'));
+        // field expression is simple select e.g. { "dateCreated" : 1 }
         if (expr[name] === 1) {
             return this.escapeName(name);
         }
-        const field = expr[name];
+        let field = expr[name];
+        // expression with method e.g. { "$count" : "$customer" }
+        if (isMethodOrNameReference(name)) {
+            field = expr;
+        }
+        // expression with alias e.g. { "createdAt" : "$dateCreated" }
         if (typeof field === 'string' && isMethodOrNameReference(field)) {
             return `${this.escapeName(field)} ${this.settings.aliasKeyword} ${this.escapeName(name)}`;
         }
+        if (typeof field === 'object') {
+            let result;
+            // field has an expression e.g. { "minPrice": { "$min": "$price" } }
+            let funcName = getOwnPropertyName(field);
+            if (isMethodOrNameReference(funcName)) {
+                const formatFunc = this[funcName];
+                if (typeof formatFunc === 'function') {
+                    const funcArgs = field[funcName];
+                    const args = [];
+                    if (Array.isArray(funcArgs)) {
+                        args = funcArgs.slice();
+                        args.unshift()
+                    }
+                    else {
+                        args.push(funcArgs);
+                    }
+                    result = formatFunc.apply(this, args);
+                    // if name is a method reference return without alias
+                    if (isMethodOrNameReference(name)) {
+                        return result;
+                    }
+                    if (this.settings.aliasKeyword) {
+                        result += ` ${this.settings.aliasKeyword} `;
+                    }
+                    else {
+                        result += ` `;
+                    }
+                    result += this.escapeName(name);
+                    return result;
+                }
+            }
+        }
+
         throw new Error('Field is invalid or syntax has not been implemented yet.');
     }
 
@@ -312,18 +357,78 @@ export class SqlFormatter2 {
         if (expr == null) {
             return '';
         }
+        // get expression property e.g. { "givenName": { "$eq" : "John" } }
+        // => givenName or { "$length" : "$givenName" } => $length
+        const name = getOwnPropertyName(expr);
+        // if name is a method reference
+        if (isMethodOrNameReference(name)) {
+            // get format method
+            const formatFunc = this[name];
+            if (typeof formatFunc === 'function') {
+                return formatFunc.apply(this, expr[name]);
+            }
+            throw new Error('Invalid expression or bad syntax');
+        }
+        else {
+            let args = [];
+            // get compare expression e.g. { "$eq" : "John" }
+            let comparerExpr = expr[name];
+            // call format where by assigning field as first argument
+            // e.g. { "$eq" : [ "$givenName",  "John" ] }
+            const comparerName = getOwnPropertyName(comparerExpr);
+            // get comparer arguments e.g. "John" 
+            const comparerArgs = comparerExpr[comparerName];
+            if (Array.isArray(comparerArgs)) {
+                // copy arguments
+                args = comparerArgs.slice();
+                // insert item
+                args.unshift(`$${name}`);
+            }
+            else {
+                args.push(`$${name}`);
+                args.push(comparerArgs);
+            }
+            // create new comparer expression e.g. { "$eq": [ "$givenName", "John" ] }
+            comparerExpr = { };
+            comparerExpr[comparerName] = args;
+            // format expression
+            return this.formatWhere(comparerExpr);
+        }
+
     }
 
     formatOrder(expr) {
         if (expr == null) {
             return '';
         }
+        const orderFields = Object.keys(expr);
+        if (orderFields.length === 0) {
+            // do nothing
+            return '';
+        }
+        return orderFields.map( key => {
+            return this.escapeName(key) +  ' ' + (expr[key] === 1 ? 'DESC': 'ASC');
+        }).join(', ');
+        
     }
 
     formatGroupBy(expr) {
         if (expr == null) {
             return '';
         }
+        const groupFields = Object.keys(expr);
+        if (groupFields.length === 0) {
+            // do nothing
+            return '';
+        }
+        return groupFields.map( key => {
+            if (isMethodOrNameReference(key)) {
+                const field = { };
+                field[key] = expr[key];
+                return this.escape(field);
+            }
+            return this.escapeName(key);
+        }).join(', ');
     }
 
     formatInsert(query) {
@@ -415,17 +520,14 @@ export class SqlFormatter2 {
 
     /**
      * Implements AND operator formatting
-     * @param {*[]} conditions
+     * @param {...*} conditions
      */
-    $and(conditions) {
-        Args.check(Array.isArray(conditions), 'Expected an array of expressions.');
+    $and() {
+        const conditions = Array.from(arguments);
         Args.check(conditions.length, 'Expected at least one expression.');
         let result = '(';
-        result =+ conditions.map(condition => {
-            const comparison = getOwnPropertyName(condition);
-            Args.check(isMethodOrNameReference(comparison), 'Expected a valid comparison operator');
-            Args.check(typeof this[comparison] === 'function', 'Unknown comparison operator');
-            return this[comparison].apply(this, condition[comparison]);
+        result += conditions.map(condition => {
+            return this.formatWhere(condition);
         }).join(' AND ');
         result += ')';
         return result;
@@ -433,17 +535,14 @@ export class SqlFormatter2 {
 
     /**
      * Implements OR operator formatting
-     * @param {*[]} conditions
+     * @param {...*} conditions
      */
-    $or(conditions) {
-        Args.check(Array.isArray(conditions), 'Expected an array of expressions.');
+    $or() {
+        const conditions = Array.from(arguments);
         Args.check(conditions.length, 'Expected at least one expression.');
         let result = '(';
-        result =+ conditions.map(condition => {
-            const comparison = getOwnPropertyName(condition);
-            Args.check(isMethodOrNameReference(comparison), 'Expected a valid comparison operator');
-            Args.check(typeof this[comparison] === 'function', 'Unknown comparison operator');
-            return this[comparison].apply(this, condition[comparison]);
+        result += conditions.map(condition => {
+            return this.formatWhere(condition);
         }).join(' OR ');
         result += ')';
         return result;
@@ -504,6 +603,15 @@ export class SqlFormatter2 {
 
     $lte(left, right) {
         return `${this.escape(left)} <= ${this.escape(right)}`;
+    }
+
+    /**
+     * Implements count() aggregate expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $count(p0) {
+        return `COUNT(${this.escape(p0)})`;
     }
 
     /**
@@ -735,7 +843,7 @@ export class SqlFormatter2 {
      * @returns {string}
      */
     $add(p0, p1) {
-        return `(${this.escape(p0)} + ${this.escape(p1)})'`;
+        return `(${this.escape(p0)} + ${this.escape(p1)})`;
     }
 
     /**
@@ -745,7 +853,7 @@ export class SqlFormatter2 {
      * @returns {string}
      */
     $subtract(p0, p1) {
-        return `(${this.escape(p0)} - ${this.escape(p1)})'`;
+        return `(${this.escape(p0)} - ${this.escape(p1)})`;
     }
 
     /**
@@ -755,7 +863,7 @@ export class SqlFormatter2 {
      * @returns {string}
      */
     $multiply(p0, p1) {
-        return `(${this.escape(p0)} * ${this.escape(p1)})'`;
+        return `(${this.escape(p0)} * ${this.escape(p1)})`;
     }
 
     /**
@@ -765,7 +873,7 @@ export class SqlFormatter2 {
      * @returns {string}
      */
     $divide(p0, p1) {
-        return `(${this.escape(p0)} / ${this.escape(p1)})'`;
+        return `(${this.escape(p0)} / ${this.escape(p1)})`;
     }
 
     /**
@@ -774,7 +882,7 @@ export class SqlFormatter2 {
      * @param p1 {*}
      */
     $mod(p0, p1) {
-        return `(${this.escape(p0)} % ${this.escape(p1)})'`;
+        return `(${this.escape(p0)} % ${this.escape(p1)})`;
     }
 
     /**
@@ -783,7 +891,7 @@ export class SqlFormatter2 {
      * @param p1 {*}
      */
     $bit(p0, p1) {
-         return `(${this.escape(p0)} & ${this.escape(p1)})'`;
+         return `(${this.escape(p0)} & ${this.escape(p1)})`;
     }
 
 }
