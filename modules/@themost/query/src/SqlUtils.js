@@ -5,7 +5,6 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {QueryExpression} from './query';
 
 /**
  * @param {string} tz
@@ -62,11 +61,12 @@ function bufferToString(buffer) {
         // node v0.4.x does not support hex / throws unknown encoding error
         for (let i = 0; i < buffer.length; i++) {
             const byte = buffer[i];
+            // noinspection JSCheckFunctionSignatures
             hex += zeroPad(byte.toString(16));
         }
     }
 
-    return "X'" + hex+ "'";
+    return "X'" + hex + "'";
 }
 
 function objectToValues(object, timeZone) {
@@ -162,6 +162,7 @@ function format(sql, values, stringifyObjects, timeZone) {
     });
 }
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * @class
  * @constructor

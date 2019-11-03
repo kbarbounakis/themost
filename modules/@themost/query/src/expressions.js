@@ -271,7 +271,6 @@ export class MethodCallExpression {
  * @enum
  */
 export class Operators {
-    static Not = 'not';
     static Not = '$not';
     static Mul = '$mul';
     static Div = '$div';
@@ -298,7 +297,7 @@ export class Operators {
 */
 export function createArithmeticExpression(left, operator, right) {
     return new ArithmeticExpression(left, operator, right);
-};
+}
 /**
 * @param {*=} left The left operand
 * @param {string=} operator The operator
@@ -307,21 +306,21 @@ export function createArithmeticExpression(left, operator, right) {
 */
 export function createComparisonExpression(left, operator, right) {
     return new ComparisonExpression(left, operator, right);
-};
+}
 /**
 * @param {string=} name A string that represents the member's name
 * @returns MemberExpression
 */
 export function createMemberExpression (name) {
     return new MemberExpression(name);
-};
+}
 /**
 * @param {*=} value The literal value
 * @returns LiteralExpression
 */
 export function createLiteralExpression(value) {
     return new LiteralExpression(value);
-};
+}
 /**
 * Creates a method call expression of the given name with an array of arguments
 * @param {String} name
@@ -330,7 +329,7 @@ export function createLiteralExpression(value) {
 */
 export function createMethodCallExpression(name, args) {
     return new MethodCallExpression(name, args);
-};
+}
 /**
 * Creates a logical expression
 * @param {string} operator The logical operator
@@ -339,7 +338,7 @@ export function createMethodCallExpression(name, args) {
 */
 export function createLogicalExpression(operator, args) {
     return new LogicalExpression(operator, args);
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given object is an ArithmeticExpression instance.
 * @param {*} obj
@@ -347,7 +346,7 @@ export function createLogicalExpression(operator, args) {
 */
 export function isArithmeticExpression(obj) {
     return obj instanceof ArithmeticExpression;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given operator is an arithmetic operator.
 * @param {string} op
@@ -356,7 +355,7 @@ export function isArithmeticOperator(op) {
     if (typeof op === 'string')
         return (op.match(ArithmeticExpression.OperatorRegEx)!==null);
     return false;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given operator is an arithmetic operator.
 * @param {string} op
@@ -366,7 +365,7 @@ export function isComparisonOperator(op) {
     if (typeof op === 'string')
         return (op.match(ComparisonExpression.OperatorRegEx)!==null);
     return false;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given operator is a logical operator.
 * @param {string} op
@@ -376,7 +375,7 @@ export function isLogicalOperator(op) {
     if (typeof op === 'string')
         return (op.match(LogicalExpression.OperatorRegEx)!==null);
     return false;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given object is an LogicalExpression instance.
 * @param {*} obj
@@ -384,7 +383,7 @@ export function isLogicalOperator(op) {
 */
 export function isLogicalExpression(obj) {
     return obj instanceof LogicalExpression;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given object is an ComparisonExpression instance.
 * @param {*} obj
@@ -392,7 +391,7 @@ export function isLogicalExpression(obj) {
 */
 export function isComparisonExpression(obj) {
     return obj instanceof ComparisonExpression;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given object is an MemberExpression instance.
 * @param {*} obj
@@ -400,7 +399,7 @@ export function isComparisonExpression(obj) {
 */
 export function isMemberExpression(obj) {
     return obj instanceof MemberExpression;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given object is an LiteralExpression instance.
 * @param {*} obj
@@ -408,7 +407,7 @@ export function isMemberExpression(obj) {
 */
 export function isLiteralExpression(obj) {
     return obj instanceof LiteralExpression;
-};
+}
 /**
 * Gets a boolean value that indicates whether or not the given object is an MemberExpression instance.
 * @param {*} obj

@@ -12,25 +12,15 @@ import { SqlUtils } from './SqlUtils';
 import { getOwnPropertyName, isMethodOrNameReference } from './query';
 import { QueryCollection } from './QueryCollection';
 import { QueryExpression } from './QueryExpression';
-import { QueryField } from './QueryField';
 
-class ExpectedArrayArguments extends Error {
-    constructor() {
-        super('Arguments must be an array');
-    }
-}
-class InvalidExpression extends Error {
-    constructor() {
-        super('Expression graph is invalid or it has not been implemented yet.');
-    }
-}
 
 class ExpectedWhereExpression extends Error {
     /**
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg || 'Current expression requires a valid where statement.');
+        super();
+        this.message = msg || 'Current expression requires a valid where statement.';
     }
 }
 
@@ -39,7 +29,8 @@ class ExpectedSelectExpression extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg || 'Invalid query expression. Expected a valid select expression.');
+        super();
+        this.message = msg || 'Invalid query expression. Expected a valid select expression.'
     }
 }
 
@@ -48,7 +39,8 @@ class ExpectedInsertExpression extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg || 'Invalid query expression. Expected a valid insert expression.');
+        super();
+        this.message = msg || 'Invalid query expression. Expected a valid insert expression.'
     }
 }
 
@@ -57,7 +49,8 @@ class ExpectedUpdateExpression extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg || 'Invalid query expression. Expected a valid update expression.');
+        super();
+        this.message = msg || 'Invalid query expression. Expected a valid update expression.';
     }
 }
 
@@ -66,7 +59,8 @@ class ExpectedDeleteExpression extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg || 'Invalid query expression. Expected a valid delete expression.');
+        super();
+        this.message = msg || 'Invalid query expression. Expected a valid delete expression.';
     }
 }
 
@@ -75,25 +69,8 @@ class ExpectedCollection extends Error {
      * @param {string=} msg
      */
     constructor(msg) {
-        super(msg || 'Invalid query expression. Expected a target collection expression.');
-    }
-}
-
-class InvalidOperator extends Error {
-    /**
-     * @param {string=} msg
-     */
-    constructor(msg) {
-        super(msg || 'Invalid expression operator');
-    }
-}
-
-class InvalidArguments extends Error {
-    /**
-     * @param {string=} msg
-     */
-    constructor(msg) {
-        super(msg || 'Invalid expression arguments');
+        super();
+        this.message = msg || 'Invalid query expression. Expected a target collection expression.';
     }
 }
 
@@ -122,7 +99,7 @@ export class SqlFormatter {
             if (value instanceof Date) {
                 return SqlUtils.escape(value);
             }
-            // parse literal values e.g. { $literal: 99.5 } 
+            // parse literal values e.g. { $literal: 99.5 }
             if (value.hasOwnProperty('$literal')) {
                 if (typeof value.$literal === 'object') {
                     // get literal property
@@ -170,7 +147,7 @@ export class SqlFormatter {
         // return formatted name e.g User.name to `User`.`name`
         return name.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
     }
-    
+
     /**
      * @param {string} name
      */
@@ -187,7 +164,7 @@ export class SqlFormatter {
         return finalName.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
     }
 
-    
+
     formatSelect(query) {
         Args.notNull(query, 'Query expression');
         Args.check(query.$select != null, new Error('Format select requires a valid select expression'));
@@ -196,7 +173,6 @@ export class SqlFormatter {
         // get select collection
         Args.check(query.$collection != null, new Error('Format select requires a valid collection'));
         const selectCollection = Object.assign(new QueryCollection(), query.$collection);
-        this.currectStatement = 'select';
         let result = `SELECT`;
         if (query.$distinct) {
             result += ` DISTINCT`;
@@ -232,7 +208,7 @@ export class SqlFormatter {
             // append simple select e.g. * FROM `UserData`
             result += ` FROM ${escapedCollection}`;
         }
-        
+
         if (selectCollection.alias) {
             // append collection alias e.g. AS `Users`
             result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(selectCollection.alias)}`
@@ -266,8 +242,6 @@ export class SqlFormatter {
         if (query.$order != null) {
             result += ' ORDER BY ' + this.formatOrder(query.$order);
         }
-        
-        this.currectStatement = null;
         this.currectCollection = null;
         return result;
     }
@@ -276,7 +250,7 @@ export class SqlFormatter {
         let result = '';
         // append lookup direction e.g. LEFT JOIN
         switch (direction) {
-            case 'left': 
+            case 'left':
                 result += 'LEFT JOIN ';
                 break;
             case 'right':
@@ -298,20 +272,20 @@ export class SqlFormatter {
             const lookupCollection = lookup.as || lookup.from;
             // format foreign field e.g. Customers.CustomerID
             const foreignField = this.escapeName(lookupCollection + '.' + lookup.foreignField);
-            // append equality expression 
+            // append equality expression
             // e.g. LEFT JOIN Customers ON Customers.CustomerID = Orders.CustomerID
             result += this.$eq(`$${lookup.localField}`, `$${foreignField}`);
         }
         else if (lookup && lookup.pipeline) {
             // build expression
             const q = new QueryExpression().select()
-                .from(lookup.from)
+                .from(lookup.from);
             if (lookup.pipeline.$project) {
                 // append fields
                 Object.assign(q, {
                     $select: lookup.pipeline.$project
                 });
-            } 
+            }
             Args.check(lookup.pipeline.$match, new Error('Lookup match expression is null or undefined.'));
             // format selection
             const formatter = Object.create(this);
@@ -339,6 +313,7 @@ export class SqlFormatter {
         return result;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      *
      * @param {*} expr
@@ -356,6 +331,7 @@ export class SqlFormatter {
         return sql;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      *
      * @param {*} query
@@ -373,6 +349,7 @@ export class SqlFormatter {
         return `SELECT COUNT(*) AS ${this.escapeName(alias)} FROM (${sql}) ${this.escapeName("c0")}`;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Formats a fixed query expression where select fields are constants e.g. SELECT 1 AS `id`,'John' AS `givenName` etc
      * @param {*} query
@@ -417,7 +394,7 @@ export class SqlFormatter {
                 const formatFunc = this[funcName];
                 if (typeof formatFunc === 'function') {
                     const funcArgs = field[funcName];
-                    const args = [];
+                    let args = [];
                     if (Array.isArray(funcArgs)) {
                         args = funcArgs.slice();
                         args.unshift()
@@ -469,7 +446,7 @@ export class SqlFormatter {
             // call format where by assigning field as first argument
             // e.g. { "$eq" : [ "$givenName",  "John" ] }
             const comparerName = getOwnPropertyName(comparerExpr);
-            // get comparer arguments e.g. "John" 
+            // get comparer arguments e.g. "John"
             const comparerArgs = comparerExpr[comparerName];
             if (Array.isArray(comparerArgs)) {
                 // copy arguments
@@ -507,7 +484,7 @@ export class SqlFormatter {
             }
             return this.escapeName(key) +  ' ' + (expr[key] === 1 ? 'DESC': 'ASC');
         }).join(', ');
-        
+
     }
 
     formatGroupBy(expr) {
@@ -529,6 +506,7 @@ export class SqlFormatter {
         }).join(', ');
     }
 
+    // noinspection JSUnusedGlobalSymbols
     formatInsert(query) {
         Args.check(query.$insert != null, new ExpectedInsertExpression());
         //get collection name
@@ -550,6 +528,7 @@ export class SqlFormatter {
         return result;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     formatUpdate(query) {
         Args.check(query.$update != null, new ExpectedUpdateExpression());
         //get collection name
@@ -586,6 +565,7 @@ export class SqlFormatter {
         return result;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     formatDelete(query) {
         Args.check(query.$delete != null, new ExpectedDeleteExpression());
         //get collection name
@@ -618,7 +598,6 @@ export class SqlFormatter {
 
     /**
      * Implements AND operator formatting
-     * @param {...*} conditions
      */
     $and() {
         const conditions = Array.from(arguments);
@@ -633,7 +612,6 @@ export class SqlFormatter {
 
     /**
      * Implements OR operator formatting
-     * @param {...*} conditions
      */
     $or() {
         const conditions = Array.from(arguments);
@@ -651,7 +629,7 @@ export class SqlFormatter {
      */
     $eq(left, right) {
         if (right == null) {
-            return `${this.escape(left)} IS NULL`; 
+            return `${this.escape(left)} IS NULL`;
         }
         if (Array.isArray(right)) {
             return this.$in(left, right);
@@ -662,18 +640,18 @@ export class SqlFormatter {
     $in(left, right) {
         const leftOperand = this.escape(left);
         if (right == null) {
-            return `${leftOperand} IS NULL`; 
+            return `${leftOperand} IS NULL`;
         }
         if (Array.isArray(right)) {
             if (right.length === 0) {
-                return `${leftOperand} IS NULL`; 
+                return `${leftOperand} IS NULL`;
             }
             const values = right.map( x => {
                 return this.escape(x);
             });
-            return `${leftOperand} IN (${values.join(', ')})`; 
+            return `${leftOperand} IN (${values.join(', ')})`;
         }
-        throw new Error('Invalid in expression. Right opearand must be an array');
+        throw new Error('Invalid in expression. Right operand must be an array');
     }
 
     $nin(left, right) {
@@ -682,7 +660,7 @@ export class SqlFormatter {
 
     $ne(left, right) {
         if (right == null) {
-            return `NOT (${this.escape(left)} IS NULL)`; 
+            return `NOT (${this.escape(left)} IS NULL)`;
         }
         return `NOT (${this.escape(left)} = ${this.escape(right)})`;
     }
@@ -837,11 +815,12 @@ export class SqlFormatter {
      */
     $round(p0, p1) {
         if (p1 == null) {
-            return `ROUND(${this.escape(p0)}, ${this.escape(p1)})`;    
+            return `ROUND(${this.escape(p0)}, ${this.escape(p1)})`;
         }
-        return `ROUND(${this.escape(p0)}, 0)`;  
+        return `ROUND(${this.escape(p0)}, 0)`;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Implements regular expression formatting.
      * @param {*} left
@@ -859,7 +838,7 @@ export class SqlFormatter {
      * @returns {string}
      */
     $text(p0, p1) {
-        return `(${this.escape(left)} REGEXP \'${this.escape(expr, true)}\')`;
+        return `(${this.escape(left)} REGEXP \'${this.escape(p1, true)}\')`;
     }
 
     /**
@@ -983,6 +962,7 @@ export class SqlFormatter {
         return `(${this.escape(p0)} % ${this.escape(p1)})`;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Implements [a & b] bitwise and expression formatter.
      * @param p0 {*}

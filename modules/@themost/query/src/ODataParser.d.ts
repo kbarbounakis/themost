@@ -5,102 +5,14 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
 import {MemberExpression, MethodCallExpression} from "./expressions";
+import {SyntaxToken} from "./SyntaxToken";
+import {Token} from "./Token";
+import {LiteralToken} from "./LiteralToken";
 
-export declare interface TokenType {
-    Literal : string;
-    Identifier: string;
-    Syntax: string;
-}
-
-export declare interface OperatorType {
-    Not: string;
-    Mul: string;
-    Div: string;
-    Mod: string;
-    Add: string;
-    Sub: string;
-    Lt: string;
-    Gt: string;
-    Le: string;
-    Ge: string;
-    Eq: string;
-    Ne: string;
-    In: string;
-    NotIn: string;
-    And: string;
-    Or: string;
-}
-
-export declare class Token {
-    constructor(tokenType: string);
-    
-    static TokenType: TokenType;
-    static Operator: OperatorType;
-    
-    isParenOpen(): boolean;
-    isParenClose(): boolean;
-    isSlash(): boolean;
-    isComma(): boolean;
-    isNegative(): boolean;
-
-}
-
-export declare interface LiteralType {
-    Null: string;
-    String: string;
-    Boolean: string;
-    Single: string;
-    Double: string;
-    Decimal: string;
-    Int: string;
-    Long: string;
-    Binary: string;
-    DateTime: string;
-    Guid: string;
-    Duration: string;
-}
-
-export declare interface StringType {
-    None: string;
-    Binary: string;
-    DateTime: string;
-    Guid: string;
-    Time: string;
-    DateTimeOffset: string;
-}
-
-export declare class LiteralToken extends Token {
-    constructor(value: string, literalType: string);
-    static PositiveInfinity : LiteralToken;
-    static NegativeInfinity : LiteralToken;
-    static NaN : LiteralToken;
-    static True : LiteralToken;
-    static False : LiteralToken;
-    static Null : LiteralToken;
-    
-}
-
-export declare class IdentifierToken extends Token {
-    constructor(name: string);
-    identifier: string;
-    
-}
-
-export declare class SyntaxToken extends Token {
-    constructor(chr: string);
-    syntax: string;
-    static ParenOpen : SyntaxToken; 
-    static ParenClose : SyntaxToken; 
-    static Slash : SyntaxToken; 
-    static Comma : SyntaxToken; 
-    static Negative : SyntaxToken; 
-}
-
-export declare class OpenDataParser {
+export declare class ODataParser {
     constructor();
-    static create(): OpenDataParser;
+    static create(): ODataParser;
     static isChar(c: any): boolean;
     static isDigit(c: any): boolean;
     static isIdentifierStartChar(c: any): boolean;

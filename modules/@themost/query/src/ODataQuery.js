@@ -5,428 +5,549 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
-import { sprintf } from 'sprintf';
-import _ from 'lodash';
+import {Args, TextUtils} from '@themost/common';
+// eslint-disable-next-line no-control-regex
+const STR_ESCAPE_REGEXP = /[\0\n\r\b\t\\'"\x1a]/g;
+// noinspection JSUnusedGlobalSymbols
 /**
  * @class
- * @constructor
  */
 export class ODataQuery {
-    constructor() {
+    /**
+     * @param {string} collection
+     */
+    constructor(collection) {
         /**
          * @private
          */
-        Object.defineProperty(this, 'privates', {
+        Object.defineProperty(this, '_privates', {
             enumerable: false,
-            configurable: false,
+            configurable: true,
             writable: false,
-            value: {}
+            value: { }
         });
+        /**
+         * @private
+         */
+        Object.defineProperty(this, '_params', {
+            enumerable: false,
+            configurable: true,
+            writable: false,
+            value: { }
+        });
+        // set collection
+        if (collection != null) {
+            Args.notString(collection, 'Collection');
+            this.$collection = collection;
+        }
     }
-    /**
-     * @private
-     * @returns ODataQuery
-     */
-    append() {
-        const self = this;
-        let exprs;
-        if (self.privates.left) {
-            let expr = null;
-            if (self.privates.op === 'in') {
-                if (_.isArray(self.privates.right)) {
-                    //expand values
-                    exprs = [];
-                    _.forEach(self.privates.right, x => {
-                        exprs.push(self.privates.left + ' eq ' + QueryExpression.escape(x));
-                    });
-                    if (exprs.length > 0)
-                        expr = '(' + exprs.join(' or ') + ')';
-                }
-            }
-            else if (self.privates.op === 'nin') {
-                if (_.isArray(self.privates.right)) {
-                    //expand values
-                    exprs = [];
-                    _.forEach(self.privates.right, x => {
-                        exprs.push(self.privates.left + ' ne ' + QueryExpression.escape(x));
-                    });
-                    if (exprs.length > 0)
-                        expr = '(' + exprs.join(' and ') + ')';
-                }
-            }
-            else
-                expr = self.privates.left + ' ' + self.privates.op + ' ' + QueryExpression.escape(self.privates.right);
-            if (expr) {
-                if (_.isNil(self.$filter))
-                    self.$filter = expr;
-                else {
-                    self.privates.lop = self.privates.lop || 'and';
-                    self.privates._lop = self.privates._lop || self.privates.lop;
-                    if (self.privates._lop === self.privates.lop)
-                        self.$filter = self.$filter + ' ' + self.privates.lop + ' ' + expr;
-                    else
-                        self.$filter = '(' + self.$filter + ') ' + self.privates.lop + ' ' + expr;
-                    self.privates._lop = self.privates.lop;
-                }
+
+    getCollection() {
+        return this.$collection;
+    }
+
+    toString() {
+        Args.check(this.$collection != null, new Error('Query collection cannot be empty at this context'));
+        const uri = this.getCollection();
+        const params = this.getParams();
+        let search = '';
+        for (const key in params) {
+            if (params.hasOwnProperty(key)) {
+                search = search.concat(key, '=', params[key], '&');
             }
         }
-        delete self.privates.lop;
-        delete self.privates.left;
-        delete self.privates.op;
-        delete self.privates.right;
-        return this;
+        if (search.length) {
+            return uri.concat('?', search.replace(/&$/, ''));
+        }
+        return uri;
     }
-    /**
-     * @param {...string} attr
-     * @returns ODataQuery
-     */
-    select(attr) {
-        const args = (arguments.length > 1) ? Array.prototype.slice.call(arguments) : attr;
-        this.$select = _.map(args, arg => {
-            if (_.isArray(arg)) {
-                return arg.join(',');
+
+    // noinspection JSUnusedGlobalSymbols
+    toExpand() {
+        let collection = this.getCollection();
+        const params = this.getParams();
+        let search = '';
+        for (const key in params) {
+            if (params.hasOwnProperty(key)) {
+                search = search.concat(key, '=', params[key], ';');
             }
-            return arg;
-        }).join(',');
+        }
+        if (search.length) {
+            return collection.concat('(', search.replace(/;$/, ''), ')');
+        }
+        return collection;
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    takeNext(n) {
+        const p = this.getParams();
+        return this.take(n).skip((p.$skip ? p.$skip : 0) + n);
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    takePrevious(n) {
+        const p = this.getParams();
+        if (p.$skip > 0) {
+            if (n <= p.$skip) {
+                this.skip(p.$skip - n);
+                return this.take(n);
+            }
+        }
         return this;
     }
+
     /**
-     * @param {number} val
-     * @returns ODataQuery
+     * @returns {ODataQueryParams}
      */
-    take(val) {
-        this.$top = isNaN(val) ? 0 : val;
-        return this;
+    getParams() {
+        if (typeof this.$prepare === 'string' && this.$prepare.length) {
+            if (typeof this._params.$filter === 'string' && this._params.$filter) {
+                return Object.assign({},
+                    this._params,
+                    {
+                        $filter: `(${this.$prepare}) and (${this._params.$filter})`
+                    });
+            } else {
+                return Object.assign({}, this._params, {
+                    $filter: this.$prepare
+                });
+            }
+
+        }
+        return Object.assign({}, this._params);
     }
-    /**
-     * @param {number} val
-     * @returns ODataQuery
-     */
-    skip(val) {
-        this.$skip = isNaN(val) ? 0 : val;
-        return this;
-    }
+
     // noinspection JSUnusedGlobalSymbols
     /**
-     * @param {string} name
-     * @returns ODataQuery
+     * @returns this
      */
-    orderBy(name) {
-        if (!name == null) {
-            this.$orderby = name.toString();
+    setParam(name, value) {
+        if (/^\$/.test(name)) {
+            this._params[name] = value;
+        } else {
+            this._params['$' + name] = value;
         }
         return this;
     }
+
     // noinspection JSUnusedGlobalSymbols
     /**
-     * @param {String} name
-     * @returns ODataQuery
+     * Gets a string which represents the relative URL associated with this object.
+     * @returns {string}
      */
-    orderByDescending(name) {
-        if (!name == null) {
-            this.$orderby = name.toString() + ' desc';
-        }
-        return this;
+    getUrl() {
+        return this.getCollection();
     }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    thenBy(name) {
-        if (!name == null) {
-            this.$orderby += (this.$orderby ? ',' + name.toString() : name.toString());
-        }
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    thenByDescending(name) {
-        if (!name == null) {
-            this.$orderby += (this.$orderby ? ',' + name.toString() : name.toString()) + ' desc';
-        }
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
+
     where(name) {
-        this.privates.left = name;
+        Args.notEmpty(name, 'Left operand');
+        this._privates.left = name;
         return this;
     }
-    /**
-     * @param {String=} name
-     * @returns ODataQuery
-     */
+
     and(name) {
-        this.privates.lop = 'and';
-        if (typeof name !== 'undefined')
-            this.privates.left = name;
+        Args.notEmpty(name, 'Left operand');
+        this._privates.left = name;
+        this._privates.lop = 'and';
         return this;
     }
-    /**
-     * @param {String=} name
-     * @returns ODataQuery
-     */
+
+    // noinspection JSUnusedGlobalSymbols
+    andAlso(name) {
+        Args.notEmpty(name, 'Left operand');
+        this._privates.left = name;
+        this._privates.lop = 'and';
+        if (this._params.$filter != null) {
+            this._params.$filter = '(' + this._params.$filter + ')';
+        }
+        return this;
+    }
+
     or(name) {
-        this.privates.lop = 'or';
-        if (typeof name !== 'undefined')
-            this.privates.left = name;
+        Args.notEmpty(name, 'Left operand');
+        this._privates.left = name;
+        this._privates.lop = 'or';
         return this;
     }
-    /**
-     * @param {*} value
-     * @returns ODataQuery
-     */
+
+    // noinspection JSUnusedGlobalSymbols
+    orElse(name) {
+        Args.notEmpty(name, 'Left operand');
+        this._privates.left = name;
+        this._privates.lop = 'or';
+        if (this._params.$filter != null) {
+            this._params.$filter = '(' + this._params.$filter + ')';
+        }
+        return this;
+    }
+
+
     equal(value) {
-        this.privates.op = 'eq';
-        this.privates.right = value;
-        return this.append();
+        return this._compare('eq', value);
     }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    indexOf(name) {
-        this.privates.left = 'indexof(' + name + ')';
-        return this;
-    }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} name
-     * @param {*} s
-     * @returns ODataQuery
-     */
-    endsWith(name, s) {
-        this.privates.left = sprintf('endswith(%s,%s)', name, QueryExpression.escape(s));
-        return this;
-    }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} name
-     * @param {*} s
-     * @returns ODataQuery
-     */
-    startsWith(name, s) {
-        this.privates.left = sprintf('startswith(%s,%s)', name, QueryExpression.escape(s));
-        return this;
-    }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} name
-     * @param {*} s
-     * @returns ODataQuery
-     */
-    substringOf(name, s) {
-        this.privates.left = sprintf('substringof(%s,%s)', name, QueryExpression.escape(s));
-        return this;
-    }
-    /**
-     * @param {*} name
-     * @param {number} pos
-     * @param {number} length
-     * @returns ODataQuery
-     */
-    substring(name, pos, length) {
-        this.privates.left = sprintf('substring(%s,%s,%s)', name, pos, length);
-        return this;
-    }
-    /**
-     * @param {*} name
-     * @returns ODataQuery
-     */
-    length(name) {
-        this.privates.left = sprintf('length(%s)', name);
-        return this;
-    }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} name
-     * @returns ODataQuery
-     */
-    toLower(name) {
-        this.privates.left = sprintf('tolower(%s)', name);
-        return this;
-    }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} name
-     * @returns ODataQuery
-     */
-    toUpper(name) {
-        this.privates.left = sprintf('toupper(%s)', name);
-        return this;
-    }
-    /**
-     * @param {*} name
-     * @returns ODataQuery
-     */
-    trim(name) {
-        this.privates.left = sprintf('trim(%s)', name);
-        return this;
-    }
-    /**
-     * @param {*} s0
-     * @param {*} s1
-     * @param {*=} s2
-     * @param {*=} s3
-     * @param {*=} s4
-     * @returns ODataQuery
-     */
-    concat(s0, s1, s2, s3, s4) {
-        this.privates.left = 'concat(' + QueryExpression.escape(s0) + ',' + QueryExpression.escape(s1);
-        if (typeof s2 !== 'undefined')
-            this.privates.left += ',' + QueryExpression.escape(s2);
-        if (typeof s3 !== 'undefined')
-            this.privates.left += ',' + QueryExpression.escape(s3);
-        if (typeof s4 !== 'undefined')
-            this.privates.left += ',' + QueryExpression.escape(s4);
-        this.privates.left += ')';
-        return this;
-    }
-    field(name) {
-        return { "$name": name };
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    day(name) {
-        this.privates.left = sprintf('day(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    hour(name) {
-        this.privates.left = sprintf('hour(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    minute(name) {
-        this.privates.left = sprintf('minute(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    month(name) {
-        this.privates.left = sprintf('month(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    second(name) {
-        this.privates.left = sprintf('second(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    year(name) {
-        this.privates.left = sprintf('year(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    round(name) {
-        this.privates.left = sprintf('round(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    floor(name) {
-        this.privates.left = sprintf('floor(%s)', name);
-        return this;
-    }
-    /**
-     * @param {String} name
-     * @returns ODataQuery
-     */
-    ceiling(name) {
-        this.privates.left = sprintf('ceiling(%s)', name);
-        return this;
-    }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} value
-     * @returns ODataQuery
-     */
-    // noinspection JSUnusedGlobalSymbols
+
     notEqual(value) {
-        this.privates.op = 'ne';
-        this.privates.right = value;
-        return this.append();
+        return this._compare('ne', value);
     }
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * @param {*} value
-     * @returns ODataQuery
-     */
+
     greaterThan(value) {
-        this.privates.op = 'gt';
-        this.privates.right = value;
-        return this.append();
+        return this._compare('gt', value);
     }
-    /**
-     * @param {*} value
-     * @returns ODataQuery
-     */
+
     greaterOrEqual(value) {
-        this.privates.op = 'ge';
-        this.privates.right = value;
-        return this.append();
+        return this._compare('ge', value);
     }
-    /**
-     * @param {*} value
-     * @returns ODataQuery
-     */
+
     lowerThan(value) {
-        this.privates.op = 'lt';
-        this.privates.right = value;
-        return this.append();
+        return this._compare('lt', value);
     }
-    /**
-     * @param {*} value
-     * @returns ODataQuery
-     */
+
     lowerOrEqual(value) {
-        this.privates.op = 'le';
-        this.privates.right = value;
-        return this.append();
+        return this._compare('le', value);
     }
+
     /**
-     * @param {Array} values
-     * @returns ODataQuery
+     * @param {*} value1
+     * @param {*} value2
+     * @returns this
      */
-    in(values) {
-        this.privates.op = 'in';
-        this.privates.right = values;
-        return this.append();
+    between(value1, value2) {
+        Args.notNull(this._privates.left, 'The left operand');
+        // generate new filter
+        const s = Object.create(this)
+            .where(this._privates.left).greaterOrEqual(value1)
+            .and(this._privates.left).lowerOrEqual(value2).toFilter();
+        this._privates.lop = this._privates.lop || 'and';
+        if (this._params.$filter) {
+            this._params.$filter = '(' + this._params.$filter + ') ' + this._privates.lop + ' (' + s + ')';
+        } else {
+            this._params.$filter = '(' + s + ')';
+        }
+        // clear object
+        this._privates.left = null;
+        this._privates.op = null;
+        this._privates.right = null;
+        this._privates.lop = null;
+        return this;
     }
+
+    toFilter() {
+        return this.getParams().$filter;
+    }
+
     /**
-     * @param {Array} values
-     * @returns ODataQuery
+     * @param {string} value
+     * @returns {*}
      */
-    notIn(values) {
-        this.privates.op = 'nin';
-        this.privates.right = values;
-        return this.append();
+    contains(value) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.op = 'ge';
+        this._privates.left = `indexof(${this._privates.left},${this._escape(value)})`;
+        this._privates.right = 0;
+        return this._append();
     }
+
+
+    getDate() {
+        return this._aggregate('date');
+    }
+
+    getDay() {
+        return this._aggregate('day');
+    }
+
+    getMonth() {
+        return this._aggregate('month');
+    }
+
+    getYear() {
+        return this._aggregate('year');
+    }
+
+    getFullYear() {
+        return this._aggregate('year');
+    }
+
+    getHours() {
+        return this._aggregate('hour');
+    }
+
+    getMinutes() {
+        return this._aggregate('minute');
+    }
+
+    getSeconds() {
+        return this._aggregate('second');
+    }
+
+    length() {
+        return this._aggregate('length');
+    }
+
+    trim() {
+        return this._aggregate('trim');
+    }
+
+    toLocaleLowerCase() {
+        return this._aggregate('tolower');
+    }
+
+    toLowerCase() {
+        return this._aggregate('tolower');
+    }
+
+    toLocaleUpperCase() {
+        return this._aggregate('toupper');
+    }
+
+    toUpperCase() {
+        return this._aggregate('toupper');
+    }
+
+    round() {
+        return this._aggregate('round');
+    }
+
+    floor() {
+        return this._aggregate('floor');
+    }
+
+    ceil() {
+        return this._aggregate('ceiling');
+    }
+
+    indexOf(value) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.left = `indexof(${this._privates.left},${this._escape(value)})`;
+        return this;
+    }
+
+    substr(pos, length) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.left = `substring(${this._privates.left},${pos},${length})`;
+        return this;
+    }
+
+    startsWith(s) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.left = `startswith(${this._privates.left},${this._escape(s)})`;
+        return this;
+    }
+
+    endsWith(s) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.left = `endswith(${this._privates.left},${this._escape(s)})`;
+        return this;
+    }
+
+    select() {
+        const args = Array.from(arguments);
+        Args.notNull(args, 'Attributes');
+        Args.check(args.length > 0, 'Attributes may not be empty');
+        const arr = [];
+        for (let i = 0; i < args.length; i++) {
+            Args.check(typeof args[i] === 'string', 'Invalid attribute. Expected string.');
+            arr.push(args[i]);
+        }
+        this._params.$select = arr.join(',');
+        return this;
+    }
+
+    groupBy() {
+        const args = Array.from(arguments);
+        Args.notNull(args, 'Attributes');
+        Args.check(args.length > 0, 'Attributes may not be empty');
+        const arr = [];
+        for (let i = 0; i < args.length; i++) {
+            Args.check(typeof args[i] === 'string', 'Invalid attribute. Expected string.');
+            arr.push(args[i]);
+        }
+        this._params.$groupby = arr.join(',');
+        return this;
+    }
+
+    expand() {
+        const args = Array.from(arguments);
+        Args.notNull(args, 'Attributes');
+        Args.check(args.length > 0, 'Attributes may not be empty');
+        const arr = [];
+        for (let i = 0; i < args.length; i++) {
+            Args.check(typeof args[i] === 'string', 'Invalid attribute. Expected string.');
+            arr.push(args[i]);
+        }
+        this._params.$expand = arr.join(',');
+        return this;
+    }
+
+    orderBy(attr) {
+        Args.notEmpty(attr, 'Order by attribute');
+        this._params.$orderby = attr.toString();
+        return this;
+    }
+
+    thenBy(attr) {
+        Args.notEmpty(attr, 'Order by attribute');
+        this._params.$orderby += (this._params.$orderby ? ',' + attr.toString() : attr.toString());
+        return this;
+    }
+
+    orderByDescending(attr) {
+        Args.notEmpty(attr, 'Order by attribute');
+        this._params.$orderby = attr.toString() + ' desc';
+        return this;
+    }
+
+    thenByDescending(attr) {
+        Args.notEmpty(attr, 'Order by attribute');
+        this._params.$orderby += (this._params.$orderby ? ',' + attr.toString() : attr.toString()) + ' desc';
+        return this;
+    }
+
+    skip(num) {
+        this._params.$skip = num;
+        return this;
+    }
+
+    take(num) {
+        this._params.$top = num;
+        return this;
+    }
+
+    filter(s) {
+        Args.notEmpty('s', 'Filter expression');
+        this._params.$filter = s;
+        return this;
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    levels(n) {
+        Args.Positive(n, 'Levels');
+        this._params.$levels = n;
+        return this;
+    }
+
+    prepare(or) {
+        const lop = or ? 'or' : 'and';
+        if (typeof this._params.$filter === 'string' && this._params.$filter.length) {
+            if (typeof this.$prepare === 'string' && this.$prepare.length) {
+                this.$prepare = `${this.$prepare} ${lop} ${this._params.$filter}`;
+            } else {
+                this.$prepare = this._params.$filter;
+            }
+        }
+        delete this._params.$filter;
+        return this;
+    }
+
+    _aggregate(method) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.left = `${method}(${this._privates.left})`;
+        return this;
+    }
+
+    _compare(op, value) {
+        Args.notNull(this._privates.left, 'The left operand');
+        this._privates.op = op;
+        this._privates.right = value;
+        return this._append();
+    }
+
+    _append() {
+        Args.notNull(this._privates.left, 'Left operand');
+        Args.notNull(this._privates.op, 'Comparison operator');
+        let expr;
+        if (Array.isArray(this._privates.right)) {
+            Args.check((this._privates.op === 'eq') || (this._privates.op === 'ne'), 'Wrong operator. Expected equal or not equal');
+            Args.check(this._privates.right.length > 0, 'Array may not be empty');
+            const arr = this._privates.right.map((x) => {
+                return this._privates.left + ' ' + this._privates.op + ' ' + this._escape(x);
+            });
+            if (this._privates.op === 'eq') {
+                expr = '(' + arr.join(' or ') + ')';
+            } else {
+                expr = '(' + arr.join(' or ') + ')';
+            }
+        } else {
+            expr = this._privates.left + ' ' + this._privates.op + ' ' + this._escape(this._privates.right);
+        }
+        this._privates.lop = this._privates.lop || 'and';
+        if (this._params.$filter != null) {
+            this._params.$filter = this._params.$filter + ' ' + this._privates.lop + ' ' + expr;
+        } else {
+            this._params.$filter = expr;
+        }
+        // clear object
+        this._privates.left = null;
+        this._privates.op = null;
+        this._privates.right = null;
+        return this;
+    }
+
+    /**
+     *
+     * @param val
+     * @returns {string|string|*}
+     * @private
+     */
+    _escape(val) {
+        if ((val == null) || (typeof val === 'undefined')) {
+            return 'null';
+        }
+        if (typeof val === 'boolean') {
+            return (val) ? 'true' : 'false';
+        }
+        if (typeof val === 'number') {
+            return val + '';
+        }
+        if (val instanceof Date) {
+            const dt = val;
+            const year = dt.getFullYear();
+            const month = TextUtils.zeroPad(dt.getMonth() + 1, 2);
+            const day = TextUtils.zeroPad(dt.getDate(), 2);
+            const hour = TextUtils.zeroPad(dt.getHours(), 2);
+            const minute = TextUtils.zeroPad(dt.getMinutes(), 2);
+            const second = TextUtils.zeroPad(dt.getSeconds(), 2);
+            const millisecond = TextUtils.zeroPad(dt.getMilliseconds(), 3);
+            // format timezone
+            const offset = (new Date()).getTimezoneOffset();
+            const timezone = (offset >= 0 ? '+' : '') + TextUtils.zeroPad(Math.floor(offset / 60), 2) +
+                ':' + TextUtils.zeroPad(offset % 60, 2);
+            return '\'' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond + timezone + '\'';
+        }
+        if (val instanceof Array) {
+            const values = [];
+            val.forEach((x) => {
+                values.push(this._escape(x));
+            });
+            return values.join(',');
+        }
+        if (typeof val === 'string') {
+            const res = val.replace(STR_ESCAPE_REGEXP, (s) => {
+                switch (s) {
+                    case '\0':
+                        return '\\0';
+                    case '\n':
+                        return '\\n';
+                    case '\r':
+                        return '\\r';
+                    case '\b':
+                        return '\\b';
+                    case '\t':
+                        return '\\t';
+                    case '\x1a':
+                        return '\\Z';
+                    default:
+                        return '\\' + s;
+                }
+            });
+            return '\'' + res + '\'';
+        }
+        // otherwise get valueOf
+        if (val.hasOwnProperty('$name')) {
+            return val.$name;
+        } else {
+            return this._escape(val.valueOf());
+        }
+    }
+
 }

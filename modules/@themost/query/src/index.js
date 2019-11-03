@@ -14,4 +14,8 @@ export * from "./ODataQuery";
 export * from "./SqlFormatter"
 export * from "./query";
 export * from "./expressions";
-export * from "./odata";
+export * from "./Token";
+export * from "./SyntaxToken";
+export * from "./IdentifierToken";
+export * from "./LiteralToken";
+export * from "./ODataParser";

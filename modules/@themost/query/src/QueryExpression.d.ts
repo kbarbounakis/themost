@@ -5,12 +5,17 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
+// noinspection JSUnusedGlobalSymbols
+/**
+ * @interface
+ */
 export declare interface QueryPipeline {
     $match: any,
     $project: any
 }
-
+/**
+ * @class
+ */
 export declare class QueryExpression {
 
     static ComparisonOperators: any;
@@ -26,6 +31,7 @@ export declare class QueryExpression {
     $group?: any;
     $expand?: any;
     $match?: any;
+    // noinspection JSUnusedGlobalSymbols
     $fixed?: any;
     $limit?: number;
     $skip?: number;
@@ -33,16 +39,21 @@ export declare class QueryExpression {
     clone():QueryExpression;
     as(alias: string): QueryExpression;
     fields(): any[];
+    // noinspection JSUnusedGlobalSymbols
     hasFilter(): boolean;
     prepare(userOr?: boolean): QueryExpression;
     hasFields(): boolean;
-    hasPaging(): boolean;
+    // noinspection JSUnusedGlobalSymbols
+    hasLimit(): boolean;
     distinct(value: any): QueryExpression;
     where(field: any): QueryExpression;
+    // noinspection JSUnusedGlobalSymbols
     injectWhere(where: any);
     delete(entity: string): QueryExpression;
     insert(any: any): QueryExpression;
+    // noinspection JSUnusedGlobalSymbols
     insertOne(any: any): QueryExpression;
+    // noinspection JSUnusedGlobalSymbols
     insertMany(any: any[]): QueryExpression;
     into(collection: any): QueryExpression;
     update(collection: any): QueryExpression;

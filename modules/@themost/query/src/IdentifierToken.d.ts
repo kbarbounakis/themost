@@ -1,3 +1,5 @@
+import {Token} from "./Token";
+
 /**
  * MOST Web Framework 3.0 Codename Zero Gravity
  * Copyright (c) 2014-2019, THEMOST LP All rights reserved
@@ -6,14 +8,9 @@
  * found in the LICENSE file at https://themost.io/license
  */
 /**
- * @class
+ *
  */
-export declare class QueryCollection {
-    constructor(name?: string);
-    readonly name: string;
-    readonly alias: string;
-    as(alias: string): QueryCollection;
-    inner(): QueryCollection;
-    left(): QueryCollection;
-    right(): QueryCollection;
+export declare class IdentifierToken extends Token {
+    constructor(name: string);
+    identifier: string;
 }

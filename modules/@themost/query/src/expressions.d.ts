@@ -67,9 +67,9 @@ export declare function createMemberExpression(name: string): MemberExpression;
 
 export declare function createLiteralExpression(value: any): LiteralExpression;
 
-export declare function createMethodCallExpression(name: string, args: any[]): MethodCallExpression;
+export declare function createMethodCallExpression(name: string, args?: any[]): MethodCallExpression;
 
-export declare function createLogicalExpression(name: string, args: any[]): LogicalExpression;
+export declare function createLogicalExpression(name: string, args?: any[]): LogicalExpression;
 
 export declare function isArithmeticExpression(any: any): boolean;
 

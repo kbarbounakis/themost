@@ -11,6 +11,7 @@
 
 export const REFERENCE_REGEXP = /^\$/;
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * Returns a string which represents the name of the first property of an object
  * @param {*} any
@@ -18,12 +19,16 @@ export const REFERENCE_REGEXP = /^\$/;
  */
 export function getOwnPropertyName(any) {
     if (any) {
+        // noinspection LoopStatementThatDoesntLoopJS
         for(let key in any) {
-            return key;
+            if  (any.hasOwnProperty(key)) {
+                return key;
+            }
         }
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * Returns true if the specified string is a method (e.g. $concat) or name reference (e.g. $dateCreated)
  * @param {string} str
@@ -33,12 +38,13 @@ export function isMethodOrNameReference(str) {
     return REFERENCE_REGEXP.test(str)
 }
 
+// noinspection JSUnusedGlobalSymbols
 /**
- * Returns a string which indicates that the given string is following name reference format.  
+ * Returns a string which indicates that the given string is following name reference format.
  * @param {string} str
  * @returns {string}
  */
-export function hasNameRerence(str) {
+export function hasNameReference(str) {
     if (str) {
         if (REFERENCE_REGEXP.test(str)) {
             return str.substr(1);
@@ -46,6 +52,7 @@ export function hasNameRerence(str) {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * Returns a string which indicates that the given object has a property with a name reference
  * e.g. $UserTable, $name etc.
@@ -54,8 +61,9 @@ export function hasNameRerence(str) {
  */
 export function getOwnPropertyWithNameRef(any) {
     if (any) {
+        // noinspection LoopStatementThatDoesntLoopJS
         for(let key in any) {
-            if (REFERENCE_REGEXP.test(key)) {
+            if (any.hasOwnProperty(key) && REFERENCE_REGEXP.test(key)) {
                 return key;
             }
             break;

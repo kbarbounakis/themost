@@ -1,5 +1,4 @@
 import { Args } from '@themost/common';
-import { QueryField } from './QueryField';
 import { getOwnPropertyName, isMethodOrNameReference } from './query';
 /**
  * @class
@@ -13,7 +12,7 @@ export class QueryCollection {
     constructor(collection) {
         if (collection) {
             Args.notString(collection, 'Collection');
-            Object.defineProperty(this, collection, { 
+            Object.defineProperty(this, collection, {
                         value: 1,
                         configurable: true,
                         enumerable: true,
@@ -57,10 +56,7 @@ export class QueryCollection {
         }
         throw new Error('Invalid collection reference.');
     }
-    select(name) {
-        const f = new QueryField(name);
-        return f.from(this.$as ? this.$as : this.$name);
-    }
+
     as(alias) {
         Args.notString(alias, 'Alias');
         const key = getOwnPropertyName(this);
@@ -68,7 +64,7 @@ export class QueryCollection {
         // if collection name is a single expression e.g. { "Person": 1 }
         if (this[key] === 1) {
             // convert collection reference to { "People": "$Person" }
-            Object.defineProperty(this, alias, { 
+            Object.defineProperty(this, alias, {
                         value: `$${key}`,
                         configurable: true,
                         enumerable: true,
@@ -77,13 +73,13 @@ export class QueryCollection {
             delete this[key];
             return this;
         }
-        // check if alias is the same with that laready exists
+        // check if alias is the same with that already exists
         if (key === alias) {
             return;
         }
         // query entity has already an alias so rename alias
         if (isMethodOrNameReference(this[key])) {
-            Object.defineProperty(this, alias, { 
+            Object.defineProperty(this, alias, {
                         value: `${this[key]}`,
                         configurable: true,
                         enumerable: true,
@@ -93,7 +89,7 @@ export class QueryCollection {
             return this;
         }
         throw new Error('Invalid collection reference.');
-        
+
     }
     inner() {
         throw new Error('Not yet implemented');

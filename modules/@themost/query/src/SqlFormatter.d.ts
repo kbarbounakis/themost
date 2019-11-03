@@ -5,7 +5,9 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
+/**
+ * @interface
+ */
 export declare interface SqlFormatterSettings {
     nameFormat: string;
     forceAlias?: boolean;
@@ -13,6 +15,9 @@ export declare interface SqlFormatterSettings {
     aliasKeyword?: string;
 }
 
+/**
+ * @class
+ */
 export declare class SqlFormatter {
     provider: any;
     settings: SqlFormatterSettings;

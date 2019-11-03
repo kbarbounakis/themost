@@ -6,80 +6,74 @@
  * found in the LICENSE file at https://themost.io/license
  */
 
-
+export interface ODataQueryParams {
+    $filter: string;
+    $groupby: string;
+    $select: string;
+    $orderby: string;
+    $expand: string;
+    $count: boolean;
+    $top: number;
+    $skip: number;
+    $first: boolean;
+    $levels: number;
+}
 export declare class ODataQuery {
-    select(...attr: string[]): ODataQuery;
-
-    take(val: number): ODataQuery;
-
-    skip(val: number): ODataQuery;
-
-    orderBy(name: string): ODataQuery;
-
-    orderByDescending(name: string): ODataQuery;
-
-    thenBy(name: string): ODataQuery;
-
-    thenByDescending(name: string): ODataQuery;
-
+    constructor(collection: string);
+    toString(): any;
+    toExpand(): string;
+    takeNext(n: number): ODataQuery;
+    takePrevious(n: number): ODataQuery;
+    getParams(): ODataQueryParams;
+    setParam(name: string, value: any): ODataQuery;
+    getCollection(): string;
+    getUrl(): string;
+    setUrl(value: string): this;
     where(name: string): ODataQuery;
-
     and(name: string): ODataQuery;
-
+    andAlso(name: string): ODataQuery;
     or(name: string): ODataQuery;
-
-    indexOf(name: string): ODataQuery;
-
+    orElse(name: string): ODataQuery;
     equal(value: any): ODataQuery;
-
-    endsWith(name: string, s: string): ODataQuery;
-
-    startsWith(name: string, s: string): ODataQuery;
-
-    substringOf(name: string, s: string): ODataQuery;
-
-    substring(name: string, pos: number, length: number): ODataQuery;
-
-    length(name: ODataQuery): ODataQuery;
-
-    toLower(name: string): ODataQuery;
-
-    trim(name: string): ODataQuery;
-
-    concat(s0: string, s1: string, s2?: string, s3?: string, s4?: string): ODataQuery;
-
-    field(name: string): any;
-
-    day(name: string): ODataQuery;
-
-    hour(name: string): ODataQuery;
-
-    month(name: string): ODataQuery;
-
-    minute(name: string): ODataQuery;
-
-    second(name: string): ODataQuery;
-
-    year(name: string): ODataQuery;
-
-    round(name: string): ODataQuery;
-
-    floor(name: string): ODataQuery;
-
-    ceiling(name: string): ODataQuery;
-
-    notEqual(name: string): ODataQuery;
-
-    greaterThan(name: string): ODataQuery;
-
-    greaterOrEqual(name: string): ODataQuery;
-
-    lowerThan(name: string): ODataQuery;
-
-    lowerOrEqual(name: string): ODataQuery;
-
-    in(values: any[]): ODataQuery;
-
-    notIn(values: any[]): ODataQuery;
-
+    notEqual(value: any): ODataQuery;
+    greaterThan(value: any): ODataQuery;
+    greaterOrEqual(value: any): ODataQuery;
+    lowerThan(value: any): ODataQuery;
+    lowerOrEqual(value: any): ODataQuery;
+    between(value1: any, value2: any): ODataQuery;
+    toFilter(): string;
+    contains(value: any): ODataQuery;
+    getDate(): ODataQuery;
+    getDay(): ODataQuery;
+    getMonth(): ODataQuery;
+    getYear(): ODataQuery;
+    getFullYear(): ODataQuery;
+    getHours(): ODataQuery;
+    getMinutes(): ODataQuery;
+    getSeconds(): ODataQuery;
+    length(): ODataQuery;
+    trim(): ODataQuery;
+    toLocaleLowerCase(): ODataQuery;
+    toLowerCase(): ODataQuery;
+    toLocaleUpperCase(): ODataQuery;
+    toUpperCase(): ODataQuery;
+    round(): ODataQuery;
+    floor(): ODataQuery;
+    ceil(): ODataQuery;
+    indexOf(s: string): ODataQuery;
+    substr(pos: number, length: number): ODataQuery;
+    startsWith(s: string): ODataQuery;
+    endsWith(s: string): ODataQuery;
+    select(...attr: string[]): ODataQuery;
+    groupBy(...attr: string[]): ODataQuery;
+    expand(...attr: string[]): ODataQuery;
+    orderBy(attr: string): ODataQuery;
+    thenBy(attr: string): ODataQuery;
+    orderByDescending(attr: string): ODataQuery;
+    thenByDescending(attr: string): ODataQuery;
+    skip(num: number): ODataQuery;
+    take(num: number): ODataQuery;
+    filter(s: string): ODataQuery;
+    levels(n: number): ODataQuery;
+    prepare(or?: boolean): ODataQuery;
 }

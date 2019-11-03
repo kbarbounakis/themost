@@ -6,14 +6,8 @@
  * found in the LICENSE file at https://themost.io/license
  */
 /**
- * @class
+ *
  */
-export declare class QueryCollection {
-    constructor(name?: string);
-    readonly name: string;
-    readonly alias: string;
-    as(alias: string): QueryCollection;
-    inner(): QueryCollection;
-    left(): QueryCollection;
-    right(): QueryCollection;
+export declare class TimeSpan {
+
 }

@@ -5,14 +5,12 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
- 
+
 import { Args } from '@themost/common';
-import { REFERENCE_REGEXP, getOwnPropertyName } from './query';
+import { getOwnPropertyName, isMethodOrNameReference } from './query';
 /**
  * @class
  * @classdesc Represents a field expression that is going to be used in any query
- * @param name {string=}
- * @constructor
  */
 export class QueryField {
     constructor(name) {
@@ -30,7 +28,7 @@ export class QueryField {
     _toReference(name) {
         Args.notEmpty(name, 'name');
         return name.split('.').map(key => {
-            if (REFERENCE_REGEXP.test(key)) {
+            if (isMethodOrNameReference(key)) {
                 return key;
             }
             return `$${key}`;
@@ -59,7 +57,7 @@ export class QueryField {
         // get object first property
         const thisName = getOwnPropertyName(this);
         // if name is a method reference e.g. { $day: "$dateCreated" } => $day
-        const isMethod = REFERENCE_REGEXP.test(thisName);
+        const isMethod = isMethodOrNameReference(thisName);
         if (isMethod) {
             // assign previous property value to new method e.g.
             // { $min: { $day: "$dateCreated" } }
@@ -351,7 +349,7 @@ export class QueryField {
         return this.toUpperCase();
     }
     /**
-     * Prepares a query which returns the index of the first occurence of an expression within expression
+     * Prepares a query which returns the index of the first occurrence of an expression within expression
      * @params {any} x - An expression to search for e.g a string
      * @params {number=} start - The starting index position for the search.
      * @returns this

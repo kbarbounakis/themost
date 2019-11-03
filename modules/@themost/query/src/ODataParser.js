@@ -8,11 +8,25 @@
 import _ from "lodash";
 import {sprintf} from 'sprintf';
 
-import {isLogicalExpression, isLogicalOperator, createLogicalExpression,
-        isArithmeticOperator, createArithmeticExpression,
-        createComparisonExpression,
-        isMethodCallExpression, createMethodCallExpression,
-        isMemberExpression, createMemberExpression} from './expressions';
+import {
+    createArithmeticExpression,
+    createComparisonExpression,
+    createLogicalExpression,
+    createMemberExpression,
+    createMethodCallExpression,
+    isArithmeticExpression,
+    isArithmeticOperator,
+    isComparisonOperator,
+    isLogicalExpression,
+    isLogicalOperator,
+    isMemberExpression,
+    isMethodCallExpression
+} from './expressions';
+import {LiteralToken} from "./LiteralToken";
+import {Token} from "./Token";
+import {IdentifierToken} from "./IdentifierToken";
+import {SyntaxToken} from "./SyntaxToken";
+import {TimeSpan} from "./TimeSpan";
 
 /**
  * @class
@@ -31,7 +45,7 @@ export class ODataParser {
     static REGEXP_DIGIT = /[0-9]/g;
     static CHR_WHITESPACE = ' ';
     static CHR_UNDERSCORE = '_';
-    static CHR_DOLLARSIGN = '$';
+    static CHR_DOLLAR_SIGN = '$';
     static CHR_POINT = '.';
 
     constructor() {
@@ -351,6 +365,7 @@ export class ODataParser {
 
                 }
                 break;
+            // eslint-disable-next-line no-case-declarations
             case Token.TokenType.Literal:
                 const value = self.currentToken.value;
                 self.moveNext();
@@ -395,7 +410,7 @@ export class ODataParser {
             self.moveNext();
             self.expect(SyntaxToken.ParenOpen);
             const args = [];
-            self.parseMethodCallArguments(args, (err, result) => {
+            self.parseMethodCallArguments(args, (err) => {
                 if (err) {
                     callback.call(self, err);
                 }
@@ -581,7 +596,7 @@ export class ODataParser {
                 }
                 else
                 {
-                    throw new Error(sprintf('Unexpected character "%s" at offset %s.', c , _current));
+                    throw new Error(`Unexpected character ${c} at offset ${_current}.`);
                 }
         }
     }
@@ -695,7 +710,7 @@ export class ODataParser {
      */
     parseGuidString(value) {
         if (typeof value !== 'string')
-            throw new Error(sprintf('Invalid argument at %s.', this.offset));
+            throw new Error(`Invalid argument at ${this.offset}.`);
         if (_.isNil(value.match(ODataParser.GuidRegex)))
             throw new Error(sprintf('Guid format is invalid at %s.', this.offset));
         return new LiteralToken(value, LiteralToken.LiteralType.Guid);
@@ -706,14 +721,14 @@ export class ODataParser {
      * @returns Token
      */
     parseTimeString(value) {
-        if (typeof value === 'undefined' || value===null)
+        if (value == null)
             return null;
         const match = value.match(ODataParser.DurationRegex);
         if (match)
         {
             const negative = (match[1] === "-");
             const year = match[2].length > 0 ? parseInt(match[2]) : 0, month = match[3].length > 0 ? parseInt(match[3]) : 0, day = match[4].length > 0 ? parseInt(match[4]) : 0, hour = match[5].length > 0 ? parseInt(match[5]) : 0, minute = match[6].length > 0 ? parseInt(match[6]) : 0, second = match[7].length > 0 ? parseFloat(match[7]) : 0;
-            return new LiteralToken(new TimeSpan(!negative, year, month, day, hour, minute, second), LiteralToken.LiteralType.Duration);
+            return new LiteralToken(new TimeSpan(year, month, day, hour, minute, second), LiteralToken.LiteralType.Duration);
         }
         else
         {
@@ -826,7 +841,7 @@ export class ODataParser {
     }
 
     skipDigits(current) {
-        const _source = this.source, _offset = this.offset;
+        const _source = this.source;
         if (!ODataParser.isDigit(_source.charAt(current)))
             return null;
         current++;
@@ -985,7 +1000,7 @@ export class ODataParser {
     }
 
     static isIdentifierStartChar(c) {
-        return (c === ODataParser.CHR_UNDERSCORE) || (c === ODataParser.CHR_DOLLARSIGN) || ODataParser.isChar(c);
+        return (c === ODataParser.CHR_UNDERSCORE) || (c === ODataParser.CHR_DOLLAR_SIGN) || ODataParser.isChar(c);
     }
 
     /**
@@ -1002,195 +1017,4 @@ export class ODataParser {
 }
 
 
-
-class TimeSpan {
-    toString() {
-
-    }
-}
-
-/**
- * @class Token
- * @abstract Toke
- * @param {String} tokenType
- * @constructor
- */
-export class Token {
-
-    static TokenType = {
-        Literal : 'Literal',
-        Identifier: 'Identifier',
-        Syntax: 'Syntax'
-    };
-
-    static Operator = {
-        Not:'$not',
-        // Multiplicative
-        Mul:'$mul',
-        Div:'$div',
-        Mod:'$mod',
-        // Additive
-        Add:'$add',
-        Sub:'$sub',
-        // Relational and type testing
-        Lt:'$lt',
-        Gt:'$gt',
-        Le:'$lte',
-        Ge:'$gte',
-        // Equality
-        Eq:'$eq',
-        Ne:'$ne',
-        // In Values
-        In:'$in',
-        NotIn:'$nin',
-        // Conditional AND
-        And:'$and',
-        // Conditional OR
-        Or:'$or'
-    }
-
-    constructor(tokenType) {
-        this.type = tokenType;
-    }
-
-    /**
-     *
-     * @returns {boolean}
-     */
-    //noinspection JSUnusedGlobalSymbols
-    isParenOpen() {
-        return (this.type==='Syntax') && (this.syntax==='(');
-    }
-
-    /**
-     *
-     * @returns {boolean}
-     */
-    //noinspection JSUnusedGlobalSymbols
-    isParenClose() {
-        return (this.type==='Syntax') && (this.syntax===')');
-    }
-
-    /**
-     *
-     * @returns {boolean}
-     */
-    //noinspection JSUnusedGlobalSymbols
-    isSlash() {
-        return (this.type==='Syntax') && (this.syntax==='/');
-    }
-
-    /**
-     *
-     * @returns {boolean}
-     */
-    //noinspection JSUnusedGlobalSymbols
-    isComma() {
-        return (this.type==='Syntax') && (this.syntax===',');
-    }
-
-    /**
-     *
-     * @returns {boolean}
-     */
-    //noinspection JSUnusedGlobalSymbols
-    isNegative() {
-        return (this.type==='Syntax') && (this.syntax==='-');
-    }
-}
-
-
-/**
- * @class
- */
- class LiteralToken extends Token {
-
-     static LiteralType = 
-     {
-        Null: 'Null',
-        String: 'String',
-        Boolean: 'Boolean',
-        Single: 'Single',
-        Double: 'Double',
-        Decimal: 'Decimal',
-        Int: 'Int',
-        Long: 'Long',
-        Binary: 'Binary',
-        DateTime: 'DateTime',
-        Guid: 'Guid',
-        Duration:'Duration'
-    };
-
-    static StringType =
-    {
-        None:'None',
-        Binary:'Binary',
-        DateTime:'DateTime',
-        Guid:'Guid',
-        Time:'Time',
-        DateTimeOffset:'DateTimeOffset'
-    };
-
-    static PositiveInfinity = new LiteralToken(NaN, LiteralToken.LiteralType.Double);
-    static NegativeInfinity = new LiteralToken(NaN, LiteralToken.LiteralType.Double);
-    static NaN = new LiteralToken(NaN, LiteralToken.LiteralType.Double);
-    static True = new LiteralToken(true, LiteralToken.LiteralType.Boolean);
-    static False = new LiteralToken(false, LiteralToken.LiteralType.Boolean);
-    static Null = new LiteralToken(null, LiteralToken.LiteralType.Null);
-
-     /**
-     * @param {*} value
-     * @param {String} literalType
-     * @constructor
-     */
-     constructor(value, literalType)
-    {
-        super();
-        LiteralToken.super_.call(this, Token.TokenType.Literal);
-        this.value = value;
-        this.literalType = literalType;
-    }
- }
-
-/**
- * @class IdentifierToken
- * @param {string} name The identifier's name
- * @constructor
- */
-export class IdentifierToken extends Token {
-    constructor(name) {
-        super();
-        IdentifierToken.super_.call(this, Token.TokenType.Identifier);
-        this.identifier = name;
-    }
-
-    valueOf() {
-        return this.identifier;
-    }
-}
-
-
-/**
- * @class
- * @param {String} chr
- * @constructor
- */
-class SyntaxToken extends Token {
-
-    static ParenOpen = new SyntaxToken('(');
-    static ParenClose = new SyntaxToken(')');
-    static Slash = new SyntaxToken('/');
-    static Comma = new SyntaxToken(',');
-    static Negative = new SyntaxToken('-');
-
-    constructor(chr) {
-        super();
-        SyntaxToken.super_.call(this, Token.TokenType.Syntax);
-        this.syntax = chr;
-    }
-
-    valueOf() {
-        return this.syntax;
-    }
-}
 

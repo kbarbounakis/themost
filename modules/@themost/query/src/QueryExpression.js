@@ -5,16 +5,17 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
- 
+
 import _ from 'lodash';
-import {Args, ArgumentError} from '@themost/common';
+import {Args} from '@themost/common';
 import { QueryField } from './QueryField';
 import { QueryCollection } from './QueryCollection';
 import {getOwnPropertyName, isMethodOrNameReference} from './query';
 
 class InvalidLeftOperandError extends Error {
     constructor() {
-        super('Left operand cannot be null at this context');
+        super();
+        this.message = 'Left operand cannot be null at this context';
     }
 }
 
@@ -57,7 +58,7 @@ export class QueryExpression {
         if (this.privates.lookup) {
             // append as expression to lookup
             this.privates.lookup.as = alias;
-            return;
+            return this;
         }
         if (this.privates.left) {
             this.privates.left.as(alias);
@@ -77,57 +78,6 @@ export class QueryExpression {
         this.$collection = Object.assign({ }, collection);
         // and return
         return this;
-    }
-    /**
-     * Gets a collection that represents the selected fields of the underlying expression
-     * @returns {Array}
-     */
-    fields() {
-        if (_.isNil(this.$select))
-            return [];
-        const entity = Object.key(this.$select);
-        let joins = [];
-        if (!_.isNil(this.$expand)) {
-            if (_.isArray(this.$expand))
-                joins = this.$expand;
-            else
-                joins.push(this.$expand);
-        }
-        //get entity fields
-        const fields = [];
-        //get fields
-        const re = QueryField.fieldNameExpression, arr = this.$select[entity] || [];
-        _.forEach(arr, x => {
-            if (typeof x === 'string') {
-                re.lastIndex = 0;
-                if (!re.test(x))
-                    fields.push(new QueryField(x));
-                else {
-                    const f = new QueryField(x);
-                    fields.push(f.from(entity));
-                }
-            }
-            else {
-                fields.push(_.assign(new QueryField(), x));
-            }
-        });
-        //enumerate join fields
-        _.forEach(joins, x => {
-            if (x.$entity instanceof QueryExpression) {
-            }
-            else {
-                const table = Object.key(x.$entity), tableFields = x.$entity[table] || [];
-                _.forEach(tableFields, y => {
-                    if (typeof x === 'string') {
-                        fields.push(new QueryField(y));
-                    }
-                    else {
-                        fields.push(_.assign(new QueryField(), y));
-                    }
-                });
-            }
-        });
-        return fields;
     }
     // noinspection JSUnusedGlobalSymbols
     /**
@@ -165,12 +115,13 @@ export class QueryExpression {
     hasFields() {
         return this.$select != null;
     }
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Gets a boolean value that indicates whether query expression has paging or not.
      * @returns {boolean}
      */
-    hasPaging() {
-        return this.$limit;
+    hasLimit() {
+        return typeof this.$limit === 'number' && this.$limit > 0;
     }
     /**
      * @returns {QueryExpression}
@@ -213,10 +164,10 @@ export class QueryExpression {
      */
     delete(collection) {
         Args.check(this.$insert != null, new Error('Items to insert must be defined. Use insert() method first.'));
-        Args.notString(collection, 'Target collection')
+        Args.notString(collection, 'Target collection');
         // clear collection
         this.$collection = { };
-        Object.defineProperty(this.$collection, collection, { 
+        Object.defineProperty(this.$collection, collection, {
                         value: 1,
                         configurable: true,
                         enumerable: true,
@@ -258,7 +209,7 @@ export class QueryExpression {
         Args.check( any === Object(any), new Error('Item for insert must be an object.'));
         // set object
         this.$insert = any;
-        //delete other properties (if any)
+        //clear object
         delete this.$delete;
         delete this.$select;
         delete this.$addFields;
@@ -268,7 +219,9 @@ export class QueryExpression {
         delete this.$order;
         delete this.$group;
         delete this.$update;
+        // and finally return
         return this;
+
     }
 
     /**
@@ -282,7 +235,7 @@ export class QueryExpression {
         Args.check(Array.isArray(any), new Error('Items for insert must be an array'));
         // set object
         this.$insert = any;
-        //delete other properties (if any)
+        //clear objects
         delete this.$delete;
         delete this.$select;
         delete this.$addFields;
@@ -301,10 +254,10 @@ export class QueryExpression {
      */
     into(collection) {
         Args.check(this.$insert != null, new Error('Items to insert must be defined. Use insert() method first.'));
-        Args.notString(collection, 'Target collection')
+        Args.notString(collection, 'Target collection');
         // clear collection
         this.$collection = { };
-        Object.defineProperty(this.$collection, collection, { 
+        Object.defineProperty(this.$collection, collection, {
                         value: 1,
                         configurable: true,
                         enumerable: true,
@@ -318,10 +271,10 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     update(collection) {
-        Args.notString(collection, 'Collection')
+        Args.notString(collection, 'Collection');
         // clear collection
         this.$collection = { };
-        Object.defineProperty(this.$collection, collection, { 
+        Object.defineProperty(this.$collection, collection, {
                         value: 1,
                         configurable: true,
                         enumerable: true,
@@ -358,11 +311,10 @@ export class QueryExpression {
         return this;
     }
     /**
-     * @param {*...=} any  
      * Prepares a select statement expression
      */
     select() {
-        // cleanup 
+        // cleanup
         delete this.$delete;
         delete this.$insert;
         delete this.$update;
@@ -401,12 +353,12 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     from(collection) {
-        Args.check(this.$select != null, new ArgumentError('Items to select must be defined. Use select() method first.'));
+        Args.check(this.$select != null, new Error('Items to select must be defined. Use select() method first.'));
         Args.check( Array.isArray(collection) === false, new Error('Target collection cannot be an array.'));
         // clear collection
         this.$collection = { };
         if (typeof collection === 'string') {
-            Object.defineProperty(this.$collection, collection, { 
+            Object.defineProperty(this.$collection, collection, {
                         value: 1,
                         configurable: true,
                         enumerable: true,
@@ -431,12 +383,11 @@ export class QueryExpression {
     /**
      * Initializes a join expression with the specified collection
      * @param {*} collectionOrQuery - The collection to be used in join expression.
-     * @param {*...=} select
      * @returns {QueryExpression}
      */
     join(collectionOrQuery) {
         Args.check(collectionOrQuery != null, new Error('Join collection cannot be empty'));
-        Args.check(Array.isArray(collectionOrQuery) == false, new Error('Join collection cannot be an array'));
+        Args.check(Array.isArray(collectionOrQuery) === false, new Error('Join collection cannot be an array'));
         // if collection is a string
         this.privates.lookup = { };
         if (typeof collectionOrQuery === 'string') {
@@ -454,7 +405,7 @@ export class QueryExpression {
                 this.privates.lookup.pipeline = {
                     $match: collectionOrQuery.$match,
                     $project: collectionOrQuery.$select
-                }
+                };
                 // add lookup to expand
                 this.$expand = this.$expand || [];
                 this.$expand.push({
@@ -503,7 +454,6 @@ export class QueryExpression {
     // noinspection JSUnusedGlobalSymbols
     /**
      * Applies an ascending ordering to a query expression
-     * @param {*...} field
      * @returns {QueryExpression}
      */
     orderBy() {
@@ -519,7 +469,7 @@ export class QueryExpression {
             const addField = this._testAddField(x);
             const result = { };
             // set property result
-            Object.defineProperty(result, addField, { 
+            Object.defineProperty(result, addField, {
                 value: -1,
                 configurable: true,
                 enumerable: true,
@@ -534,7 +484,6 @@ export class QueryExpression {
     // noinspection JSUnusedGlobalSymbols
     /**
      * Applies a descending ordering to a query expression
-     * @param {*...} field
      * @returns {QueryExpression}
      */
     orderByDescending() {
@@ -550,7 +499,7 @@ export class QueryExpression {
             const addField = this._testAddField(x);
             const result = { };
             // set property result
-            Object.defineProperty(result, addField, { 
+            Object.defineProperty(result, addField, {
                 value: 1,
                 configurable: true,
                 enumerable: true,
@@ -564,11 +513,10 @@ export class QueryExpression {
     }
     /**
      * Performs a subsequent ordering in a query expression
-     * @param {*...} field
      * @returns {QueryExpression}
      */
     thenBy() {
-        Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.')
+        Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.');
         // get arguments
         const args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
@@ -581,7 +529,7 @@ export class QueryExpression {
             const addField = this._testAddField(x);
             const result = { };
             // set property result
-            Object.defineProperty(result, addField, { 
+            Object.defineProperty(result, addField, {
                 value: -1,
                 configurable: true,
                 enumerable: true,
@@ -596,11 +544,10 @@ export class QueryExpression {
     }
     /**
      * Performs a subsequent ordering in a query expression
-     * @param {*...} field
      * @returns {QueryExpression}
      */
     thenByDescending() {
-        Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.')
+        Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.');
         // get arguments
         const args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
@@ -613,7 +560,7 @@ export class QueryExpression {
             const addField = this._testAddField(x);
             const result = { };
             // set property result
-            Object.defineProperty(result, addField, { 
+            Object.defineProperty(result, addField, {
                 value: 1,
                 configurable: true,
                 enumerable: true,
@@ -661,7 +608,7 @@ export class QueryExpression {
      */
     _where(field) {
         if (field == null) {
-            throw new Error('Left operand cannot be empty. Expected string or object.'); 
+            throw new Error('Left operand cannot be empty. Expected string or object.');
         }
         if (typeof field === 'string') {
             // set left operand
@@ -713,7 +660,7 @@ export class QueryExpression {
                 // get alias
                 alias = `${name.replace(/\$/,'')}${Object.keys(this.$addFields).length + 1}`;
                 // add field to $addFields collection
-                Object.defineProperty(this.$addFields, alias, { 
+                Object.defineProperty(this.$addFields, alias, {
                         value: addField,
                         configurable: true,
                         enumerable: true,
@@ -722,7 +669,7 @@ export class QueryExpression {
             }
             // set filter expression
             filter[alias] = right;
-            
+
         } else  {
             // check if left operand is a single field expression (e.g { "dateCreated": 1 })
             if (left[name] === 1 || left[name] === 0) {
@@ -730,10 +677,10 @@ export class QueryExpression {
                 filter[name] = right;
             }
             else {
-                // [name] is an alias (e.g. { "createdAt" : "$dateCreated" } ) 
+                // [name] is an alias (e.g. { "createdAt" : "$dateCreated" } )
                 // so add field to $addFields collection
                 this.$addFields = this.$addFields || { };
-                Object.defineProperty(this.$addFields, name, { 
+                Object.defineProperty(this.$addFields, name, {
                     value: left[name],
                     configurable: true,
                     enumerable: true,
@@ -742,7 +689,7 @@ export class QueryExpression {
                 filter[name] = right;
             }
         }
-        
+
         if (this.$match == null) {
             this.$match = filter;
         }
@@ -771,7 +718,7 @@ export class QueryExpression {
     /**
      * @private
      * @param {*} field
-     * @returns {string}
+     * @returns {string|*}
      */
     _testAddField(field) {
         if (field == null) {
@@ -793,11 +740,11 @@ export class QueryExpression {
                 return _.isEqual(addField, this.$addFields[key]);
             });
             if (alias == null) {
-                // get alias 
-                // todo: validate alias index e.g. year1, year2 etc by searching $addFields collection 
+                // get alias
+                // todo: validate alias index e.g. year1, year2 etc by searching $addFields collection
                 alias = `${name.replace(/\$/,'')}${Object.keys(this.$addFields).length + 1}`;
                 // add field to $addFields collection
-                Object.defineProperty(this.$addFields, alias, { 
+                Object.defineProperty(this.$addFields, alias, {
                         value: addField,
                         configurable: true,
                         enumerable: true,
@@ -815,7 +762,7 @@ export class QueryExpression {
             // else try to add field expression
             // e.g. { "yearCreated": { "$year": "$dateCreated" } }
             this.$addFields = this.$addFields || { };
-            Object.defineProperty(this.$addFields, name, { 
+            Object.defineProperty(this.$addFields, name, {
                     value: addField,
                     configurable: true,
                     enumerable: true,
@@ -829,7 +776,7 @@ export class QueryExpression {
     /**
      * @param {*} where
      * @param {*=} addFields
-     * 
+     *
      */
     _concat(where, addFields) {
         if (this.$match == null) {
@@ -982,6 +929,7 @@ export class QueryExpression {
     notContains(value) {
         return this._append({ $not: { $text: { $search: value } } });
     }
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @param value {*}
      * @returns {QueryExpression}
@@ -990,6 +938,11 @@ export class QueryExpression {
         return this._append({ '$lt': value });
     }
 
+    /**
+     *
+     * @param value
+     * @returns {QueryExpression}
+     */
     lt(value) {
         return this.lowerThan(value);
     }
@@ -1001,7 +954,12 @@ export class QueryExpression {
     lowerOrEqual(value) {
         return this._append({ '$lte': value });
     }
-
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @param value
+     * @returns {QueryExpression}
+     */
     lte(value) {
         return this.lowerOrEqual(value);
     }
@@ -1014,6 +972,12 @@ export class QueryExpression {
         return this._append({ '$gte': value });
     }
 
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     *
+     * @param value
+     * @returns {QueryExpression}
+     */
     gte(value) {
         return this.greaterOrEqual(value);
     }
@@ -1026,7 +990,7 @@ export class QueryExpression {
     between(value1, value2) {
         // validate left operand
         Args.check(this.privates.left instanceof QueryField, new InvalidLeftOperandError());
-        // create new query expression 
+        // create new query expression
         const q = new QueryExpression();
         q.where(this.privates.left).greaterOrEqual(value1).and(this.privates.left).lowerOrEqual(value2);
         return this._concat(q.$match, q.$addFields);
@@ -1082,7 +1046,7 @@ export class QueryExpression {
         return this;
     }
     /**
-     * @param {anyimport('dnsAnyRecord} x
+     * @param {*} x
      * @returns {QueryExpression}
      */
     multiply(x) {
@@ -1161,6 +1125,7 @@ export class QueryExpression {
         this.privates.left.getDate();
         return this;
     }
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @returns {QueryExpression}
      */
@@ -1275,7 +1240,7 @@ export class QueryExpression {
         return this;
     }
     // noinspection JSUnusedGlobalSymbols
-    
+
     static escape(val) {
         if (val == null) {
             return 'null';
@@ -1295,12 +1260,10 @@ export class QueryExpression {
             const millisecond = QueryExpression.zeroPad(dt.getMilliseconds(), 3);
             val = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond;
         }
-        if (typeof val === 'object' && Object.prototype.toString.call(val) === '[object Array]') {
-            const values = [];
-            _.forEach(val, x => {
+        if (Array.isArray(val)) {
+            return val.map( x => {
                 QueryExpression.escape(x);
-            });
-            return values.join(',');
+            }).join(', ');
         }
         if (typeof val === 'object') {
             if (val.hasOwnProperty('$name'))
@@ -1309,7 +1272,7 @@ export class QueryExpression {
             else
                 return this.escape(val.valueOf());
         }
-        val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, s => {
+        val = val.replace(/[\0\n\r\b\t\\'"\x1a]/g, s => {
             switch (s) {
                 case "\0": return "\\0";
                 case "\n": return "\\n";
