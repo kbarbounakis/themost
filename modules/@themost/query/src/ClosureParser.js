@@ -11,9 +11,8 @@ import {createLogicalExpression,
         createLiteralExpression, isLiteralExpression,
         createMethodCallExpression, isComparisonOperator,
         createMemberExpression, Operators} from './expressions';
-import esprima from 'esprima';
+import {parse} from 'esprima';
 import async from 'async';
-import _ from 'lodash';
 
 const ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -61,7 +60,7 @@ export class ClosureParser {
         }
         try {
             //convert the given function to javascript expression
-            const expr = esprima.parse('void(' + fn.toString() + ')');
+            const expr = parse('void(' + fn.toString() + ')');
             //get FunctionExpression
             const fnExpr = expr.body[0].expression.argument;
             if (fnExpr == null) {

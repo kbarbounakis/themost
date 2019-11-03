@@ -1,6 +1,5 @@
 import {QueryExpression} from './QueryExpression';
 import {QueryField} from './QueryField';
-import {QueryCollection} from './QueryCollection';
 import {SqlFormatter} from './SqlFormatter';
 
 describe('SqlFormatter', () => {
@@ -83,7 +82,7 @@ describe('SqlFormatter', () => {
                 { "actionStatus": {  "$eq" : 1 } },
                 { "owner": {  "$eq" : 'user1' } }
             ]
-            
+
         });
         expect(sql).toBe('(`actionStatus` = 1 AND `owner` = \'user1\')');
         sql = formatter.formatSelect({
@@ -98,7 +97,7 @@ describe('SqlFormatter', () => {
                     { "actionStatus": {  "$eq" : 1 } },
                     { "owner": {  "$eq" : 'user1' } }
                 ]
-            }            
+            }
         });
         const sqlToBe = 'SELECT * FROM `ActionData` WHERE (`actionStatus` = 1 AND `owner` = \'user1\')';
         expect(sql).toBe(sqlToBe);
@@ -242,7 +241,7 @@ describe('SqlFormatter', () => {
             .groupBy('Country');
         sqlToBe = 'SELECT COUNT(CustomerID) AS TotalCustomers, Country FROM Customers GROUP BY Country';
         q = new QueryExpression().select(
-            new QueryField('CustomerID').count().as('TotalCustomers'), 
+            new QueryField('CustomerID').count().as('TotalCustomers'),
             new QueryField('Country'))
             .from('Customers')
             .groupBy('Country');
@@ -286,11 +285,11 @@ describe('SqlFormatter', () => {
                 .equal('$Orders.CustomerID'))
             .orderBy('Customers.CustomerName');
         sqlToBe = 'SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate ' +
-        'FROM Orders INNER JOIN (SELECT Customers.* FROM Customers) AS Customers ' + 
+        'FROM Orders INNER JOIN (SELECT Customers.* FROM Customers) AS Customers ' +
         'ON Customers.CustomerID = Orders.CustomerID ORDER BY Customers.CustomerName ASC';
         expect(formatter.formatSelect(q)).toBe(sqlToBe);
     });
 
-    
+
 
 });
