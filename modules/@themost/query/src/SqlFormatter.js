@@ -121,7 +121,7 @@ export class SqlFormatter {
             else {
                 //check if value is a known expression e.g. { $length: "name" }
                 const key = getOwnPropertyName(value);
-                if (_.isString(key) && /^\$/.test(key) && _.isFunction(this[key])) {
+                if ((typeof key === 'string') && /^\$/.test(key) && (typeof this[key] == 'function')) {
                     const formatFunc = this[key];
                     if (Array.isArray(value[key])) {
                         return formatFunc.apply(this, value[key]);

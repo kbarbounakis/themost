@@ -91,7 +91,7 @@ export class LogicalExpression {
     exprOf() {
         if (this.operator.match(LogicalExpression.OperatorRegEx)===null)
             throw new Error('Invalid logical operator.');
-        if (!_.isArray(this.args))
+        if (Array.isArray(this.args) === false)
             throw new Error('Logical expression arguments cannot be null at this context.');
         if (this.args.length===0)
             throw new Error('Logical expression arguments cannot be empty.');
@@ -228,7 +228,7 @@ export class MethodCallExpression {
          * @type {Array}
          */
         this.args = [];
-        if (_.isArray(args))
+        if (Array.isArray(args))
             this.args = args;
     }
 

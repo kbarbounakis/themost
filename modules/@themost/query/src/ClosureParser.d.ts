@@ -9,6 +9,7 @@
  * @class
  */
 export declare class ClosureParser {
+    static binaryToExpressionOperator(binaryOperator: string): string;
     parseFilter(func: void, callback: (err: Error, result: any) => void): void;
     parseCommon(expr: any, callback: (err: Error, result: any) => void): void;
     parseLogical(expr: any, callback: (err: Error, result: any) => void): void;

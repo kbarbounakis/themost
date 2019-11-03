@@ -40,7 +40,7 @@ export class LiteralToken extends Token {
 
     /**
      * @param {*} value
-     * @param {String} literalType
+     * @param {string} literalType
      * @constructor
      */
     constructor(value, literalType) {

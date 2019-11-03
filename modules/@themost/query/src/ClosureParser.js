@@ -64,7 +64,7 @@ export class ClosureParser {
             const expr = esprima.parse('void(' + fn.toString() + ')');
             //get FunctionExpression
             const fnExpr = expr.body[0].expression.argument;
-            if (_.isNil(fnExpr)) {
+            if (fnExpr == null) {
                 callback(new Error('Invalid closure statement. Closure expression cannot be found.'));
                 return;
             }
@@ -122,7 +122,7 @@ export class ClosureParser {
         const self = this;
         const op = (expr.operator === '||') ? Operators.Or : Operators.And;
         //validate operands
-        if (_.isNil(expr.left) || _.isNil(expr.right)) {
+        if (expr.left == null || expr.right == null) {
             callback(new Error('Invalid logical expression. Left or right operand is missing or undefined.'));
         }
         else {
@@ -148,15 +148,16 @@ export class ClosureParser {
 
     /**
      * @static
-     * @param {string} op
+     * @param {string} binaryOperator
      * @returns {*}
      */
-    static BinaryToExpressionOperator(op) {
-      switch (op) {
+    static binaryToExpressionOperator(binaryOperator) {
+      switch (binaryOperator) {
           case '===':
           case '==':
               return Operators.Eq;
           case '!=':
+          case '!==':
               return Operators.Ne;
           case '>':
               return Operators.Gt;
@@ -183,8 +184,8 @@ export class ClosureParser {
 
     parseBinary(expr, callback) {
         const self = this;
-        const op = ClosureParser.BinaryToExpressionOperator(expr.operator);
-        if (_.isNil(op)) {
+        const op = ClosureParser.binaryToExpressionOperator(expr.operator);
+        if (op == null) {
             callback(new Error('Invalid binary operator.'));
         }
         else {
@@ -246,7 +247,7 @@ export class ClosureParser {
             const self = this;
             if (expr.property) {
                 const namedParam = self.namedParams[0];
-                if (_.isNil(namedParam)) {
+                if (namedParam == null) {
                     callback('Invalid or missing closure parameter');
                     return;
                 }
@@ -261,7 +262,7 @@ export class ClosureParser {
                 }
                 else {
                     let value;
-                    if (_.isNil(expr.object.object)) {
+                    if (expr.object.object == null) {
                         //evaluate object member value e.g. item.title or item.status.id
                         value = self.eval(memberExpressionToString(expr));
                         callback(null, createLiteralExpression(value));
@@ -298,7 +299,7 @@ export class ClosureParser {
      */
     parseMethodCall(expr, callback) {
         const self = this;
-        if (_.isNil(expr.callee.object)) {
+        if (expr.callee.object == null) {
             callback(new Error('Invalid or unsupported method expression.'));
             return;
         }
@@ -370,9 +371,9 @@ export class ClosureParser {
             const args = [];
             let needsEvaluation = true;
             let thisName;
-            if (_.isNil(name)) {
-                if (!_.isNil(expr.callee.object)) {
-                    if (!_.isNil(expr.callee.object.object)) {
+            if (name == null) {
+                if (expr.callee.object != null) {
+                    if (expr.callee.object.object != null) {
                         if (expr.callee.object.object.name===self.namedParams[0].name) {
                             self.parseMethodCall(expr, callback);
                             return;
@@ -464,7 +465,7 @@ export class ClosureParser {
 }
 
 function memberExpressionToString(expr) {
-    if (_.isNil(expr.object.object)) {
+    if (expr.object.object == null) {
         return expr.object.name + '.' + expr.property.name
     }
     else {
@@ -473,7 +474,7 @@ function memberExpressionToString(expr) {
 }
 
 function parentMemberExpressionToString(expr) {
-    if (_.isNil(expr.object.object)) {
+    if (expr.object.object == null) {
         return expr.object.name;
     }
     else {

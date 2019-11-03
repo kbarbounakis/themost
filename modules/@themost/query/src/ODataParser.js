@@ -6,7 +6,6 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import _ from "lodash";
-import {sprintf} from 'sprintf';
 
 import {
     createArithmeticExpression,
@@ -336,7 +335,7 @@ export class ODataParser {
         switch (this.currentToken.type) {
             case Token.TokenType.Identifier:
                 //if next token is an open parenthesis token and the current token is not an operator. current=indexOf, next=(
-                if ((self.nextToken.syntax===SyntaxToken.ParenOpen.syntax) && (_.isNil(self.getOperator(self.currentToken))))
+                if ((self.nextToken.syntax===SyntaxToken.ParenOpen.syntax) && (self.getOperator(self.currentToken) == null))
                 {
                     //then parse method call
                     self.parseMethodCall(callback);
@@ -420,7 +419,7 @@ export class ODataParser {
                            callback.call(self, err);
                        }
                        else {
-                           if (_.isNil(expr))
+                           if (expr == null)
                                callback.call(self, null, createMethodCallExpression(method, args));
                            else
                                callback.call(self, null, expr);
@@ -711,8 +710,8 @@ export class ODataParser {
     parseGuidString(value) {
         if (typeof value !== 'string')
             throw new Error(`Invalid argument at ${this.offset}.`);
-        if (_.isNil(value.match(ODataParser.GuidRegex)))
-            throw new Error(sprintf('Guid format is invalid at %s.', this.offset));
+        if (ODataParser.GuidRegex.test(value) === false)
+            throw new Error(`Guid format is invalid at ${this.offset}.`);
         return new LiteralToken(value, LiteralToken.LiteralType.Guid);
     }
 
@@ -726,13 +725,14 @@ export class ODataParser {
         const match = value.match(ODataParser.DurationRegex);
         if (match)
         {
+            // eslint-disable-next-line no-unused-vars
             const negative = (match[1] === "-");
             const year = match[2].length > 0 ? parseInt(match[2]) : 0, month = match[3].length > 0 ? parseInt(match[3]) : 0, day = match[4].length > 0 ? parseInt(match[4]) : 0, hour = match[5].length > 0 ? parseInt(match[5]) : 0, minute = match[6].length > 0 ? parseInt(match[6]) : 0, second = match[7].length > 0 ? parseFloat(match[7]) : 0;
             return new LiteralToken(new TimeSpan(year, month, day, hour, minute, second), LiteralToken.LiteralType.Duration);
         }
         else
         {
-            throw new Error(sprintf('Duration format is invalid at %s.', this.offset))
+            throw new Error(`Duration format is invalid at ${this.offset}.`)
         }
     }
 
@@ -761,7 +761,7 @@ export class ODataParser {
      * @returns {LiteralToken}
      */
     parseDateTimeString(value) {
-        if (_.isNil(value))
+        if (value == null)
             return null;
         const match = value.match(ODataParser.DateTimeRegex);
         if (match)
@@ -770,7 +770,7 @@ export class ODataParser {
         }
         else
         {
-            throw new Error(sprintf('Datetime format is invalid at %s.', this.offset))
+            throw new Error(`Datetime format is invalid at ${this.offset}.`)
         }
     }
 
@@ -833,7 +833,7 @@ export class ODataParser {
 
         if (!hadEnd)
         {
-            throw new Error(sprintf('Unterminated string starting at %s', _offset));
+            throw new Error(`Unterminated string starting at ${_offset}`);
         }
         this.current = _current;
         this.offset = _current + 1;
@@ -885,17 +885,17 @@ export class ODataParser {
                 if (_source.charAt(_current) === '-')
                     _current++;
                 const exponentEnd = (_current === _source.length) ? null : this.skipDigits(_current);
-                if (_.isNil(exponentEnd))
-                    throw new Error(sprintf('Expected digits after exponent at %s.', _offset));
+                if (exponentEnd == null)
+                    throw new Error(`Expected digits after exponent at ${_offset}.`);
                 _current = exponentEnd;
                 haveExponent = true;
 
                 if (_current < _source.length) {
                     c = _source.charAt(_current);
                     if (c === 'm' || c === 'M')
-                        throw new Error(sprintf('Unexpected exponent for decimal literal at %s.', _offset));
+                        throw new Error(`Unexpected exponent for decimal literal at ${_offset}.`);
                     else if (c === 'l' || c === 'L')
-                        throw new Error(sprintf('Unexpected exponent for long literal at %s.', _offset));
+                        throw new Error(`Unexpected exponent for long literal at ${_offset}.`);
                 }
             }
         }

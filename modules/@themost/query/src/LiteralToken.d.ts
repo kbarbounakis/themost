@@ -43,7 +43,7 @@ export declare interface StringType {
 export declare class LiteralToken extends Token {
     static LiteralType: LiteralType;
     static StringType: StringType;
-    constructor(value: string, literalType: string);
+    constructor(value: any, literalType: string);
     static PositiveInfinity : LiteralToken;
     static NegativeInfinity : LiteralToken;
     static NaN : LiteralToken;
