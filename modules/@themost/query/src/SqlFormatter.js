@@ -5,155 +5,156 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {sprintf} from 'sprintf';
+
 import _ from 'lodash';
-import {SqlUtils} from './SqlUtils';
-import {getOwnPropertyName} from './query';
-import {QueryExpression} from './QueryExpression';
-import {QueryField} from './QueryField';
+import { Args } from '@themost/common';
+import { SqlUtils } from './SqlUtils';
+import { getOwnPropertyName, isMethodOrNameReference } from './query';
+import { QueryCollection } from './QueryCollection';
+import { QueryExpression } from './QueryExpression';
+import { QueryField } from './QueryField';
 
-
-const aliasKeyword = ' AS ';
-/**
- * @this SqlFormatter
- */
-function getAliasKeyword() {
-    if (this.settings.hasOwnProperty('useAliasKeyword') === false) {
-        return aliasKeyword;
+class ExpectedArrayArguments extends Error {
+    constructor() {
+        super('Arguments must be an array');
     }
-    if (this.settings.useAliasKeyword) {
-        return aliasKeyword;
+}
+class InvalidExpression extends Error {
+    constructor() {
+        super('Expression graph is invalid or it has not been implemented yet.');
     }
-    return ' ';
 }
 
-function isQueryField_(obj) {
-    if (_.isNil(obj))
-        return false;
-    return (obj.constructor) && (obj.constructor.name === 'QueryField');
+class ExpectedWhereExpression extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Current expression requires a valid where statement.');
+    }
 }
 
-/**
- * Initializes an SQL formatter class.
- * @class SqlFormatter
- * @constructor
- */
+class ExpectedSelectExpression extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid query expression. Expected a valid select expression.');
+    }
+}
+
+class ExpectedInsertExpression extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid query expression. Expected a valid insert expression.');
+    }
+}
+
+class ExpectedUpdateExpression extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid query expression. Expected a valid update expression.');
+    }
+}
+
+class ExpectedDeleteExpression extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid query expression. Expected a valid delete expression.');
+    }
+}
+
+class ExpectedCollection extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid query expression. Expected a target collection expression.');
+    }
+}
+
+class InvalidOperator extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid expression operator');
+    }
+}
+
+class InvalidArguments extends Error {
+    /**
+     * @param {string=} msg
+     */
+    constructor(msg) {
+        super(msg || 'Invalid expression arguments');
+    }
+}
+
 export class SqlFormatter {
     constructor() {
-        //
-        this.provider = null;
-        /**
-         * Gets or sets formatter settings
-         * @type {{nameFormat: string, forceAlias: boolean, useAliasKeyword: boolean}|*}
-         */
         this.settings = {
-            /**
-             * Gets or sets a format that is going to be applied in field expression e.g. AS [$1] or AS '$1'.
-             * @type {string}
-             */
-            nameFormat : '$1',
-            /**
-             * Gets or sets a boolean that indicates whether field aliases will forcibly be used even if field expression does not have any alias
-             * (e.g. SELECT Person.name as name or SELECT Person.name).
-             * @type {boolean}
-             */
+            nameFormat: '`$1`',
             forceAlias: false,
-            /**
-             * Gets or sets a boolean which indicates whether AS keyword must be used in alias expression e.g. SELECT * FROM Table1 AS T1 or SELECT * FROM Table1 T1
-             */
-            useAliasKeyword: true
+            useAliasKeyword: true,
+            aliasKeyword: 'AS'
         }
     }
 
     /**
-     * Formats a JSON comparison object to the equivalent sql expression eg. { $gt: 100} as >100, or { $in:[5, 8] } as IN {5,8} etc
-     * @param {*} comparison
-     * @returns {string}
-     */
-    formatComparison(comparison) {
-        let key;
-        if (_.isNil(comparison))
-            return '(%s IS NULL)';
-        if (typeof comparison === 'object')
-        {
-            if (comparison instanceof Date) {
-                return '(%s'.concat(sprintf('=%s)',this.escape(comparison)));
-            }
-            const compares = [];
-            for(key in comparison) {
-                if (comparison.hasOwnProperty(key))
-                    compares.push(key);
-            }
-            if (compares.length===0)
-                return '(%s IS NULL)';
-            else {
-                const arr = [];
-                for (let i = 0; i < compares.length; i++) {
-                    key = compares[i];
-                    if (QueryExpression.ComparisonOperators[key]===undefined)
-                        throw new Error(sprintf('Unknown operator %s.', key));
-                    const escapedValue = this.escape(comparison[key]);
-                    switch (key) {
-                        case '$eq': arr.push('(%s'.concat('=',escapedValue,')'));break;
-                        case '$lt': arr.push('(%s'.concat('<',escapedValue,')'));break;
-                        case '$lte': arr.push('(%s'.concat('<=',escapedValue,')'));break;
-                        case '$gt': arr.push('(%s'.concat('>',escapedValue,')'));break;
-                        case '$gte': arr.push('(%s'.concat('>=',escapedValue,')'));break;
-                        case '$ne': arr.push('(NOT %s'.concat('=',escapedValue,')'));break;
-                        case '$in': arr.push('(%s'.concat('(',escapedValue,'))'));break;
-                        case '$nin':arr.push('(NOT %s'.concat('(',escapedValue,'))'));break;
-                    }
-                }
-                //join expression
-                if (arr.length===1)
-                    return arr[0];
-                else if (arr.length>1) {
-                    return '('.concat(arr.join(' AND '),')');
-                }
-                else
-                    return '(%s IS NULL)';
-            }
-        }
-        else
-        {
-            return '(%s'.concat(sprintf('=%s)',this.escape(comparison)));
-        }
-    }
-
-    isComparison(obj) {
-        const key = getOwnPropertyName(obj);
-        return (/^\$(eq|ne|lt|lte|gt|gte|in|nin|text|regex)$/g.test(key));
-    }
-
-    /**
-     * Escapes an object or a value and returns the equivalent sql value.
-     * @param {*} value - A value that is going to be escaped for SQL statements
-     * @param {boolean=} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
-     * @returns {string} - The equivalent SQL string value
-     */
+    * Escapes an object or a value and returns the equivalent sql value.
+    * @param {*} value - A value that is going to be escaped for SQL statements
+    * @param {boolean=} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
+    * @returns {string} - The equivalent SQL string value
+    */
     escape(value, unquoted) {
-        if (_.isNil(value))
+        if (value == null)
             return SqlUtils.escape(null);
 
-        if (typeof value === 'object')
-        {
+        if (typeof value === 'object') {
             //add an exception for Date object
-            if (value instanceof Date)
+            if (value instanceof Date) {
                 return SqlUtils.escape(value);
-            if (value.hasOwnProperty('$name'))
+            }
+            // parse literal values e.g. { $literal: 99.5 } 
+            if (value.hasOwnProperty('$literal')) {
+                if (typeof value.$literal === 'object') {
+                    // get literal property
+                    const literalProperty = getOwnPropertyName(value.$literal);
+                    // if literal is an expression e.g. { $add: [ 100, 45 ] }
+                    if (literalProperty && isMethodOrNameReference(literalProperty)) {
+                        // if expression is a formatter method e.g. $add
+                        if (typeof this[literalProperty] === 'function') {
+                            // call formatter method
+                            return this[literalProperty].apply(this, value.$literal);
+                        }
+                    }
+                }
+                return SqlUtils.escape(value.$literal);
+            }
+            if (value.hasOwnProperty('$name')) {
                 return this.escapeName(value.$name);
+            }
             else {
-                //check if value is a known expression e.g. { $length:"name" }
-                const keys = _.keys(value), key0 = keys[0];
-                if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
-                    const exprFunc = this[key0];
-                    //get arguments
-                    const args = _.map(keys, x => {
-                        return value[x];
-                    });
-                    return exprFunc.apply(this, args);
+                //check if value is a known expression e.g. { $length: "name" }
+                const key = getOwnPropertyName(value);
+                if (_.isString(key) && /^\$/.test(key) && _.isFunction(this[key])) {
+                    const formatFunc = this[key];
+                    if (Array.isArray(value[key])) {
+                        return formatFunc.apply(this, value[key]);
+                    }
+                    return formatFunc.call(this, value[key]);
                 }
             }
+        }
+        if (typeof value === 'string' && /^\$/.test(value)) {
+            return this.escapeName(value);
         }
         if (unquoted)
             return value.valueOf();
@@ -162,239 +163,712 @@ export class SqlFormatter {
     }
 
     /**
-     * Escapes an object or a value and returns the equivalent sql value.
-     * @param {*} value - A value that is going to be escaped for SQL statements
-     * @param {boolean=} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
-     * returns {string} - The equivalent SQL string value
+     * @param {string} name
      */
-    escapeConstant(value, unquoted) {
-        return this.escape(value,unquoted);
+    escapeCollection(name) {
+        Args.notString(name, 'Name');
+        // return formatted name e.g User.name to `User`.`name`
+        return name.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
     }
-
+    
     /**
-     * Formats a where expression object and returns the equivalen SQL string expression.
-     * @param {*} where - An object that represents the where expression object to be formatted.
-     * @returns {string|*}
+     * @param {string} name
      */
-    formatWhere(where) {
-        const self = this;
-
-        //get expression (the first property of the object)
-        const keys = Object.keys(where), property = keys[0];
-        if (typeof property === 'undefined')
-            return '';
-        //get property value
-        const propertyValue = where[property];
-        switch (property) {
-            case '$not':
-                return '(NOT ' + self.formatWhere(propertyValue) + ')';
-            case '$and':
-            case '$or':
-                const separator = property==='$or' ? ' OR ' : ' AND ';
-                //property value must be an array
-                if (!_.isArray(propertyValue))
-                    throw new Error('Invalid query argument. A logical expression must contain one or more comparison expressions.');
-                if (propertyValue.length===0)
-                    return '';
-                return '(' + _.map(propertyValue, x => {
-                    return self.formatWhere(x);
-                }).join(separator) + ')';
-            default:
-                let comparison = propertyValue;
-                let op =  null, sql = null;
-                if (isQueryField_(comparison)) {
-                    op = '$eq';
-                    comparison = {$eq:propertyValue};
-                }
-                else if (_.isArray(comparison)) {
-                    op = "$in";
-                    comparison = {
-                        "$in": propertyValue
-                    }
-                }
-                else if (typeof comparison === 'object' && comparison !== null) {
-                    //get comparison operator
-                    op = Object.keys(comparison)[0];
-                }
-                else {
-                    //set default comparison operator to equal
-                    op = '$eq';
-                    comparison = {$eq:propertyValue};
-                }
-                //escape property name
-                const escapedProperty = this.escapeName(property);
-                switch (op) {
-                    case '$text':
-                        return self.$text({ $name:property}, comparison.$text.$search);
-                    case '$eq':
-                        if (_.isNil(comparison.$eq))
-                            return sprintf('(%s IS NULL)', escapedProperty);
-                        return sprintf('(%s=%s)', escapedProperty, self.escape(comparison.$eq));
-                    case '$gt':
-                        return sprintf('(%s>%s)', escapedProperty, self.escape(comparison.$gt));
-                    case '$gte':
-                        return sprintf('(%s>=%s)', escapedProperty, self.escape(comparison.$gte));
-                    case '$lt':
-                        return sprintf('(%s<%s)', escapedProperty, self.escape(comparison.$lt));
-                    case '$lte':
-                        return sprintf('(%s<=%s)', escapedProperty, self.escape(comparison.$lte));
-                    case '$ne':
-                        if (_.isNil(comparison.$ne))
-                            return sprintf('(NOT %s IS NULL)', escapedProperty);
-                        if (comparison!==null) {
-                            if (_.isArray(comparison.$ne)) {
-                                return sprintf('(NOT %s IN (%s))', escapedProperty, self.escape(comparison.$ne));
-                            }
-                            return sprintf('(NOT %s=%s)', escapedProperty, self.escape(comparison.$ne));
-                        }
-                        else
-                            return sprintf('(NOT %s IS NULL)', escapedProperty);
-                    case '$regex':
-                        return this.$regex({ $name:property} , comparison.$regex);
-                    case '$in':
-                        if (_.isArray(comparison.$in)) {
-                            if (comparison.$in.length===0)
-                                return sprintf('(%s IN (NULL))', escapedProperty);
-                            sql = '('.concat(escapedProperty,' IN (',_.map(comparison.$in, x => {
-                                return self.escape(x!==null ? x: null)
-                            }).join(', '),'))');
-                            return sql;
-                        }
-                        else if (typeof comparison.$in === 'object') {
-                            //try to validate if comparison.$in is a select query expression (sub-query support)
-                            const q1 = _.assign(new QueryExpression(), comparison.$in);
-                            if (q1.$select) {
-                                //if sub query is a select expression
-                                return sprintf('(%s IN (%s))', escapedProperty, self.format(q1));
-                            }
-                        }
-                        //otherwise throw error
-                        throw new Error('Invalid query argument. An in statement must contain one or more values.');
-                    case '$nin':
-                        if (_.isArray(comparison.$nin)) {
-                            if (comparison.$nin.length===0)
-                                return sprintf('(NOT %s IN (NULL))', escapedProperty);
-                            sql = '(NOT '.concat(escapedProperty,' IN (',_.map(comparison.$nin, x => {
-                                return self.escape(x!==null ? x: null)
-                            }).join(', '),'))');
-                            return sql;
-                        }
-                        else if (typeof comparison.$in === 'object') {
-                            //try to validate if comparison.$nin is a select query expression (sub-query support)
-                            const q2 = _.assign(new QueryExpression(), comparison.$in);
-                            if (q2.$select) {
-                                //if sub query is a select expression
-                                return sprintf('(NOT %s IN (%s))', escapedProperty, self.format(q2));
-                            }
-                        }
-                        //otherwise throw error
-                        throw new Error('Invalid query argument. An in statement must contain one or more values.');
-                    default :
-                        //search if current operator (arithmetic, evaluation etc) exists as a formatter function (e.g. function $add(p1,p2) { ... } )
-                        //in this case the first parameter is the defined property e.g. Price
-                        // and the property value contains an array of all others parameters (if any) and the comparison operator
-                        // e.g. { Price: { $add: [5, { $gt:100} ]} } where we are trying to find elements that meet the following query expression: (Price+5)>100
-                        // The identifier <Price> is the first parameter, the constant 5 is the second
-                        const fn = this[op], p1 = comparison[op];
-                        if (typeof fn === 'function')
-                        {
-                            const args = [];
-                            let argn = null;
-                            //push identifier
-                            args.push({ $name:property });
-                            if (_.isArray(p1)) {
-                                //push other parameters
-                                for (let j = 0; j < p1.length-1; j++) {
-                                    args.push(p1[j]);
-                                }
-                                //get comparison argument (last item of the arguments' array)
-                                argn = p1[p1.length-1];
-                            }
-                            else {
-                                if (self.isComparison(p1)) {
-                                    argn = p1;
-                                }
-                                else {
-                                    //get comparison argument (equal)
-                                    argn = { $eq: p1.valueOf() };
-                                }
-
-                            }
-                            //call formatter function
-                            const f0 = fn.apply(this, args);
-                            return self.formatComparison(argn).replace(/%s/g, f0.replace('$','\$'));
-                        }
-                        else {
-                            //equal expression
-                            if (typeof p1 !== 'undefined' && p1!==null)
-                                return sprintf('(%s=%s)', escapedProperty, self.escape(p1));
-                            else
-                                return sprintf('(%s IS NULL)', escapedProperty);
-                        }
-
-                }
+    escapeName(name) {
+        Args.notString(name, 'Name');
+        let finalName;
+        if (this.currectCollection && (/\./g.test(name) === false)) {
+            finalName = this.currectCollection.concat('.', name);
         }
+        else {
+            finalName = name;
+        }
+        // return formatted name e.g User.name to `User`.`name`
+        return finalName.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    /**
-     * Implements startsWith(a,b) expression formatter.
-     * @param {*} p0
-     * @param {*} p1
-     * @returns {string}
-     */
-    $startswith(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '';
-        return sprintf('(%s REGEXP \'^%s\')', this.escape(p0), this.escape(p1, true));
+    
+    formatSelect(query) {
+        Args.notNull(query, 'Query expression');
+        Args.check(query.$select != null, new Error('Format select requires a valid select expression'));
+        // get select fields
+        const selectFields = Object.keys(query.$select);
+        // get select collection
+        Args.check(query.$collection != null, new Error('Format select requires a valid collection'));
+        const selectCollection = Object.assign(new QueryCollection(), query.$collection);
+        this.currectStatement = 'select';
+        let result = `SELECT`;
+        if (query.$distinct) {
+            result += ` DISTINCT`;
+        }
+        const escapedCollection = this.escapeCollection(selectCollection.name);
+        // set current Collection
+        this.currectCollection = null;
+        if (this.settings.forceAlias) {
+            // set current collection equal to collection alias or name
+            this.currectCollection = selectCollection.alias || selectCollection.name;
+        }
+        if (selectCollection.alias) {
+            this.currectCollection = selectCollection.alias;
+        }
+        // if select statement does not have any field use wildcard
+        if (selectFields.length === 0) {
+            // if formatter uses forceAlias e.g. `Users`.* instead of a single *
+            if (this.settings.forceAlias) {
+                result += ` ${this.escapeName('*')} FROM ${escapedCollection}`;
+            }
+            else {
+                // append simple select e.g. * FROM `UserData`
+                result += ` * FROM ${escapedCollection}`;
+            }
+        }
+        else {
+            result += ' ';
+            result += selectFields.map( key => {
+                const field = { };
+                field[key] = query.$select[key];
+                return this.formatField(field);
+            }).join(', ');
+            // append simple select e.g. * FROM `UserData`
+            result += ` FROM ${escapedCollection}`;
+        }
+        
+        if (selectCollection.alias) {
+            // append collection alias e.g. AS `Users`
+            result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(selectCollection.alias)}`
+        }
+
+        // format lookups
+        if (query.$expand && query.$expand.length) {
+            query.$expand.forEach(expand => {
+                result += ' ' + this.formatLookup(expand.$lookup, expand.$direction);
+            });
+        }
+
+        if (query.$match != null) {
+            if (query.$prepared == null) {
+                result += ' WHERE ' + this.formatWhere(query.$match);
+            }
+            else {
+                result += ' WHERE ' + this.formatWhere({
+                    $and: [
+                        query.$prepared,
+                        query.$match
+                    ]
+                });
+            }
+        }
+
+        if (query.$group != null) {
+            result += ' GROUP BY ' + this.formatGroupBy(query.$group);
+        }
+
+        if (query.$order != null) {
+            result += ' ORDER BY ' + this.formatOrder(query.$order);
+        }
+        
+        this.currectStatement = null;
+        this.currectCollection = null;
+        return result;
     }
 
-    // noinspection JSUnusedGlobalSymbols
+    formatLookup(lookup, direction) {
+        let result = '';
+        // append lookup direction e.g. LEFT JOIN
+        switch (direction) {
+            case 'left': 
+                result += 'LEFT JOIN ';
+                break;
+            case 'right':
+                result += 'RIGHT JOIN ';
+                break;
+            default:
+                result += 'INNER JOIN ';
+                break;
+        }
+        if (lookup && lookup.localField && lookup.foreignField) {
+            Args.notNull(lookup.from, 'Lookup collection');
+            // append join collection e.g. LEFT JOIN Customers
+            result += this.escapeCollection(lookup.from);
+            if (lookup.as) {
+                // append alias e.g. LEFT JOIN Customers AS c1
+                result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(lookup.as)}`;
+            }
+            result += ' ON ';
+            const lookupCollection = lookup.as || lookup.from;
+            // format foreign field e.g. Customers.CustomerID
+            const foreignField = this.escapeName(lookupCollection + '.' + lookup.foreignField);
+            // append equality expression 
+            // e.g. LEFT JOIN Customers ON Customers.CustomerID = Orders.CustomerID
+            result += this.$eq(`$${lookup.localField}`, `$${foreignField}`);
+        }
+        else if (lookup && lookup.pipeline) {
+            // build expression
+            const q = new QueryExpression().select()
+                .from(lookup.from)
+            if (lookup.pipeline.$project) {
+                // append fields
+                Object.assign(q, {
+                    $select: lookup.pipeline.$project
+                });
+            } 
+            Args.check(lookup.pipeline.$match, new Error('Lookup match expression is null or undefined.'));
+            // format selection
+            const formatter = Object.create(this);
+            // format query expression
+            result += '(';
+            result += formatter.formatSelect(q).replace(/;$/,'');
+            result += ')';
+            if (lookup.as) {
+                // append alias e.g. LEFT JOIN (SELECT * FROM Customers) AS c1
+                result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(lookup.as)}`;
+            }
+            else {
+                // append alias e.g. LEFT JOIN (SELECT * FROM Customers) AS Customers
+                result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(lookup.from)}`;
+            }
+            // format match expression
+            result += ' ON ';
+            formatter.currectCollection = lookup.as || lookup.from;
+            result += formatter.formatWhere(lookup.pipeline.$match);
+            formatter.currectCollection = null;
+        }
+        else {
+            throw new Error('Lookup syntax has not been implemented yet.');
+        }
+        return result;
+    }
+
     /**
-     * Implements endsWith(a,b) expression formatter.
-     * @param {*} p0
-     * @param {*} p1
+     *
+     * @param {*} expr
      * @returns {string}
      */
-    $endswith(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+    formatLimitSelect(expr) {
+
+        let sql=this.formatSelect(expr);
+        if (expr.$limit) {
+            if (expr.$skip) {
+                return ` LIMIT ${expr.$skip}, ${expr.$limit}`
+            }
+            return ` LIMIT ${expr.$limit}`
+        }
+        return sql;
+    }
+
+    /**
+     *
+     * @param {*} query
+     * @returns {string}
+     */
+    formatCount(query) {
+        // validate select expression
+        Args.check(query.$select != null, new ExpectedSelectExpression());
+        // get count alias
+        const alias = this.$count || "__count__";
+        // format select statement (ignore paging parameters even if there are exist)
+        const sql = this.formatSelect(query);
+        // return final count expression by setting the derived sql statement as sub-query
+        // e.g. SELECT COUNT(*) AS `__count__` FROM (SELECT * FROM `UserData`) `c0`
+        return `SELECT COUNT(*) AS ${this.escapeName(alias)} FROM (${sql}) ${this.escapeName("c0")}`;
+    }
+
+    /**
+     * Formats a fixed query expression where select fields are constants e.g. SELECT 1 AS `id`,'John' AS `givenName` etc
+     * @param {*} query
+     * @returns {string}
+     */
+    formatFixedSelect(query) {
+        // validate select expression
+        Args.check(query.$select != null, new ExpectedSelectExpression());
+        // get select fields
+        const selectFields = Object.keys(query.$select);
+        // validate select expression
+        Args.check(selectFields.length, new Error('Invalid query expression. A fixed query expects at least one valid select expression.'));
+        let result = 'SELECT ';
+        result += selectFields.map( key => {
+            return this.escape(query.$select[key]);
+        }).join(', ');
+        return result;
+    }
+
+    formatField(expr) {
+        Args.notNull(expr, 'Field expression');
+        let name = getOwnPropertyName(expr);
+        Args.check(name != null, new Error('Field name cannot be empty.'));
+        // field expression is simple select e.g. { "dateCreated" : 1 }
+        if (expr[name] === 1) {
+            return this.escapeName(name);
+        }
+        let field = expr[name];
+        // expression with method e.g. { "$count" : "$customer" }
+        if (isMethodOrNameReference(name)) {
+            field = expr;
+        }
+        // expression with alias e.g. { "createdAt" : "$dateCreated" }
+        if (typeof field === 'string' && isMethodOrNameReference(field)) {
+            return `${this.escapeName(field)} ${this.settings.aliasKeyword} ${this.escapeName(name)}`;
+        }
+        if (typeof field === 'object') {
+            let result;
+            // field has an expression e.g. { "minPrice": { "$min": "$price" } }
+            let funcName = getOwnPropertyName(field);
+            if (isMethodOrNameReference(funcName)) {
+                const formatFunc = this[funcName];
+                if (typeof formatFunc === 'function') {
+                    const funcArgs = field[funcName];
+                    const args = [];
+                    if (Array.isArray(funcArgs)) {
+                        args = funcArgs.slice();
+                        args.unshift()
+                    }
+                    else {
+                        args.push(funcArgs);
+                    }
+                    result = formatFunc.apply(this, args);
+                    // if name is a method reference return without alias
+                    if (isMethodOrNameReference(name)) {
+                        return result;
+                    }
+                    if (this.settings.aliasKeyword) {
+                        result += ` ${this.settings.aliasKeyword} `;
+                    }
+                    else {
+                        result += ` `;
+                    }
+                    result += this.escapeName(name);
+                    return result;
+                }
+            }
+        }
+
+        throw new Error('Field is invalid or syntax has not been implemented yet.');
+    }
+
+
+    formatWhere(expr) {
+        if (expr == null) {
             return '';
-        return sprintf('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
+        }
+        // get expression property e.g. { "givenName": { "$eq" : "John" } }
+        // => givenName or { "$length" : "$givenName" } => $length
+        const name = getOwnPropertyName(expr);
+        // if name is a method reference
+        if (isMethodOrNameReference(name)) {
+            // get format method
+            const formatFunc = this[name];
+            if (typeof formatFunc === 'function') {
+                return formatFunc.apply(this, expr[name]);
+            }
+            throw new Error('Invalid expression or bad syntax');
+        }
+        else {
+            let args = [];
+            // get compare expression e.g. { "$eq" : "John" }
+            let comparerExpr = expr[name];
+            // call format where by assigning field as first argument
+            // e.g. { "$eq" : [ "$givenName",  "John" ] }
+            const comparerName = getOwnPropertyName(comparerExpr);
+            // get comparer arguments e.g. "John" 
+            const comparerArgs = comparerExpr[comparerName];
+            if (Array.isArray(comparerArgs)) {
+                // copy arguments
+                args = comparerArgs.slice();
+                // insert item
+                args.unshift(`$${name}`);
+            }
+            else {
+                args.push(`$${name}`);
+                args.push(comparerArgs);
+            }
+            // create new comparer expression e.g. { "$eq": [ "$givenName", "John" ] }
+            comparerExpr = { };
+            comparerExpr[comparerName] = args;
+            // format expression
+            return this.formatWhere(comparerExpr);
+        }
+
+    }
+
+    formatOrder(expr) {
+        if (expr == null) {
+            return '';
+        }
+        const orderFields = Object.keys(expr);
+        if (orderFields.length === 0) {
+            // do nothing
+            return '';
+        }
+        return orderFields.map( key => {
+            if (isMethodOrNameReference(key) && typeof expr[key] !== 'number') {
+                const field = { };
+                field[key] = expr[key];
+                return this.escape(field) +  ' ' + (expr[key] === 1 ? 'DESC': 'ASC');
+            }
+            return this.escapeName(key) +  ' ' + (expr[key] === 1 ? 'DESC': 'ASC');
+        }).join(', ');
+        
+    }
+
+    formatGroupBy(expr) {
+        if (expr == null) {
+            return '';
+        }
+        const groupFields = Object.keys(expr);
+        if (groupFields.length === 0) {
+            // do nothing
+            return '';
+        }
+        return groupFields.map( key => {
+            if (isMethodOrNameReference(key) && typeof expr[key] !== 'number') {
+                const field = { };
+                field[key] = expr[key];
+                return this.escape(field);
+            }
+            return this.escapeName(key);
+        }).join(', ');
+    }
+
+    formatInsert(query) {
+        Args.check(query.$insert != null, new ExpectedInsertExpression());
+        //get collection name
+        Args.check(query.$collection != null, new ExpectedCollection());
+        const collection = Object.assign(new QueryCollection(), query.$collection);
+        Args.notNull(collection.name, 'Collection name');
+        const insertFields = Object.keys(query.$insert);
+        Args.check(insertFields.length, new Error('Insert fields cannot be an empty array'));
+        let result = `INSERT INTO ${this.escapeName(collection.name)}`;
+        result += ' (';
+        result += insertFields.map( key => {
+            return this.escapeName(key);
+        }).join(', ');
+        result += ') VALUES (';
+        result += insertFields.map( key => {
+            return this.escape(query.$insert[key]);
+        }).join(', ');
+        result += ')';
+        return result;
+    }
+
+    formatUpdate(query) {
+        Args.check(query.$update != null, new ExpectedUpdateExpression());
+        //get collection name
+        Args.check(query.$collection != null, new ExpectedCollection());
+        const collection = Object.assign(new QueryCollection(), query.$collection);
+        Args.notNull(collection.name, 'Collection name');
+        const updateFields = Object.keys(query.$update);
+        Args.check(updateFields.length, new Error('Update fields cannot be an empty array'));
+        let hasWhere = false;
+        let result = `UPDATE ${this.escapeName(collection.name)}`;
+        result += ' SET ';
+        result += updateFields.map( key => {
+            return `${this.escapeName(key)} = ${this.escape(query.$update[key])}`;
+        }).join(', ');
+        if (query.$prepared != null) {
+            hasWhere = true;
+            if (query.$match != null) {
+                result += ' WHERE ';
+                result += this.formatWhere({
+                    $and: [ query.$prepared, query.$match ]
+                });
+            }
+            else {
+                result += ' WHERE ';
+                result += this.formatWhere(query.$prepared);
+            }
+        }
+        else if (query.$match != null) {
+            hasWhere = true;
+            result += ' WHERE ';
+            result += this.formatWhere(query.$match);
+        }
+        Args.check(hasWhere, new ExpectedWhereExpression());
+        return result;
+    }
+
+    formatDelete(query) {
+        Args.check(query.$delete != null, new ExpectedDeleteExpression());
+        //get collection name
+        Args.check(query.$collection != null, new ExpectedCollection());
+        const collection = Object.assign(new QueryCollection(), query.$collection);
+        Args.notNull(collection.name, 'Collection name');
+        let result = `DELETE FROM ${this.escapeName(collection.name)}`;
+        let hasWhere = false;
+        if (query.$prepared != null) {
+            hasWhere = true;
+            if (query.$match != null) {
+                result += ' WHERE ';
+                result += this.formatWhere({
+                    $and: [ query.$prepared, query.$match ]
+                });
+            }
+            else {
+                result += ' WHERE ';
+                result += this.formatWhere(query.$prepared);
+            }
+        }
+        else if (query.$match != null) {
+            hasWhere = true;
+            result += ' WHERE ';
+            result += this.formatWhere(query.$match);
+        }
+        Args.check(hasWhere, new ExpectedWhereExpression());
+        return result;
+    }
+
+    /**
+     * Implements AND operator formatting
+     * @param {...*} conditions
+     */
+    $and() {
+        const conditions = Array.from(arguments);
+        Args.check(conditions.length, 'Expected at least one expression.');
+        let result = '(';
+        result += conditions.map(condition => {
+            return this.formatWhere(condition);
+        }).join(' AND ');
+        result += ')';
+        return result;
+    }
+
+    /**
+     * Implements OR operator formatting
+     * @param {...*} conditions
+     */
+    $or() {
+        const conditions = Array.from(arguments);
+        Args.check(conditions.length, 'Expected at least one expression.');
+        let result = '(';
+        result += conditions.map(condition => {
+            return this.formatWhere(condition);
+        }).join(' OR ');
+        result += ')';
+        return result;
+    }
+
+    /**
+     * Formats an equality expression e.g. { "id": { $eq: 100 } }
+     */
+    $eq(left, right) {
+        if (right == null) {
+            return `${this.escape(left)} IS NULL`; 
+        }
+        if (Array.isArray(right)) {
+            return this.$in(left, right);
+        }
+        return `${this.escape(left)} = ${this.escape(right)}`;
+    }
+
+    $in(left, right) {
+        const leftOperand = this.escape(left);
+        if (right == null) {
+            return `${leftOperand} IS NULL`; 
+        }
+        if (Array.isArray(right)) {
+            if (right.length === 0) {
+                return `${leftOperand} IS NULL`; 
+            }
+            const values = right.map( x => {
+                return this.escape(x);
+            });
+            return `${leftOperand} IN (${values.join(', ')})`; 
+        }
+        throw new Error('Invalid in expression. Right opearand must be an array');
+    }
+
+    $nin(left, right) {
+        return `NOT ${this.$in(left, right)}`;
+    }
+
+    $ne(left, right) {
+        if (right == null) {
+            return `NOT (${this.escape(left)} IS NULL)`; 
+        }
+        return `NOT (${this.escape(left)} = ${this.escape(right)})`;
+    }
+
+    $gt(left, right) {
+        return `${this.escape(left)} > ${this.escape(right)}`;
+    }
+
+    $gte(left, right) {
+        return `${this.escape(left)} >= ${this.escape(right)}`;
+    }
+
+    $lt(left, right) {
+        return `${this.escape(left)} < ${this.escape(right)}`;
+    }
+
+    $lte(left, right) {
+        return `${this.escape(left)} <= ${this.escape(right)}`;
+    }
+
+    /**
+     * Implements count() aggregate expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $count(p0) {
+        return `COUNT(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements min() aggregate expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $min(p0) {
+        return `MIN(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements MAX() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $max(p0) {
+        return `MAX(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements AVG() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $avg(p0) {
+        return `AVG(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements SUM() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $sum(p0) {
+        return `SUM(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements YEAR() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $year(p0) {
+        return `YEAR(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements MONTH() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $month(p0) {
+        return `MONTH(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements DAY() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $dayOfMonth(p0) {
+        return `DAY(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements HOUR() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $hour(p0) {
+        return `HOUR(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements HOUR() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $minute(p0) {
+        return `MINUTE(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements SECOND() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $second(p0) {
+        return `SECOND(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements DATE() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $date(p0) {
+        return `DATE(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements FLOOR() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $floor(p0) {
+        return `FLOOR(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements CEILING() sql expression formatting.
+     * @param {*} p0
+     * @returns {*}
+     */
+    $ceil(p0) {
+        return `CEILING(${this.escape(p0)})`;
+    }
+
+    /**
+     * Implements ROUND() expression formatter.
+     * @param {*} p0
+     * @param {*=} p1
+     * @returns {string}
+     */
+    $round(p0, p1) {
+        if (p1 == null) {
+            return `ROUND(${this.escape(p0)}, ${this.escape(p1)})`;    
+        }
+        return `ROUND(${this.escape(p0)}, 0)`;  
     }
 
     /**
      * Implements regular expression formatting.
-     * @param {*} p0
-     * @param {string|*} p1
+     * @param {*} left
+     * @param {string|*} expr
      * @returns {string}
      */
-    $regex(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '';
-        return sprintf('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
+    $regex(left, expr) {
+        return `(${this.escape(left)} REGEXP \'${this.escape(expr, true)}\')`;
     }
 
     /**
-     * Implements length(a) expression formatter.
+     * Implements text() expression formatter.
+     * @param {string|*} p0
+     * @param {string|*} p1
+     * @returns {string}
+     */
+    $text(p0, p1) {
+        return `(${this.escape(left)} REGEXP \'${this.escape(expr, true)}\')`;
+    }
+
+    /**
+     * Implements length() expression formatter.
      * @param {*} p0
      * @returns {string}
      */
     $length(p0) {
-        return sprintf('LENGTH(%s)', this.escape(p0));
-    }
-
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * Implements length(a) expression formatter.
-     * @param {*} p0
-     * @param {*} p1
-     * @returns {string}
-     */
-    $ifnull(p0, p1) {
-        return sprintf('COALESCE(%s,%s)', this.escape(p0), this.escape(p1));
+        return `LENGTH(${this.escape(p0)})`;
     }
 
     /**
@@ -403,7 +877,7 @@ export class SqlFormatter {
      * @returns {string}
      */
     $trim(p0) {
-        return sprintf('TRIM(%s)', this.escape(p0));
+        return `TRIM(${this.escape(p0)})`;
     }
 
     /**
@@ -413,7 +887,7 @@ export class SqlFormatter {
      * @returns {string}
      */
     $concat(p0, p1) {
-        return sprintf('CONCAT(%s,%s)', this.escape(p0),  this.escape(p1));
+        return `CONCAT(${this.escape(p0)},${this.escape(p1)})`;
     }
 
     /**
@@ -422,180 +896,91 @@ export class SqlFormatter {
      * @param {string} p1 The string to search for
      * @returns {string}
      */
-    $indexof(p0, p1) {
-        return sprintf('(LOCATE(%s,%s)-1)', this.escape(p1), this.escape(p0));
+    $indexOfBytes(p0, p1) {
+        return `(LOCATE(${this.escape(p0)},${this.escape(p1)})-1)`;
     }
 
     /**
-     * Implements substring(str,pos) expression formatter.
+     * Implements SUBSTRING() sql expression formatter.
      * @param {String} p0 The source string
      * @param {Number} pos The starting position
      * @param {Number=} length The length of the resulted string
      * @returns {string}
      */
-    $substring(p0, pos, length) {
-        if (length)
-            return sprintf('SUBSTRING(%s,%s,%s)', this.escape(p0), pos.valueOf()+1, length.valueOf());
-        else
-            return sprintf('SUBSTRING(%s,%s)', this.escape(p0), pos.valueOf()+1);
+    $substr(p0, pos, length) {
+        if (length) {
+            return `SUBSTRING(${this.escape(p0)},${pos + 1},${length})`;
+        }
+        else {
+            return `SUBSTRING(${this.escape(p0)},${pos + 1})`;
+        }
     }
 
     /**
-     * Implements lower(str) expression formatter.
+     * Implements LOWER() sql expression formatting.
      * @param {String} p0
      * @returns {string}
      */
-    $tolower(p0) {
-        return sprintf('LOWER(%s)', this.escape(p0));
+    $toLower(p0) {
+        return `LOWER(${this.escape(p0)})`;
     }
 
     /**
-     * Implements upper(str) expression formatter.
+     * Implements UPPER() sql expression formatting.
      * @param {String} p0
      * @returns {string}
      */
-    $toupper(p0) {
-        return sprintf('UPPER(%s)', this.escape(p0));
+    $toUpper(p0) {
+        return `UPPER(${this.escape(p0)})`;
     }
 
     /**
-     * Implements contains(a,b) expression formatter.
-     * @param {*} p0
-     * @param {*} p1
-     * @returns {string}
-     */
-    $contains(p0, p1) {
-        return this.$text(p0, p1);
-    }
-
-    /**
-     * Implements contains(a,b) expression formatter.
-     * @param {string|*} p0
-     * @param {string|*} p1
-     * @returns {string}
-     */
-    $text(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '';
-        if (p1.valueOf().toString().length===0)
-            return '';
-        return sprintf('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
-    }
-
-    $day(p0) { return sprintf('DAY(%s)', this.escape(p0)); }
-    $month(p0) { return sprintf('MONTH(%s)', this.escape(p0)); }
-    $year(p0) { return sprintf('YEAR(%s)', this.escape(p0)); }
-    $hour(p0) { return sprintf('HOUR(%s)', this.escape(p0)); }
-    $minute(p0) { return sprintf('MINUTE(%s)', this.escape(p0)); }
-    $second(p0) { return sprintf('SECOND(%s)', this.escape(p0)); }
-
-    $date(p0) {
-        return sprintf('DATE(%s)', this.escape(p0));
-    }
-
-    $floor(p0) { return sprintf('FLOOR(%s)', this.escape(p0)); }
-    $ceiling(p0) { return sprintf('CEILING(%s)', this.escape(p0)); }
-
-    /**
-     * Implements round(a) expression formatter.
-     * @param {*} p0
-     * @param {*=} p1
-     * @returns {string}
-     */
-    $round(p0, p1) {
-        if (_.isNil(p1))
-            p1 = 0;
-        return sprintf('ROUND(%s,%s)', this.escape(p0), this.escape(p1));
-    }
-
-    /**
-     * Implements a + b expression formatter.
+     * Implements a + b sql expression formatting.
      * @param {*} p0
      * @param {*} p1
      * @returns {string}
      */
     $add(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s + %s)', this.escape(p0), this.escape(p1));
-    }
-
-    //noinspection JSUnusedGlobalSymbols
-    /**
-     * Validates whether the given parameter is a field object or not.
-     * @param obj
-     * @returns {boolean}
-     */
-    isField(obj) {
-        if (_.isNil(obj))
-            return false;
-        if (typeof obj === 'object')
-            if (obj.hasOwnProperty('$name'))
-                return true;
-        return false;
+        return `(${this.escape(p0)} + ${this.escape(p1)})`;
     }
 
     /**
-     * Implements a - b expression formatter.
+     * Implements a - b sql expression formatting.
      * @param {*} p0
      * @param {*} p1
      * @returns {string}
      */
-    $sub(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s - %s)', this.escape(p0), this.escape(p1));
+    $subtract(p0, p1) {
+        return `(${this.escape(p0)} - ${this.escape(p1)})`;
     }
 
     /**
-     * Implements a * b expression formatter.
-     * @param p0 {*}
-     * @param p1 {*}
+     * Implements a * b sql expression formatting.
+     * @param {*} p0
+     * @param {*} p1
+     * @returns {string}
      */
-    $mul(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s * %s)', this.escape(p0), this.escape(p1));
+    $multiply(p0, p1) {
+        return `(${this.escape(p0)} * ${this.escape(p1)})`;
     }
 
     /**
-     * Implements a mod b expression formatter.
-     * @param p0 {*}
-     * @param p1 {*}
+     * Implements a * b sql expression formatting.
+     * @param {*} p0
+     * @param {*} p1
+     * @returns {string}
      */
-    $mod(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
+    $divide(p0, p1) {
+        return `(${this.escape(p0)} / ${this.escape(p1)})`;
     }
 
     /**
-     * Implements [a / b] expression formatter.
-     * @param p0 {*}
-     * @param p1 {*}
-     */
-    $div(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s / %s)', this.escape(p0), this.escape(p1));
-    }
-
-    /**
-     * Implements [a mod b] expression formatter.
+     * Implements [a % b] sql expression formatter.
      * @param p0 {*}
      * @param p1 {*}
      */
     $mod(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
+        return `(${this.escape(p0)} % ${this.escape(p1)})`;
     }
 
     /**
@@ -604,501 +989,7 @@ export class SqlFormatter {
      * @param p1 {*}
      */
     $bit(p0, p1) {
-        //validate params
-        if (_.isNil(p0) || _.isNil(p1))
-            return '0';
-        return sprintf('(%s & %s)', this.escape(p0), this.escape(p1));
+         return `(${this.escape(p0)} & ${this.escape(p1)})`;
     }
 
-    /**
-     *
-     * @param query {QueryExpression|*}
-     * @returns {string}
-     */
-    formatCount(query) {
-        //validate select expression
-        if (_.isNil(query.$select)) {
-            throw new Error('Invalid query expression. Expected a valid select expression.')
-        }
-        //get count alias
-        const alias = this.$count || "__count__";
-        //format select statement (ignore paging parameters even if there are exist)
-        const sql = this.formatSelect(query);
-        //return final count expression by setting the derived sql statement as sub-query
-        return "SELECT COUNT(*) AS " + this.escapeName(alias) + " FROM (" + sql + ") " + this.escapeName("c0");
-    }
-
-    /**
-     * Formats a fixed query expression where select fields are constants e.g. SELECT 1 AS `id`,'John' AS `givenName` etc
-     * @param obj {QueryExpression|*}
-     * @returns {string}
-     */
-    formatFixedSelect(obj) {
-        const self = this;
-        const fields = obj.fields();
-        return 'SELECT ' + _.map(fields, x => { return self.format(x,'%f'); }).join(', ');
-    }
-
-    /**
-     *
-     * @param obj {QueryExpression|*}
-     * @returns {string}
-     */
-    formatSelect(obj) {
-        const $this = this;
-        let sql = '';
-        let escapedEntity;
-        if (_.isNil(obj.$select))
-            throw new Error('Select expression cannot be empty at this context.');
-        //get entity name
-        const entity = getOwnPropertyName(obj.$select);
-        let joins = [];
-        if (!_.isNil(obj.$expand))
-        {
-            if (_.isArray(obj.$expand))
-                joins=obj.$expand;
-            else
-                joins.push(obj.$expand);
-        }
-        //get entity fields
-        const fields = obj.fields();
-        //if fields is not an array
-        if (!_.isArray(fields))
-            throw new Error('Select expression does not contain any fields or the collection of fields is of the wrong type.');
-
-        //validate entity reference (if any)
-        if (obj.$ref && obj.$ref[entity]) {
-            const entityRef = obj.$ref[entity];
-            //escape entity ref
-            if (entityRef instanceof QueryExpression) {
-                escapedEntity = "(" + this.format(entityRef) + ") " + $this.escapeName(entity);
-            }
-            else {
-                escapedEntity = entityRef.$as ?  $this.escapeName(entityRef.name) + getAliasKeyword.bind($this)() + $this.escapeName(entityRef.$as) : $this.escapeName(entityRef.name);
-            }
-        }
-        else {
-            //escape entity name
-            escapedEntity = $this.escapeName(entity)
-        }
-        //add basic SELECT statement
-        if (obj["$fixed"]) {
-            sql = sql.concat('SELECT * FROM (', $this.formatFixedSelect(obj), ') ', escapedEntity);
-        }
-        else {
-            sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', _.map(fields, x => {
-                return $this.format(x,'%f');
-            }).join(', '), ' FROM ', escapedEntity);
-        }
-
-
-        //add join if any
-        if (obj.$expand!==null)
-        {
-            //enumerate joins
-            _.forEach(joins, x => {
-                if (x.$entity instanceof QueryExpression) {
-                    //get on statement (the join comparison)
-                    sql = sql.concat(sprintf(' INNER JOIN (%s)', $this.format(x.$entity)));
-                    //add alias
-                    if (x.$entity.$alias)
-                        sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$alias));
-                }
-                else {
-                    //get join table name
-                    var table = getOwnPropertyName(x.$entity);
-                    //get on statement (the join comparison)
-                    const joinType = (x.$entity.$join || 'inner').toUpperCase();
-                    sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
-                    //add alias
-                    if (x.$entity.$as)
-                        sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$as));
-                }
-                if (_.isArray(x.$with))
-                {
-                    if (x.$with.length!==2)
-                        throw new Error('Invalid join comparison expression.');
-
-                    //get left and right expression
-                    const left = x.$with[0];
-
-                    const right = x.$with[1];
-
-                    let //the default left table is the query entity
-                    leftTable =  entity;
-
-                    let //the default right table is the join entity
-                    rightTable = table;
-
-                    if (typeof left === 'object') {
-                        leftTable = getOwnPropertyName(left);
-                    }
-                    if (typeof right === 'object') {
-                        rightTable = getOwnPropertyName(right);
-                    }
-                    const leftFields = left[leftTable], rightFields = right[rightTable];
-                    for (let i = 0; i < leftFields.length; i++)
-                    {
-                        let leftExpr = null, rightExpr = null;
-                        if (typeof leftFields[i] === 'object')
-                            leftExpr = leftFields[i];
-                        else {
-                            leftExpr = {};
-                            leftExpr[leftTable] = leftFields[i];
-                        }
-                        if (typeof rightFields[i] === 'object')
-                            rightExpr = rightFields[i];
-                        else {
-                            rightExpr = {};
-                            rightExpr[rightTable] = rightFields[i];
-                        }
-                        sql = sql.concat((i===0) ? ' ON ' : ' AND ', $this.formatField(leftExpr), '=',  $this.formatField(rightExpr));
-                    }
-                }
-                else {
-                    sql = sql.concat(' ON ', $this.formatWhere(x.$with));
-                }
-            });
-        }
-        //add WHERE statement if any
-        if (_.isObject(obj.$where))
-        {
-            if (_.isObject(obj.$prepared)) {
-                const where1 = { $and: [obj.$where, obj.$prepared] };
-                sql = sql.concat(' WHERE ',this.formatWhere(where1));
-            }
-            else {
-                sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
-            }
-
-        }
-        else {
-            if (_.isObject(obj.$prepared))
-                sql = sql.concat(' WHERE ',this.formatWhere(obj.$prepared));
-        }
-
-        if (_.isObject(obj.$group))
-            sql = sql.concat(this.formatGroupBy(obj.$group));
-
-        if (_.isObject(obj.$order))
-            sql = sql.concat(this.formatOrder(obj.$order));
-
-        //finally return statement
-        return sql;
-    }
-
-    /**
-     *
-     * @param {QueryExpression} obj
-     * @returns {string}
-     */
-    formatLimitSelect(obj) {
-
-        let sql=this.formatSelect(obj);
-        if (obj.$take) {
-            if (obj.$skip)
-            //add limit and skip records
-                sql= sql.concat(' LIMIT ', obj.$skip.toString() ,', ',obj.$take.toString());
-            else
-            //add only limit
-                sql= sql.concat(' LIMIT ',  obj.$take.toString());
-        }
-        return sql;
-    }
-
-    formatField(obj) {
-        const self = this;
-        if (_.isNil(obj))
-            return '';
-        if (typeof obj === 'string')
-            return obj;
-        if (_.isArray(obj)) {
-            return _.map(obj, x => {
-                return x.valueOf();
-            }).join(', ');
-        }
-        if (typeof obj === 'object') {
-            //if field is a constant e.g. { $value:1000 }
-            if (obj.hasOwnProperty('$value'))
-                return this.escapeConstant(obj['$value']);
-            //get table name
-            const tableName = getOwnPropertyName(obj);
-            let fields = [];
-            if (!_.isArray(obj[tableName])) {
-                fields.push(obj[tableName])
-            }
-            else {
-                fields = obj[tableName];
-            }
-            return _.map(fields, x => {
-                if (QueryField.fieldNameExpression.test(x.valueOf()))
-                    return self.escapeName(tableName.concat('.').concat(x.valueOf()));
-                else
-                    return self.escapeName(x.valueOf());
-            }).join(', ');
-        }
-    }
-
-    /**
-     * Formats a order object to the equivalent SQL statement
-     * @param obj
-     * @returns {string}
-     */
-    formatOrder(obj) {
-        const self = this;
-        if (!_.isArray(obj))
-            return '';
-        const sql = _.map(obj, x => {
-            const f = x.$desc ? x.$desc : x.$asc;
-            if (_.isNil(f))
-                throw new Error('An order by object must have either ascending or descending property.');
-            if (_.isArray(f)) {
-                return _.map(f, a => {
-                    return self.format(a,'%ff').concat(x.$desc ? ' DESC': ' ASC');
-                }).join(', ');
-            }
-            return self.format(f,'%ff').concat(x.$desc ? ' DESC': ' ASC');
-        }).join(', ');
-        if (sql.length>0)
-            return ' ORDER BY '.concat(sql);
-        return sql;
-    }
-
-    /**
-     * Formats a group by object to the equivalent SQL statement
-     * @param obj {Array}
-     * @returns {string}
-     */
-    formatGroupBy(obj) {
-        const self = this;
-        if (!_.isArray(obj))
-            return '';
-        const arr = [];
-        _.forEach(obj, x => {
-            arr.push(self.format(x, '%ff'));
-        });
-        const sql = arr.join(', ');
-        if (sql.length>0)
-            return ' GROUP BY '.concat(sql);
-        return sql;
-    }
-
-    /**
-     * Formats an insert query to the equivalent SQL statement
-     * @param obj {QueryExpression|*}
-     * @returns {string}
-     */
-    formatInsert(obj) {
-        const self= this;
-        let sql = '';
-        if (_.isNil(obj.$insert))
-            throw new Error('Insert expression cannot be empty at this context.');
-        //get entity name
-        const entity = getOwnPropertyName(obj.$insert);
-        //get entity fields
-        const obj1 = obj.$insert[entity];
-        const props = [];
-        for(const prop in obj1)
-            if (obj1.hasOwnProperty(prop))
-                props.push(prop);
-        sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , _.map(props, x => { return self.escapeName(x); }).join(', '), ') VALUES (',
-            _.map(props, x => {
-                const value = obj1[x];
-                return self.escape(value!==null ? value: null);
-            }).join(', ') ,')');
-        return sql;
-    }
-
-    /**
-     * Formats an update query to the equivalent SQL statement
-     * @param obj {QueryExpression|*}
-     * @returns {string}
-     */
-    formatUpdate(obj) {
-        const self= this;
-        let sql = '';
-        if (!_.isObject(obj.$update))
-            throw new Error('Update expression cannot be empty at this context.');
-        //get entity name
-        const entity = getOwnPropertyName(obj.$update);
-        //get entity fields
-        const obj1 = obj.$update[entity];
-        const props = [];
-        for(const prop in obj1)
-            if (obj1.hasOwnProperty(prop))
-                props.push(prop);
-        //add basic INSERT statement
-        sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
-            _.map(props, x => {
-                const value = obj1[x];
-                return self.escapeName(x).concat('=', self.escape(value!==null ? value: null));
-            }).join(', '));
-        if (_.isObject(obj.$where))
-            sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
-        return sql;
-    }
-
-    /**
-     * Formats a delete query to the equivalent SQL statement
-     * @param obj {QueryExpression|*}
-     * @returns {string}
-     */
-    formatDelete(obj) {
-        let sql = '';
-        if (_.isNil(obj.$delete))
-            throw new Error('Delete expression cannot be empty at this context.');
-        //get entity name
-        const entity = obj.$delete;
-        //add basic INSERT statement
-        sql = sql.concat('DELETE FROM ', this.escapeName(entity));
-        if (_.isObject(obj.$where))
-            sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
-        return sql;
-    }
-
-    escapeName(name) {
-        if (typeof name === 'string')
-            return name.replace(/(\w+)$|^(\w+)$/g, this.settings.nameFormat);
-        return name;
-    }
-
-    /**
-     * @param obj {QueryField}
-     * @param format {string}
-     * @returns {string|*}
-     */
-    formatFieldEx(obj, format) {
-
-        if (_.isNil(obj))
-            return null;
-        if (!isQueryField_(obj))
-            throw new Error('Invalid argument. An instance of QueryField class is expected.');
-        //get property
-        let prop = getOwnPropertyName(obj);
-        if (_.isNil(prop))
-            return null;
-        const useAlias = (format==='%f');
-        if (prop==='$name') {
-            return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.getName())) : this.escapeName(obj.$name);
-        }
-        else {
-            const expr = obj[prop];
-            if (_.isNil(expr))
-                throw new Error('Field definition cannot be empty while formatting.');
-            if (typeof expr === 'string') {
-                return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
-            }
-            //get aggregate expression
-            const alias = prop;
-            prop = getOwnPropertyName(expr);
-            const name = expr[prop];
-            let s;
-            switch (prop) {
-                case '$count':
-                    s= sprintf('COUNT(%s)',this.escapeName(name));
-                    break;
-                case '$min':
-                    s= sprintf('MIN(%s)',this.escapeName(name));
-                    break;
-                case '$max':
-                    s= sprintf('MAX(%s)',this.escapeName(name));
-                    break;
-                case '$avg':
-                    s= sprintf('AVG(%s)',this.escapeName(name));
-                    break;
-                case '$sum':
-                    s= sprintf('SUM(%s)',this.escapeName(name));
-                    break;
-                case '$value':
-                    s= this.escapeConstant(name);
-                    break;
-                default :
-                    const fn = this[prop];
-                    if (typeof fn === 'function') {
-                        const args = expr[prop];
-                        s = fn.apply(this,args);
-                    }
-                    else
-                        throw new Error('The specified function is not yet implemented.');
-            }
-            return useAlias ? s.concat(' AS ', this.escapeName(alias)) : s;
-        }
-    }
-
-    /**
-     * Formats a query expression and returns the SQL equivalent string
-     * @param obj {QueryExpression|*}
-     * @param s {string=}
-     * @returns {string|*}
-     */
-    format(obj, s) {
-        if (_.isNil(obj))
-            return null;
-        //if a format is defined
-        if (s!==undefined)
-        {
-            if ((s ==='%f') || (s ==='%ff'))
-            {
-                //field formatting
-                let field = new QueryField();
-                if (typeof obj === 'string')
-                    field.select(obj);
-                else
-                    field = _.assign(new QueryField(), obj);
-                return this.formatFieldEx(field, s);
-            }
-            else if (s==='%o') {
-                if (obj instanceof QueryExpression)
-                    return this.formatOrder(obj.$order);
-                return this.formatOrder(obj);
-            }
-        }
-
-        /**
-         * @type {QueryExpression}
-         */
-        let query = null;
-        //cast object to QueryExpression
-        if (obj instanceof QueryExpression)
-            query = obj;
-        else
-            query = _.assign(new QueryExpression(), obj);
-        //format query
-        if (_.isObject(query.$select)) {
-            if (_.isString(query.$count)) {
-                return this.formatCount(query);
-            }
-            if (!query.hasPaging())
-                return this.formatSelect(query);
-            else
-                return this.formatLimitSelect(query);
-        }
-        else if (_.isObject(query.$insert))
-            return this.formatInsert(query);
-        else if (_.isObject(query.$update))
-            return this.formatUpdate(query);
-        else if (query.$delete!==null)
-            return this.formatDelete(query);
-        else if (query.$where!==null)
-            return this.formatWhere(query.$where);
-        else
-            return null;
-
-    }
 }
-
-SqlFormatter.prototype.$indexOf = SqlFormatter.prototype.$indexof;
-
-SqlFormatter.prototype.$substr = SqlFormatter.prototype.$substring;
-
-SqlFormatter.prototype.$toLower = SqlFormatter.prototype.$tolower;
-SqlFormatter.prototype.$toUpper = SqlFormatter.prototype.$toupper;
-SqlFormatter.prototype.$dayOfMonth = SqlFormatter.prototype.$day;
-SqlFormatter.prototype.$minutes = SqlFormatter.prototype.$minute;
-SqlFormatter.prototype.$seconds = SqlFormatter.prototype.$second;
-
-SqlFormatter.prototype.$subtract = SqlFormatter.prototype.$sub;
-
-SqlFormatter.prototype.$multiply = SqlFormatter.prototype.$mul;
-
-SqlFormatter.prototype.$divide = SqlFormatter.prototype.$div;

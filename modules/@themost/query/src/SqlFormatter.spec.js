@@ -1,7 +1,7 @@
 import {QueryExpression} from './QueryExpression';
 import {QueryField} from './QueryField';
 import {QueryCollection} from './QueryCollection';
-import {SqlFormatter2 as SqlFormatter} from './SqlFormatter2';
+import {SqlFormatter} from './SqlFormatter';
 
 describe('SqlFormatter', () => {
 
@@ -219,12 +219,9 @@ describe('SqlFormatter', () => {
             .thenByDescending('CustomerName');
         sqlToBe = 'SELECT CustomerID AS ID, CustomerName FROM Customers ORDER BY Country ASC, CustomerName DESC';
         q = new QueryExpression().select({
-            "ID": "$CustomerID"
-        },
-        {
+            "ID": "$CustomerID",
             "CustomerName": 1
-        }
-        ).from('Customers')
+        }).from('Customers')
             .orderBy('Country')
             .thenByDescending('CustomerName');
         sqlToBe = 'SELECT CustomerID AS ID, CustomerName FROM Customers ORDER BY Country ASC, CustomerName DESC';
