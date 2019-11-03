@@ -8,7 +8,8 @@
 import {createLogicalExpression,
         isArithmeticOperator, createArithmeticExpression,
         createComparisonExpression,
-        createMethodCallExpression,
+        createLiteralExpression, isLiteralExpression,
+        createMethodCallExpression, isComparisonOperator,
         createMemberExpression, Operators} from './expressions';
 import esprima from 'esprima';
 import async from 'async';
@@ -416,14 +417,6 @@ export class ClosureParser {
         catch(e) {
             callback(e);
         }
-    }
-
-    /**
-     * @param {*} str
-     * @returns {*}
-     */
-    eval(str) {
-        return eval.call(undefined,str);
     }
 
     parseIdentifier(expr, callback) {
