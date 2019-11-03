@@ -54,6 +54,11 @@ export class QueryExpression {
      */
     as(alias) {
         Args.notNull(alias, 'Alias');
+        if (this.privates.lookup) {
+            // append as expression to lookup
+            this.privates.lookup.as = alias;
+            return;
+        }
         if (this.privates.left) {
             this.privates.left.as(alias);
             return this;
@@ -203,16 +208,28 @@ export class QueryExpression {
     }
     /**
      * Initializes a delete query and sets the entity name that is going to be used in this query.
-     * @param entity {string}
+     * @param collection {string}
      * @returns {QueryExpression}
      */
-    delete(entity) {
-        if (entity == null)
-            return this;
-        this.$delete = entity.valueOf();
+    delete(collection) {
+        Args.check(this.$insert != null, new Error('Items to insert must be defined. Use insert() method first.'));
+        Args.notString(collection, 'Target collection')
+        // clear collection
+        this.$collection = { };
+        Object.defineProperty(this.$collection, collection, { 
+                        value: 1,
+                        configurable: true,
+                        enumerable: true,
+                        writable: true
+                    });
+        this.$delete = { };
         //delete other properties (if any)
         delete this.$insert;
         delete this.$select;
+        delete this.$addFields;
+        if (this.privates) {
+            delete this.privates.lookup;
+        }
         delete this.$update;
         return this;
     }
@@ -245,6 +262,9 @@ export class QueryExpression {
         delete this.$delete;
         delete this.$select;
         delete this.$addFields;
+        if (this.privates) {
+            delete this.privates.lookup;
+        }
         delete this.$order;
         delete this.$group;
         delete this.$update;
@@ -266,6 +286,9 @@ export class QueryExpression {
         delete this.$delete;
         delete this.$select;
         delete this.$addFields;
+        if (this.privates) {
+            delete this.privates.lookup;
+        }
         delete this.$order;
         delete this.$group;
         delete this.$update;
@@ -307,6 +330,10 @@ export class QueryExpression {
         //cleanup
         delete this.$delete;
         delete this.$select;
+        if (this.privates) {
+            delete this.privates.lookup;
+        }
+        delete this.$addFields;
         delete this.$insert;
         delete this.$group;
         delete this.$order;
@@ -392,6 +419,9 @@ export class QueryExpression {
             Object.assign(this.$collection, collection);
         }
         //clear object
+        if (this.privates) {
+            delete this.privates.lookup;
+        }
         delete this.$delete;
         delete this.$insert;
         delete this.$update;
@@ -413,8 +443,30 @@ export class QueryExpression {
             this.privates.lookup.from = collectionOrQuery;
         }
         else {
+            let queryCollection;
+            if (collectionOrQuery.hasOwnProperty('$collection')) {
+                // collectionOrQuery is a query expression
+                queryCollection = Object.assign(new QueryCollection(), collectionOrQuery.$collection);
+                this.privates.lookup.from = queryCollection.name;
+                if (queryCollection.alias) {
+                    this.privates.lookup.as = queryCollection.alias;
+                }
+                this.privates.lookup.pipeline = {
+                    $match: collectionOrQuery.$match,
+                    $project: collectionOrQuery.$select
+                }
+                // add lookup to expand
+                this.$expand = this.$expand || [];
+                this.$expand.push({
+                    $lookup: this.privates.lookup
+                });
+                //destroy temp object
+                delete this.privates.lookup;
+                //and return QueryExpression
+                return this;
+            }
             // try to convert collection to QueryCollection instance
-            const queryCollection = Object.assign(new QueryCollection(), collectionOrQuery);
+            queryCollection = Object.assign(new QueryCollection(), collectionOrQuery);
             const name = queryCollection.name;
             // validate query collection name
             Args.notString(name, 'Query collection name');

@@ -16,9 +16,9 @@ export declare interface FormatterSettings2 {
 export declare class SqlFormatter2 {
     provider: any;
     settings: FormatterSettings2;
-    formatComparison(comparison: any): string;
-    isComparison(obj: any): boolean;
     escape(value: any,unquoted?: boolean): string;
+    escapeName(name: string): string;
+    escapeCollection(name: string): string;
     escapeConstant(value: any,unquoted?: boolean): string;
     formatWhere(where: any): string;
     formatCount(query: any): string;
@@ -31,7 +31,6 @@ export declare class SqlFormatter2 {
     formatInsert(query: any): string;
     formatUpdate(query: any): string;
     formatDelete(query: any): string;
-    escapeName(name: string): string;
     format(obj: any, s?: string): string;
 
 }

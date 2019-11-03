@@ -6,6 +6,11 @@
  * found in the LICENSE file at https://themost.io/license
  */
 
+export declare interface QueryPipeline {
+    $match: any,
+    $project: any
+}
+
 export declare class QueryExpression {
 
     static ComparisonOperators: any;

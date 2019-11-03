@@ -11,6 +11,7 @@ import { Args } from '@themost/common';
 import { SqlUtils } from './SqlUtils';
 import { getOwnPropertyName, isMethodOrNameReference } from './query';
 import { QueryCollection } from './QueryCollection';
+import { QueryExpression } from './QueryExpression';
 import { QueryField } from './QueryField';
 
 class ExpectedArrayArguments extends Error {
@@ -164,12 +165,29 @@ export class SqlFormatter2 {
     /**
      * @param {string} name
      */
-    escapeName(name) {
+    escapeCollection(name) {
         Args.notString(name, 'Name');
         // return formatted name e.g User.name to `User`.`name`
         return name.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
     }
+    
+    /**
+     * @param {string} name
+     */
+    escapeName(name) {
+        Args.notString(name, 'Name');
+        let finalName;
+        if (this.currectCollection && (/\./g.test(name) === false)) {
+            finalName = this.currectCollection.concat('.', name);
+        }
+        else {
+            finalName = name;
+        }
+        // return formatted name e.g User.name to `User`.`name`
+        return finalName.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
+    }
 
+    
     formatSelect(query) {
         Args.notNull(query, 'Query expression');
         Args.check(query.$select != null, new Error('Format select requires a valid select expression'));
@@ -178,26 +196,26 @@ export class SqlFormatter2 {
         // get select collection
         Args.check(query.$collection != null, new Error('Format select requires a valid collection'));
         const selectCollection = Object.assign(new QueryCollection(), query.$collection);
+        this.currectStatement = 'select';
         let result = `SELECT`;
         if (query.$distinct) {
             result += ` DISTINCT`;
         }
-        const escapedCollection = this.escapeName(selectCollection.name);
-        
+        const escapedCollection = this.escapeCollection(selectCollection.name);
+        // set current Collection
+        this.currectCollection = null;
+        if (this.settings.forceAlias) {
+            // set current collection equal to collection alias or name
+            this.currectCollection = selectCollection.alias || selectCollection.name;
+        }
+        if (selectCollection.alias) {
+            this.currectCollection = selectCollection.alias;
+        }
         // if select statement does not have any field use wildcard
         if (selectFields.length === 0) {
             // if formatter uses forceAlias e.g. `Users`.* instead of a single *
             if (this.settings.forceAlias) {
-                // if collection has an alias
-                if (selectCollection.alias) {
-                    // append select e.g. `Users`.* FROM `UserData`
-                    result += ` ${this.escapeName(selectCollection.alias)}.* FROM ${escapedCollection}`;
-                }
-                // if collection does not have an alias
-                else {
-                    // append select with collection name e.g. `UserData`.* FROM `UserData`
-                    result += ` ${escapedCollection}.* FROM ${escapedCollection}`;
-                }
+                result += ` ${this.escapeName('*')} FROM ${escapedCollection}`;
             }
             else {
                 // append simple select e.g. * FROM `UserData`
@@ -214,9 +232,17 @@ export class SqlFormatter2 {
             // append simple select e.g. * FROM `UserData`
             result += ` FROM ${escapedCollection}`;
         }
+        
         if (selectCollection.alias) {
             // append collection alias e.g. AS `Users`
-            result += ` ${this.settings.aliasKeyword} ${this.escapeName(selectCollection.alias)}`
+            result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(selectCollection.alias)}`
+        }
+
+        // format lookups
+        if (query.$expand && query.$expand.length) {
+            query.$expand.forEach(expand => {
+                result += ' ' + this.formatLookup(expand.$lookup, expand.$direction);
+            });
         }
 
         if (query.$match != null) {
@@ -240,9 +266,76 @@ export class SqlFormatter2 {
         if (query.$order != null) {
             result += ' ORDER BY ' + this.formatOrder(query.$order);
         }
+        
+        this.currectStatement = null;
+        this.currectCollection = null;
+        return result;
+    }
 
-        // at end statement
-        result += ';'
+    formatLookup(lookup, direction) {
+        let result = '';
+        // append lookup direction e.g. LEFT JOIN
+        switch (direction) {
+            case 'left': 
+                result += 'LEFT JOIN ';
+                break;
+            case 'right':
+                result += 'RIGHT JOIN ';
+                break;
+            default:
+                result += 'INNER JOIN ';
+                break;
+        }
+        if (lookup && lookup.localField && lookup.foreignField) {
+            Args.notNull(lookup.from, 'Lookup collection');
+            // append join collection e.g. LEFT JOIN Customers
+            result += this.escapeCollection(lookup.from);
+            if (lookup.as) {
+                // append alias e.g. LEFT JOIN Customers AS c1
+                result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(lookup.as)}`;
+            }
+            result += ' ON ';
+            const lookupCollection = lookup.as || lookup.from;
+            // format foreign field e.g. Customers.CustomerID
+            const foreignField = this.escapeName(lookupCollection + '.' + lookup.foreignField);
+            // append equality expression 
+            // e.g. LEFT JOIN Customers ON Customers.CustomerID = Orders.CustomerID
+            result += this.$eq(`$${lookup.localField}`, `$${foreignField}`);
+        }
+        else if (lookup && lookup.pipeline) {
+            // build expression
+            const q = new QueryExpression().select()
+                .from(lookup.from)
+            if (lookup.pipeline.$project) {
+                // append fields
+                Object.assign(q, {
+                    $select: lookup.pipeline.$project
+                });
+            } 
+            Args.check(lookup.pipeline.$match, new Error('Lookup match expression is null or undefined.'));
+            // format selection
+            const formatter = Object.create(this);
+            // format query expression
+            result += '(';
+            result += formatter.formatSelect(q).replace(/;$/,'');
+            result += ')';
+            if (lookup.as) {
+                // append alias e.g. LEFT JOIN (SELECT * FROM Customers) AS c1
+                result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(lookup.as)}`;
+            }
+            else {
+                // append alias e.g. LEFT JOIN (SELECT * FROM Customers) AS Customers
+                result += ` ${this.settings.aliasKeyword} ${this.escapeCollection(lookup.from)}`;
+            }
+            // format match expression
+            result += ' ON ';
+            formatter.currectCollection = lookup.as || lookup.from;
+            result += formatter.formatWhere(lookup.pipeline.$match);
+            formatter.currectCollection = null;
+        }
+        else {
+            throw new Error('Lookup syntax has not been implemented yet.');
+        }
         return result;
     }
 
@@ -407,6 +500,11 @@ export class SqlFormatter2 {
             return '';
         }
         return orderFields.map( key => {
+            if (isMethodOrNameReference(key) && typeof expr[key] !== 'number') {
+                const field = { };
+                field[key] = expr[key];
+                return this.escape(field) +  ' ' + (expr[key] === 1 ? 'DESC': 'ASC');
+            }
             return this.escapeName(key) +  ' ' + (expr[key] === 1 ? 'DESC': 'ASC');
         }).join(', ');
         
@@ -422,7 +520,7 @@ export class SqlFormatter2 {
             return '';
         }
         return groupFields.map( key => {
-            if (isMethodOrNameReference(key)) {
+            if (isMethodOrNameReference(key) && typeof expr[key] !== 'number') {
                 const field = { };
                 field[key] = expr[key];
                 return this.escape(field);

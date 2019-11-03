@@ -19,10 +19,10 @@ describe('SqlFormatter', () => {
             $select: {},
         }
         let sql = formatter.formatSelect(query);
-        expect(sql).toBe('SELECT * FROM `UserData`;');
+        expect(sql).toBe('SELECT * FROM `UserData`');
         formatter.settings.forceAlias = true;
         sql = formatter.formatSelect(query);
-        expect(sql).toBe('SELECT `UserData`.* FROM `UserData`;');
+        expect(sql).toBe('SELECT `UserData`.* FROM `UserData`');
         query = {
             $collection: {
                 'Users': '$UserData'
@@ -30,7 +30,7 @@ describe('SqlFormatter', () => {
             $select: {},
         };
         sql = formatter.formatSelect(query);
-        expect(sql).toBe('SELECT `Users`.* FROM `UserData` AS `Users`;');
+        expect(sql).toBe('SELECT `Users`.* FROM `UserData` AS `Users`');
 
     });
 
@@ -100,7 +100,7 @@ describe('SqlFormatter', () => {
                 ]
             }            
         });
-        const sqlToBe = 'SELECT * FROM `ActionData` WHERE (`actionStatus` = 1 AND `owner` = \'user1\');';
+        const sqlToBe = 'SELECT * FROM `ActionData` WHERE (`actionStatus` = 1 AND `owner` = \'user1\')';
         expect(sql).toBe(sqlToBe);
         let q = new QueryExpression().select().from('ActionData').where('actionStatus').equal(1).and('owner').equal('user1');
         expect(formatter.formatSelect(q)).toBe(sqlToBe);
@@ -129,7 +129,7 @@ describe('SqlFormatter', () => {
             }
         };
         let sql = formatter.formatSelect(query);
-        expect(sql).toBe('SELECT `id`, `name` FROM `UserData` AS `Users`;');
+        expect(sql).toBe('SELECT `Users`.`id`, `Users`.`name` FROM `UserData` AS `Users`');
     });
 
     it('should use SqlFormatter.$min()', ()=> {
@@ -202,16 +202,32 @@ describe('SqlFormatter', () => {
         // change name format to simple
         formatter.settings.nameFormat = '$1';
 
-        let sqlToBe = 'SELECT * FROM Customers ORDER BY Country DESC;'
+        let sqlToBe = 'SELECT * FROM Customers ORDER BY Country DESC';
         let q = new QueryExpression().select().from('Customers')
             .orderByDescending('Country');
         expect(formatter.formatSelect(q)).toBe(sqlToBe);
 
-        sqlToBe = 'SELECT * FROM Customers ORDER BY Country ASC, CustomerName DESC;'
+        sqlToBe = 'SELECT * FROM Customers ORDER BY Country ASC, CustomerName DESC';
         q = new QueryExpression().select().from('Customers')
             .orderBy('Country')
             .thenByDescending('CustomerName');
         expect(formatter.formatSelect(q)).toBe(sqlToBe);
+        q = new QueryExpression().select(new QueryField('CustomerID').as('ID'),
+        new QueryField('CustomerName')
+        ).from('Customers')
+            .orderBy('Country')
+            .thenByDescending('CustomerName');
+        sqlToBe = 'SELECT CustomerID AS ID, CustomerName FROM Customers ORDER BY Country ASC, CustomerName DESC';
+        q = new QueryExpression().select({
+            "ID": "$CustomerID"
+        },
+        {
+            "CustomerName": 1
+        }
+        ).from('Customers')
+            .orderBy('Country')
+            .thenByDescending('CustomerName');
+        sqlToBe = 'SELECT CustomerID AS ID, CustomerName FROM Customers ORDER BY Country ASC, CustomerName DESC';
     });
 
     it('should use SqlFormatter.formatGroupBy()', ()=> {
@@ -223,16 +239,58 @@ describe('SqlFormatter', () => {
         expect(sql).toBe('COUNT(`CustomerID`), `Country`');
         // change name format to simple
         formatter.settings.nameFormat = '$1';
-        let sqlToBe = 'SELECT COUNT(CustomerID), Country FROM Customers GROUP BY Country;';
+        let sqlToBe = 'SELECT COUNT(CustomerID), Country FROM Customers GROUP BY Country';
         let q = new QueryExpression().select(new QueryField('CustomerID').count(), new QueryField('Country'))
             .from('Customers')
             .groupBy('Country');
-        sqlToBe = 'SELECT COUNT(CustomerID) AS TotalCustomers, Country FROM Customers GROUP BY Country;';
+        sqlToBe = 'SELECT COUNT(CustomerID) AS TotalCustomers, Country FROM Customers GROUP BY Country';
         q = new QueryExpression().select(
             new QueryField('CustomerID').count().as('TotalCustomers'), 
             new QueryField('Country'))
             .from('Customers')
             .groupBy('Country');
+        expect(formatter.formatSelect(q)).toBe(sqlToBe);
+    });
+
+    it('should use SqlFormatter.formatSelect()', ()=> {
+        const formatter = new SqlFormatter();
+        formatter.settings.nameFormat = '$1';
+        let q = new QueryExpression().select('CustomerName','City').from('Customers');
+        let sqlToBe = 'SELECT CustomerName, City FROM Customers';
+        expect(formatter.formatSelect(q)).toBe(sqlToBe);
+
+        q = new QueryExpression().select('CustomerName','City').from('Customers').as('c0');
+        sqlToBe = 'SELECT c0.CustomerName, c0.City FROM Customers AS c0';
+        expect(formatter.formatSelect(q)).toBe(sqlToBe);
+        q = new QueryExpression()
+            .select('CustomerName','City').from('Customers').as('c0')
+            .where('City').equal('London');
+        sqlToBe = 'SELECT c0.CustomerName, c0.City FROM Customers AS c0 WHERE c0.City = \'London\'';
+        expect(formatter.formatSelect(q)).toBe(sqlToBe);
+    });
+
+    it('should use SqlFormatter.formatSelect() for lookups', ()=> {
+        const formatter = new SqlFormatter();
+        formatter.settings.nameFormat = '$1';
+        formatter.settings.forceAlias = true;
+        let q = new QueryExpression().select('OrderID',  'Customers.CustomerName','OrderDate')
+            .from('Orders')
+            .join('Customers')
+            .with('CustomerID', 'CustomerID')
+            .orderBy('Customers.CustomerName');
+        let sqlToBe = 'SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate FROM Orders ' +
+        'INNER JOIN Customers ON Orders.CustomerID = Customers.CustomerID ORDER BY Customers.CustomerName ASC';
+        expect(formatter.formatSelect(q)).toBe(sqlToBe);
+        q = new QueryExpression().select('OrderID',  'Customers.CustomerName','OrderDate')
+            .from('Orders')
+            .join(new QueryExpression()
+                .select().from('Customers')
+                .where('CustomerID')
+                .equal('$Orders.CustomerID'))
+            .orderBy('Customers.CustomerName');
+        sqlToBe = 'SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate ' +
+        'FROM Orders INNER JOIN (SELECT Customers.* FROM Customers) AS Customers ' + 
+        'ON Customers.CustomerID = Orders.CustomerID ORDER BY Customers.CustomerName ASC';
         expect(formatter.formatSelect(q)).toBe(sqlToBe);
     });
 
