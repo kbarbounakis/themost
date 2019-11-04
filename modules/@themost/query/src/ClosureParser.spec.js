@@ -5,7 +5,6 @@ describe('ClosureParser', () => {
       const parser = new ClosureParser();
       expect(parser).toBeTruthy();
    });
-
     it('should ClosureParser.parse()', async () => {
         const parser = new ClosureParser();
         const parseFilter = util.promisify(parser.parseFilter).bind(parser);

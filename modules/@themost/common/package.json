@@ -28,24 +28,7 @@
     "lodash": "^4.17.4",
     "sprintf": "^0.1.5"
   },
-  "devDependencies": {
-    "@babel/node": "^7.6.3",
-    "@babel/register": "^7.6.2",
-    "@types/jasmine": "^3.4.4",
-    "babel-loader": "^8.0.6",
-    "jasmine": "^3.5.0",
-    "jasmine-core": "^3.5.0",
-    "jasmine-node": "^3.0.0",
-    "karma": "^4.3.0",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-jasmine": "^2.0.1",
-    "karma-jasmine-html-reporter": "^1.4.2",
-    "karma-mocha-reporter": "^2.2.5",
-    "karma-webpack": "^4.0.2",
-    "puppeteer-core": "^1.20.0",
-    "webpack": "^4.41.0",
-    "webpack-karma-jasmine": "^3.0.8"
-  },
+  "devDependencies": {},
   "eslintConfig": {
     "env": {
       "browser": true,

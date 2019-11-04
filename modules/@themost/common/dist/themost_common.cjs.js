@@ -943,7 +943,7 @@ function () {
     function Animal() {
         //
     }
-      function Dog() {
+     function Dog() {
         Dog.super_.bind(this)();
     }
     LangUtils.inherits(Dog,Animal);
