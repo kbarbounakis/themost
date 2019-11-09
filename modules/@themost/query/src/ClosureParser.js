@@ -13,6 +13,7 @@ import {createLogicalExpression,
         createMemberExpression, Operators} from './expressions';
 import {parse} from 'esprima';
 import async from 'async';
+import {Args} from '@themost/common';
 
 const ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -27,7 +28,8 @@ const ExpressionTypes = {
     FunctionExpression:'FunctionExpression',
     BlockStatement:'BlockStatement',
     ReturnStatement:'ReturnStatement',
-    CallExpression:'CallExpression'
+    CallExpression:'CallExpression',
+    ObjectExpression:'ObjectExpression'
 };
 
 /**
@@ -45,6 +47,36 @@ export class ClosureParser {
          */
         this.parsers = { };
 
+    }
+
+    parseSelect(func, callback) {
+        if (func == null) {
+            return callback();
+        }
+        Args.check(typeof func === 'function', new Error('Select closure must a function.'));
+        //convert the given function to javascript expression
+        const expr = parse('void(' + func.toString() + ')');
+        //validate expression e.g. return [EXPRESSION];
+        const funcExpr = expr.body[0].expression.argument;
+        //get named parameters
+        this.namedParams = funcExpr.params;
+        return this.parseCommon(funcExpr.body, (err, result) => {
+                if (err) {
+                    return callback(err);
+                }
+                return callback(null, result);
+            });
+    }
+
+    async parseSelectAsync(func) {
+        return await new Promise((resolve, reject) => {
+            return this.parseSelect(func, (err, result) => {
+                if (err) {
+                    return reject(err);
+                } 
+                return resolve(result);
+            });
+        });
     }
 
     /**
@@ -69,6 +101,15 @@ export class ClosureParser {
             }
             //get named parameters
             self.namedParams = fnExpr.params;
+            //validate expression e.g. return [EXPRESSION];
+            if (fnExpr.body.type === ExpressionTypes.MemberExpression) {
+                return this.parseMember(fnExpr.body, (err, result) => {
+                    if (err) {
+                        return callback(err);
+                    }
+                    return callback(null, result);
+                });
+            }
             //validate expression e.g. return [EXPRESSION];
             if (fnExpr.body.body[0].type!==ExpressionTypes.ReturnStatement) {
                 callback(new Error('Invalid closure syntax. A closure expression must return a value.'));
@@ -112,9 +153,64 @@ export class ClosureParser {
         else if (expr.type === ExpressionTypes.Identifier) {
             this.parseIdentifier(expr, callback);
         }
+        else if (expr.type === ExpressionTypes.BlockStatement) {
+            this.parseBlock(expr, callback);
+        }
         else {
             callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
         }
+    }
+
+    parseBlock(expr, callback) {
+        const self = this;
+        // get expression statement
+        const bodyExpression = expr.body[0];
+        let finalResult = [];
+        if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
+            if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
+                // enumerate and parse sequence expression
+                const expressions = bodyExpression.expression.expressions;
+                if (Array.isArray(expressions)) {
+                    return async.eachSeries(expressions, (expression, cb) => {
+                        return self.parseCommon(expression, (err, res) => {
+                            if (err) {
+                                return cb(err);
+                            }
+                            // add expression
+                            finalResult.push(res);
+                            return cb();
+                        })
+                    }, (err, result) => {
+                        if (err) {
+                            return callback(err);
+                        }
+                        return callback(null, finalResult);
+                    });
+                }
+            }
+        }
+        else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
+            // get return statement
+            const objectExpression = bodyExpression.argument;
+            if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
+                return async.eachSeries(objectExpression.properties, (property, cb) => {
+                    self.parseCommon(property.value, (err, value) => {
+                        if (err) {
+                            return cb(err);
+                        }
+                        // add expression
+                        finalResult.push(value);
+                        return cb();
+                    });
+                }, (err) => {
+                    if (err) {
+                        return callback(err);
+                    }
+                    return callback(null, finalResult);
+                });
+            }
+        }
+        return callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
     }
 
     parseLogical(expr, callback) {

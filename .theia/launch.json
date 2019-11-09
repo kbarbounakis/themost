@@ -17,9 +17,20 @@
           "request": "attach",
           "name": "query debug",
           "port": 9222,
-          "cwd": "${workspaceFolder}/modules/@themost/query",
+          "cwd": "${workspaceFolder}",
           "address": "localhost",
           "timeout": 30000
+      },
+      {
+          "type": "node",
+          "request": "launch",
+          "name": "debug query with jasmine",
+          "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine",
+          "cwd": "${workspaceFolder}",
+          "args": [
+              "./modules/@themost/query/src/ClosureParser.spec.js",
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
       }
   ]
 }
