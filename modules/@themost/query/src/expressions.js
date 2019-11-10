@@ -5,13 +5,10 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
-import _ from 'lodash';
-
 /**
  * @class
  * @param {*=} p0 The left operand
- * @param {String=} oper The operator
+ * @param {string=} oper The operator
  * @param {*=} p1 The right operand
  * @constructor
  */
@@ -72,7 +69,7 @@ export class MemberExpression {
     }
 
     exprOf() {
-        return this.name;
+        return `$${this.name}`;
     }
 }
 
@@ -238,32 +235,83 @@ export class MethodCallExpression {
      */
     exprOf() {
         const method = {};
-        const result = {};
         const name = '$'.concat(this.name);
         //set arguments array
-        method[name] = [] ;
         if (this.args.length===0)
             throw new Error('Unsupported method expression. Method arguments cannot be empty.');
-        //get first argument
-        if (this.args[0] instanceof MemberExpression) {
-            const member = this.args[0].name;
-            for (let i = 1; i < this.args.length; i++)
-            {
-                const arg = this.args[i];
-                if (typeof arg === 'undefined' || arg===null)
-                    method[name].push(null);
-                else if (typeof arg.exprOf === 'function')
-                    method[name].push((arg instanceof MemberExpression) ? { $name:arg.exprOf() } : arg.exprOf());
-                else
-                    method[name].push(arg);
+        if (this.args.length === 1) {
+            const arg = this.args[0];
+            if (arg == null) {
+                throw new Error('Method call argument cannot be null at this context.');
             }
-            result[member] = method;
-            return result;
+            method[name] = arg.exprOf();
         }
         else {
-            throw new Error('Unsupported method expression. The first argument of a method expression must be always a MemberExpression.');
+            method[name] = this.args.map(value => {
+                if (value == null) {
+                    return null;
+                }
+                if (typeof value.exprOf === 'function') {
+                    return value.exprOf();
+                }
+                return value;
+            })
         }
+        return method;
+    }
+}
 
+export class SequenceExpression {
+    constructor() {
+        //
+        this.value = [];
+    }
+
+    exprOf() {
+        // eslint-disable-next-line no-empty-pattern
+        return this.value.reduce((previousValue, currentValue, currentIndex) => {
+            if (currentValue instanceof MemberExpression) {
+                Object.defineProperty(previousValue, currentValue.name, {
+                    value: 1,
+                    enumerable: true,
+                    configurable: true
+                });
+                return previousValue;
+            }
+            else if (currentValue instanceof MethodCallExpression) {
+                // validate method name e.g. Math.floor and get only the last part
+                const name = currentValue.name.split('.');
+                Object.defineProperty(previousValue, `${name[name.length-1]}${currentIndex}`, {
+                    value: currentValue.exprOf(),
+                    enumerable: true,
+                    configurable: true
+                });
+                return previousValue;
+            }
+            throw new Error('Sequence expression is invalid or has a member which its type has not implemented yet');
+        }, {});
+    }
+
+}
+
+export class ObjectExpression {
+    constructor() {
+        //
+    }
+    exprOf() {
+        const finalResult = { };
+        Object.keys(this).forEach( key => {
+            if (typeof this[key].exprOf === 'function') {
+                Object.defineProperty(finalResult, key, {
+                    value: this[key].exprOf(),
+                    enumerable: true,
+                    configurable: true
+                });
+                return;
+            }
+            throw new Error('Object expression is invalid or has a member which its type has not implemented yet');
+        });
+        return finalResult;
     }
 }
 

@@ -5,12 +5,14 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {createLogicalExpression,
-        isArithmeticOperator, createArithmeticExpression,
-        createComparisonExpression,
-        createLiteralExpression, isLiteralExpression,
-        createMethodCallExpression, isComparisonOperator,
-        createMemberExpression, Operators} from './expressions';
+import {
+    createLogicalExpression,
+    isArithmeticOperator, createArithmeticExpression,
+    createComparisonExpression,
+    createLiteralExpression, isLiteralExpression,
+    createMethodCallExpression, isComparisonOperator,
+    createMemberExpression, Operators, SequenceExpression, ObjectExpression, MethodCallExpression
+} from './expressions';
 import {parse} from 'esprima';
 import async from 'async';
 import {Args} from '@themost/common';
@@ -29,8 +31,70 @@ const ExpressionTypes = {
     BlockStatement:'BlockStatement',
     ReturnStatement:'ReturnStatement',
     CallExpression:'CallExpression',
-    ObjectExpression:'ObjectExpression'
+    ObjectExpression:'ObjectExpression',
+    SequenceExpression:'SequenceExpression'
 };
+
+export class StaticMethodParser {
+    constructor() {
+
+    }
+
+    static get Math() {
+        return {
+            floor(args) {
+              return new MethodCallExpression('floor', args);
+            },
+            ceil(args) {
+                return new MethodCallExpression('ceil', args);
+            },
+            round(args) {
+                return new MethodCallExpression('round', args);
+            },
+            min(args) {
+                return new MethodCallExpression('min', args);
+            },
+            max(args) {
+                return new MethodCallExpression('max', args);
+            }
+        }
+    }
+    static round(args) {
+        return new MethodCallExpression('round', args);
+    }
+
+}
+
+/**
+ *
+ * @param {string} name
+ * @returns {Function}
+ */
+function findMethodParser(name) {
+    let result = null;
+    const keys = name.split('.');
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        if (result) {
+            if (result.hasOwnProperty(key)) {
+                result = result[key];
+            }
+            else {
+                result = null;
+                break;
+            }
+        }
+        else if (StaticMethodParser.hasOwnProperty(key) && i === 0) {
+            result = StaticMethodParser[key];
+        }
+        else {
+            break;
+        }
+    }
+    if (typeof result === 'function') {
+        return result;
+    }
+}
 
 /**
  * @class ClosureParser
@@ -73,7 +137,7 @@ export class ClosureParser {
             return this.parseSelect(func, (err, result) => {
                 if (err) {
                     return reject(err);
-                } 
+                }
                 return resolve(result);
             });
         });
@@ -134,6 +198,17 @@ export class ClosureParser {
 
     }
 
+    async parseFilterAsync(func) {
+        return await new Promise((resolve, reject) => {
+            return this.parseFilter(func, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
+    }
+
     parseCommon(expr, callback) {
         if (expr.type === ExpressionTypes.LogicalExpression) {
             this.parseLogical(expr, callback);
@@ -161,52 +236,114 @@ export class ClosureParser {
         }
     }
 
+    /**
+     * Parses an object expression e.g. { "createdAt": x.dateCreated }
+     * @param {*} objectExpression
+     * @param {Function} callback
+     */
+    parseObject(objectExpression, callback) {
+        const self =this;
+        if (objectExpression == null) {
+            return callback(new Error('Object expression may not be null'));
+        }
+        if (objectExpression.type !== ExpressionTypes.ObjectExpression) {
+            return callback(new Error('Invalid expression type. Expected an object expression.'));
+        }
+        if (Array.isArray(objectExpression.properties) === false) {
+            return callback(new Error('Object expression properties must be an array.'));
+        }
+        let finalResult = new ObjectExpression();
+        return async.eachSeries(objectExpression.properties, (property, cb) => {
+            self.parseCommon(property.value, (err, value) => {
+                if (err) {
+                    return cb(err);
+                }
+                let name;
+                if (property.key == null) {
+                    return cb(new Error(`Property key may not be null.`));
+                }
+                if (property.key && property.key.type === 'Literal') {
+                    name = property.key.value;
+                }
+                else if (property.key && property.key.type === 'Identifier') {
+                    name = property.key.name;
+                }
+                else {
+                    return cb(new Error(`Invalid property key type. Expected Literal or Identifier. Found ${property.key.type}.`));
+                }
+                Object.defineProperty(finalResult, name, {
+                   value: value,
+                    enumerable: true,
+                    configurable: true
+                });
+                return cb();
+            });
+        }, (err) => {
+            if (err) {
+                return callback(err);
+            }
+            return callback(null, finalResult);
+        });
+    }
+
+    /**
+     * Parses a sequence expression e.g. { x.id, x.dateCreated }
+     * @param {*} sequenceExpression
+     * @param {Function} callback
+     */
+    parseSequence(sequenceExpression, callback) {
+        const self =this;
+        if (sequenceExpression == null) {
+            return callback(new Error('Sequence expression may not be null'));
+        }
+        if (sequenceExpression.type !== ExpressionTypes.SequenceExpression) {
+            return callback(new Error('Invalid expression type. Expected an object expression.'));
+        }
+        if (Array.isArray(sequenceExpression.expressions) === false) {
+            return callback(new Error('Sequence expression expressions must be an array.'));
+        }
+        let finalResult = new SequenceExpression();
+        return async.eachSeries(sequenceExpression.expressions, (expression, cb) => {
+            return self.parseCommon(expression, (err, res) => {
+                if (err) {
+                    return cb(err);
+                }
+                // add expression
+                finalResult.value.push(res);
+                return cb();
+            })
+        }, (err) => {
+            if (err) {
+                return callback(err);
+            }
+            return callback(null, finalResult);
+        });
+    }
+
+
     parseBlock(expr, callback) {
         const self = this;
         // get expression statement
         const bodyExpression = expr.body[0];
-        let finalResult = [];
         if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
             if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
-                // enumerate and parse sequence expression
-                const expressions = bodyExpression.expression.expressions;
-                if (Array.isArray(expressions)) {
-                    return async.eachSeries(expressions, (expression, cb) => {
-                        return self.parseCommon(expression, (err, res) => {
-                            if (err) {
-                                return cb(err);
-                            }
-                            // add expression
-                            finalResult.push(res);
-                            return cb();
-                        })
-                    }, (err, result) => {
-                        if (err) {
-                            return callback(err);
-                        }
-                        return callback(null, finalResult);
-                    });
-                }
+                return self.parseSequence(bodyExpression.expression, (err, result) => {
+                    if (err) {
+                        return callback(err);
+                    }
+                    return callback(null, result);
+                });
             }
         }
         else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
             // get return statement
             const objectExpression = bodyExpression.argument;
             if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
-                return async.eachSeries(objectExpression.properties, (property, cb) => {
-                    self.parseCommon(property.value, (err, value) => {
-                        if (err) {
-                            return cb(err);
-                        }
-                        // add expression
-                        finalResult.push(value);
-                        return cb();
-                    });
-                }, (err) => {
-                    if (err) {
-                        return callback(err);
-                    }
-                    return callback(null, finalResult);
+                return self.parseObject(objectExpression, (err, result) => {
+                   if (err) {
+                       return callback(err);
+                   }
+                   return callback(null, result);
                 });
             }
         }
@@ -419,25 +556,36 @@ export class ClosureParser {
                     }
                     else {
                         switch (method) {
-                            case 'getDate': method='day';break;
-                            case 'getMonth': method='month';break;
+                            case 'getDate':
+                                method='dayOfMonth';break;
+                            case 'toDate':
+                                method='date';break;
+                            case 'getMonth':
+                                method='month';break;
                             case 'getYear':
                             case 'getFullYear':
-                                method='date';break;
-                            case 'getMinutes': method='minute';break;
-                            case 'getSeconds': method='second';break;
-                            case 'getHours': method='hour';break;
-                            case 'startsWith': method='startswith';break;
-                            case 'endsWith': method='endswith';break;
-                            case 'trim': method='trim';break;
-                            case 'toUpperCase': method='toupper';break;
-                            case 'toLowerCase': method='tolower';break;
-                            case 'floor': method='floor';break;
-                            case 'ceiling': method='ceiling';break;
-                            case 'indexOf': method='indexof';break;
+                                method='year';break;
+                            case 'getMinutes':
+                                method='minute';break;
+                            case 'getSeconds':
+                                method='second';break;
+                            case 'getHours':
+                                method='hour';break;
+                            case 'startsWith':
+                                method='startswith';break;
+                            case 'endsWith':
+                                method='endswith';break;
+                            case 'trim':
+                                method='trim';break;
+                            case 'toUpperCase':
+                                method='toUpper';break;
+                            case 'toLowerCase':
+                                method='toLower';break;
+                            case 'indexOf':
+                                method='indexOfBytes';break;
                             case 'substring':
                             case 'substr':
-                                method='substring';break;
+                                method='substr';break;
                             default:
                                 callback(new Error('The specified method ('+ method +') is unsupported or is not yet implemented.'));
                                 return;
@@ -460,8 +608,25 @@ export class ClosureParser {
 
         const self = this;
         try {
-            //get method name
-            let name = expr.callee.name;
+            let name;
+            // if callee is a sequence expression e.g. round(x.price, 4)
+            // where round is something like import { round } from 'mathjs';
+            if (expr.callee && expr.callee.type === ExpressionTypes.SequenceExpression) {
+                // search argument for an expression of type StaticMemberExpression
+                const findExpression = expr.callee.expressions.find( expression => {
+                    return expression.type === ExpressionTypes.MemberExpression;
+                });
+                if (findExpression == null) {
+                    // throw error
+                    return callback(new Error('CallExpression has an invalid syntax. Expected a valid callee member expression.'));
+                } else {
+                    name = memberExpressionToString(findExpression);
+                }
+            }
+            else {
+                name = expr.callee.name;
+            }
+
 
             const args = [];
             let needsEvaluation = true;
@@ -502,7 +667,17 @@ export class ClosureParser {
                         callback(null, createLiteralExpression(fn.apply(thisArg, args.map(x => { return x.value; }))));
                     }
                     else {
-                        callback(null, createMethodCallExpression(name, args));
+                        /**
+                         * @type {Function|*}
+                         */
+                        const createMethodCall = findMethodParser(name);
+                        if (typeof createMethodCall === 'function') {
+                            return callback(null, createMethodCall(args));
+                        }
+                        else {
+                            return callback(null, createMethodCallExpression(name, args));
+                        }
+
                     }
                 }
                 catch(e) {

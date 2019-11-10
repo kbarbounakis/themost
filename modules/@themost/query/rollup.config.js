@@ -27,7 +27,9 @@ module.exports = [{
         }
     ],
     plugins: [
-        rollupBabel(),
+        rollupBabel({
+            "runtimeHelpers": true
+        }),
         rollupResolve(),
         rollupCommon(),
         autoExternal()
