@@ -27,7 +27,7 @@ module.exports = [{
     ],
     plugins: [
         rollupBabel({
-            exclude: "node_modules/**",
+            exclude: [/\/node_modules\//],
             runtimeHelpers: true
         }),
         rollupResolve(),
