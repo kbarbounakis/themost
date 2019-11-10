@@ -1,6 +1,7 @@
 import {ClosureParser} from './ClosureParser';
 import {MemberExpression, SequenceExpression} from './expressions';
-import {round} from 'mathjs';
+// eslint-disable-next-line no-unused-vars
+import {round, ceil, floor, mod, multiply, subtract, divide, add, bitAnd} from 'mathjs';
 describe('ClosureParser', () => {
    it('should create instance', () => {
       const parser = new ClosureParser();

@@ -7,7 +7,6 @@ import dts from "rollup-plugin-dts";
 
 const dist = './dist/';
 const name = 'themost_query';
-const production = !process.env.ROLLUP_WATCH;
 
 module.exports = [{
     input: './src/index.js',
@@ -28,7 +27,8 @@ module.exports = [{
     ],
     plugins: [
         rollupBabel({
-            "runtimeHelpers": true
+            exclude: "node_modules/**",
+            runtimeHelpers: true
         }),
         rollupResolve(),
         rollupCommon(),

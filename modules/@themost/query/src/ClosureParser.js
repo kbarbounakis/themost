@@ -6,16 +6,25 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import {
-    createLogicalExpression,
-    isArithmeticOperator, createArithmeticExpression,
+    createArithmeticExpression,
     createComparisonExpression,
-    createLiteralExpression, isLiteralExpression,
-    createMethodCallExpression, isComparisonOperator,
-    createMemberExpression, Operators, SequenceExpression, ObjectExpression, MethodCallExpression
+    createLiteralExpression,
+    createLogicalExpression,
+    createMemberExpression,
+    createMethodCallExpression,
+    isArithmeticOperator,
+    isComparisonOperator,
+    isLiteralExpression,
+    MethodCallExpression,
+    ObjectExpression,
+    Operators,
+    SequenceExpression
 } from './expressions';
 import {parse} from 'esprima';
 import async from 'async';
 import {Args} from '@themost/common';
+import {MathJsMethodParser} from "./MathJsMethodParser";
+import {MathMethodParser} from "./MathMethodParser";
 
 const ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -35,66 +44,14 @@ const ExpressionTypes = {
     SequenceExpression:'SequenceExpression'
 };
 
-export class StaticMethodParser {
-    constructor() {
+// // extend StaticMethodParser
+// const properties = Object.getOwnPropertyDescriptors(MathJsMethodParser);
+// Object.defineProperties(StaticMethodParser, Object.keys(properties).filter( key => {
+//     return typeof properties[key].value === 'function';
+// }).map( key => {
+//     return properties[key];
+// }));
 
-    }
-
-    static get Math() {
-        return {
-            floor(args) {
-              return new MethodCallExpression('floor', args);
-            },
-            ceil(args) {
-                return new MethodCallExpression('ceil', args);
-            },
-            round(args) {
-                return new MethodCallExpression('round', args);
-            },
-            min(args) {
-                return new MethodCallExpression('min', args);
-            },
-            max(args) {
-                return new MethodCallExpression('max', args);
-            }
-        }
-    }
-    static round(args) {
-        return new MethodCallExpression('round', args);
-    }
-
-}
-
-/**
- *
- * @param {string} name
- * @returns {Function}
- */
-function findMethodParser(name) {
-    let result = null;
-    const keys = name.split('.');
-    for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        if (result) {
-            if (result.hasOwnProperty(key)) {
-                result = result[key];
-            }
-            else {
-                result = null;
-                break;
-            }
-        }
-        else if (StaticMethodParser.hasOwnProperty(key) && i === 0) {
-            result = StaticMethodParser[key];
-        }
-        else {
-            break;
-        }
-    }
-    if (typeof result === 'function') {
-        return result;
-    }
-}
 
 /**
  * @class ClosureParser
@@ -109,7 +66,10 @@ export class ClosureParser {
         /**
          * @type {*}
          */
-        this.parsers = { };
+        this.parsers = [
+            new MathJsMethodParser(),
+            new MathMethodParser()
+        ];
 
     }
 
@@ -670,7 +630,11 @@ export class ClosureParser {
                         /**
                          * @type {Function|*}
                          */
-                        const createMethodCall = findMethodParser(name);
+                        const createMethodCall =self.parsers.map( parser => {
+                            return parser.test(name);
+                        }).find( method => {
+                            return typeof method === 'function';
+                        });
                         if (typeof createMethodCall === 'function') {
                             return callback(null, createMethodCall(args));
                         }
