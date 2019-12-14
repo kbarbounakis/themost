@@ -21,42 +21,36 @@ export class ArithmeticExpression {
 
     exprOf() {
         let p;
-        if (typeof this.left === 'undefined' || this.left===null)
+        if (this.left == null) {
             throw new Error('Expected left operand');
-        else if (typeof this.left.exprOf === 'function')
-            p = this.left.exprOf();
-        else
-            p = this.left;
-        if (typeof this.operator === 'undefined' || this.operator===null)
-            throw new Error('Expected arithmetic operator.');
-        if (this.operator.match(ArithmeticExpression.OperatorRegEx)===null)
-            throw new Error('Invalid arithmetic operator.');
-        //build right operand e.g. { $add:[ 5 ] }
-        const r = {};
-        if (typeof this.right === 'undefined' || this.right===null) {
-            r[this.operator]=[null];
         }
-        else if (typeof this.right.exprOf === 'function') {
-            if (this.right instanceof MemberExpression) {
-                r[this.operator] = [{ "$name": this.right.exprOf() }];
-            }
-            else {
-                r[this.operator] = [this.right.exprOf()];
-            }
-
+        else if (typeof this.left.exprOf === 'function') { 
+            p = this.left.exprOf(); 
         }
         else {
-            r[this.operator]=[this.right];
+            p = this.left;
         }
-        //add left operand e.g { Price: { $add:[ 5 ] } }
-        const result = {};
-        result[p] = r;
+        if (this.operator == null)
+            throw new Error('Expected arithmetic operator.');
+        if (this.operator.match(ArithmeticExpression.OperatorRegEx) == null) {
+            throw new Error('Invalid arithmetic operator.');
+        }
+        //build right operand e.g. { $add:[ 5 ] }
+        const result = { };
+        Object.defineProperty(result, this.operator, {
+            value: [ this.left.exprOf(), this.right.exprOf() ],
+            enumerable: true,
+            configurable: true
+        });
+        if (this.right == null) {
+            result[this.operator]=[null];
+        }
         //return query expression
         return result;
     }
 }
 
-ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
+ArithmeticExpression.OperatorRegEx = /^(\$add|\$subtract|\$multiply|\$divide|\$mod)$/g;
 
 /**
  * @class
@@ -320,11 +314,11 @@ export class ObjectExpression {
  */
 export class Operators {
     static Not = '$not';
-    static Mul = '$mul';
-    static Div = '$div';
+    static Mul = '$multiply';
+    static Div = '$divide';
     static Mod = '$mod';
     static Add = '$add';
-    static Sub = '$sub';
+    static Sub = '$subtract';
     static Lt = '$lt';
     static Gt = '$gt';
     static Le = '$lte';

@@ -9,14 +9,14 @@ describe('ClosureParser', () => {
    });
     it('should use ClosureParser.parseSelect()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => x.dateCreated);
+        let expr = parser.parseSelect(x => x.dateCreated);
         expect(expr).toBeTruthy();
         expect(expr instanceof MemberExpression).toBeTruthy();
         expect(expr.name).toBe('dateCreated');
     });
     it('should use ClosureParser.parseSelect()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => {
+        let expr = parser.parseSelect(x => {
             x.id,
             x.dateCreated
         });
@@ -27,7 +27,7 @@ describe('ClosureParser', () => {
     });
     it('should use ClosureParser.parseSelect()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync( x => {
+        let expr = parser.parseSelect( x => {
             return {
                 id: x.id,
                 createdAt: x.dateCreated
@@ -41,7 +41,7 @@ describe('ClosureParser', () => {
         expect(select.id).toBe('$id');
         expect(select.createdAt).toBe('$dateCreated');
 
-        expr = await parser.parseSelectAsync(function(x) {
+        expr = parser.parseSelect(function(x) {
             return {
                 id: x.id,
                 createdAt: x.dateCreated
@@ -52,7 +52,7 @@ describe('ClosureParser', () => {
 
     it('should use ClosureParser.parseSelect() with SequenceExpression', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => {
+        let expr = parser.parseSelect(x => {
             x.id,
             x.dateCreated.getMonth()
         });
@@ -63,7 +63,7 @@ describe('ClosureParser', () => {
 
     it('should use Math.floor()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => {
+        let expr = parser.parseSelect(x => {
                 x.id,
                 Math.floor(x.price)
         });
@@ -76,7 +76,7 @@ describe('ClosureParser', () => {
                 $floor: "$price"
             }
         });
-        expr = await parser.parseSelectAsync(x => {
+        expr = parser.parseSelect(x => {
                 return {
                     "price": Math.floor(x.price)
                 }
@@ -91,7 +91,7 @@ describe('ClosureParser', () => {
 
     it('should use Math.ceil()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => {
+        let expr = parser.parseSelect(x => {
                 x.id,
                 Math.ceil(x.price)
         });
@@ -104,7 +104,7 @@ describe('ClosureParser', () => {
                 $ceil: "$price"
             }
         });
-        expr = await parser.parseSelectAsync(x => {
+        expr = parser.parseSelect(x => {
             return {
                 "price": Math.ceil(x.price)
             }
@@ -119,9 +119,9 @@ describe('ClosureParser', () => {
 
     it('should use Math.round()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => {
+        let expr = parser.parseSelect(x => {
             x.id,
-                Math.round(x.price)
+            Math.round(x.price)
         });
         expect(expr).toBeTruthy();
         let select = expr.exprOf();
@@ -131,7 +131,7 @@ describe('ClosureParser', () => {
                 $round: "$price"
             }
         });
-        expr = await parser.parseSelectAsync(x => {
+        expr = parser.parseSelect(x => {
             return {
                 "price": Math.round(x.price)
             }
@@ -144,9 +144,10 @@ describe('ClosureParser', () => {
         });
     });
 
-    fit('should use mathjs.round()', async () => {
+
+    it('should use mathjs.round()', async () => {
         const parser = new ClosureParser();
-        let expr = await parser.parseSelectAsync(x => {
+        let expr = parser.parseSelect(x => {
             return {
                 "price": round(x.price, 4)
             }
@@ -158,5 +159,27 @@ describe('ClosureParser', () => {
             }
         });
     });
+
+    it('should use mathjs.floor()', async () => {
+        const parser = new ClosureParser();
+        let expr = parser.parseSelect(x => {
+            return {
+                "price": floor(x.price * 0.8)
+            }
+        });
+        let select = expr.exprOf();
+        expect(select).toEqual(
+        {
+            "price": {
+                "$floor": { 
+                    "$multiply": [ 
+                        "$price",
+                        0.8 
+                    ] 
+                }
+            }
+        });
+    });
+
 
 });

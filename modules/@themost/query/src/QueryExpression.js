@@ -324,6 +324,10 @@ export class QueryExpression {
             this.$select = { };
             return this;
         }
+        // todo: validate select closure argument
+        if (typeof args[0] === 'function') {
+            const selectClosure = args[0];
+        }
         // map arguments to query fields
         this.$select = args.filter( x => x!= null ).map( x => {
             if (typeof x === 'string') {
