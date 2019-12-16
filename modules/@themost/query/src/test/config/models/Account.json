@@ -1,0 +1,22 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "name": "Account",
+    "title": "Accounts",
+    "source": "Accounts",
+    "view": "Accounts",
+    "version": "1.0",
+    "fields": [
+        {
+            "name": "ID",
+            "type": "Counter",
+            "nullable": false,
+            "primary": true
+        },
+        {
+            "name": "Name",
+            "type": "Text",
+            "size": 255,
+            "nullable": false
+        }
+    ]
+}

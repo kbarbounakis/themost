@@ -36,6 +36,6 @@ export declare class SqlFormatter {
     formatInsert(query: any): string;
     formatUpdate(query: any): string;
     formatDelete(query: any): string;
-    format(obj: any, s?: string): string;
+    format(expr: any): string;
 
 }

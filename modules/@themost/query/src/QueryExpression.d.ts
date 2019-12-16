@@ -46,7 +46,8 @@ export declare class QueryExpression {
     // noinspection JSUnusedGlobalSymbols
     hasLimit(): boolean;
     distinct(value: any): QueryExpression;
-    where(field: any): QueryExpression;
+    where(expr: any): QueryExpression;
+    where<T>(expr: (value: T) => boolean): QueryExpression;
     // noinspection JSUnusedGlobalSymbols
     injectWhere(where: any);
     delete(entity: string): QueryExpression;
@@ -59,6 +60,7 @@ export declare class QueryExpression {
     update(collection: any): QueryExpression;
     set(any: any): QueryExpression;
     select(...field: any[]): QueryExpression;
+    select<T>(expr: (value: T) => any): QueryExpression;
     count(alias: string): QueryExpression;
     from(alias: string): QueryExpression;
     join(collection: any): QueryExpression;

@@ -191,10 +191,7 @@ export class ComparisonExpression {
                 p[this.operator]=this.right;
             name = this.left.name;
             expr = {};
-            if (this.operator==='$eq' && !(this.right instanceof MemberExpression))
-                expr[name]=p.$eq;
-            else
-                expr[name] = p;
+            expr[name] = p;
             //return query expression
             return expr;
         }

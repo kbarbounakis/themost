@@ -1,0 +1,662 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "title": "Product",
+    "name": "Products",
+    "source": "Products",
+    "view": "Products",
+    "version": "1.0",
+    "fields": [
+        {
+            "name": "ProductID",
+            "type": "Integer",
+            "nullable": false,
+            "primary": true,
+            "value":"javascript:return this.newid();"
+        },
+        {
+            "name": "ProductName",
+            "type": "Text",
+            "nullable": false,
+            "size": 255
+        },
+        {
+            "name": "Supplier",
+            "type": "Supplier",
+            "nullable": false
+        },
+        {
+            "name": "Category",
+            "type": "Category",
+            "nullable": false
+        },
+        {
+            "name": "Unit",
+            "type": "Text",
+            "nullable": false,
+            "size": 255
+        },
+        {
+            "name": "Price",
+            "type": "PositiveNumber",
+            "nullable": false
+        }
+    ],
+    "seed": [
+        {
+            "ProductID": 1,
+            "ProductName": "Chais",
+            "Supplier": 1,
+            "Category": 1,
+            "Unit": "10 boxes x 20 bags",
+            "Price": 18.0
+        },
+        {
+            "ProductID": 2,
+            "ProductName": "Chang",
+            "Supplier": 1,
+            "Category": 1,
+            "Unit": "24 - 12 oz bottles",
+            "Price": 19.0
+        },
+        {
+            "ProductID": 3,
+            "ProductName": "Aniseed Syrup",
+            "Supplier": 1,
+            "Category": 2,
+            "Unit": "12 - 550 ml bottles",
+            "Price": 10.0
+        },
+        {
+            "ProductID": 4,
+            "ProductName": "Chef Anton's Cajun Seasoning",
+            "Supplier": 2,
+            "Category": 2,
+            "Unit": "48 - 6 oz jars",
+            "Price": 22.0
+        },
+        {
+            "ProductID": 5,
+            "ProductName": "Chef Anton's Gumbo Mix",
+            "Supplier": 2,
+            "Category": 2,
+            "Unit": "36 boxes",
+            "Price": 21.35
+        },
+        {
+            "ProductID": 6,
+            "ProductName": "Grandma's Boysenberry Spread",
+            "Supplier": 3,
+            "Category": 2,
+            "Unit": "12 - 8 oz jars",
+            "Price": 25.0
+        },
+        {
+            "ProductID": 7,
+            "ProductName": "Uncle Bob's Organic Dried Pears",
+            "Supplier": 3,
+            "Category": 7,
+            "Unit": "12 - 1 lb pkgs.",
+            "Price": 30.0
+        },
+        {
+            "ProductID": 8,
+            "ProductName": "Northwoods Cranberry Sauce",
+            "Supplier": 3,
+            "Category": 2,
+            "Unit": "12 - 12 oz jars",
+            "Price": 40.0
+        },
+        {
+            "ProductID": 9,
+            "ProductName": "Mishi Kobe Niku",
+            "Supplier": 4,
+            "Category": 6,
+            "Unit": "18 - 500 g pkgs.",
+            "Price": 97.0
+        },
+        {
+            "ProductID": 10,
+            "ProductName": "Ikura",
+            "Supplier": 4,
+            "Category": 8,
+            "Unit": "12 - 200 ml jars",
+            "Price": 31.0
+        },
+        {
+            "ProductID": 11,
+            "ProductName": "Queso Cabrales",
+            "Supplier": 5,
+            "Category": 4,
+            "Unit": "1 kg pkg.",
+            "Price": 21.0
+        },
+        {
+            "ProductID": 12,
+            "ProductName": "Queso Manchego La Pastora",
+            "Supplier": 5,
+            "Category": 4,
+            "Unit": "10 - 500 g pkgs.",
+            "Price": 38.0
+        },
+        {
+            "ProductID": 13,
+            "ProductName": "Konbu",
+            "Supplier": 6,
+            "Category": 8,
+            "Unit": "2 kg box",
+            "Price": 6.0
+        },
+        {
+            "ProductID": 14,
+            "ProductName": "Tofu",
+            "Supplier": 6,
+            "Category": 7,
+            "Unit": "40 - 100 g pkgs.",
+            "Price": 23.25
+        },
+        {
+            "ProductID": 15,
+            "ProductName": "Genen Shouyu",
+            "Supplier": 6,
+            "Category": 2,
+            "Unit": "24 - 250 ml bottles",
+            "Price": 15.5
+        },
+        {
+            "ProductID": 16,
+            "ProductName": "Pavlova",
+            "Supplier": 7,
+            "Category": 3,
+            "Unit": "32 - 500 g boxes",
+            "Price": 17.45
+        },
+        {
+            "ProductID": 17,
+            "ProductName": "Alice Mutton",
+            "Supplier": 7,
+            "Category": 6,
+            "Unit": "20 - 1 kg tins",
+            "Price": 39.0
+        },
+        {
+            "ProductID": 18,
+            "ProductName": "Carnarvon Tigers",
+            "Supplier": 7,
+            "Category": 8,
+            "Unit": "16 kg pkg.",
+            "Price": 62.5
+        },
+        {
+            "ProductID": 19,
+            "ProductName": "Teatime Chocolate Biscuits",
+            "Supplier": 8,
+            "Category": 3,
+            "Unit": "10 boxes x 12 pieces",
+            "Price": 9.2
+        },
+        {
+            "ProductID": 20,
+            "ProductName": "Sir Rodney's Marmalade",
+            "Supplier": 8,
+            "Category": 3,
+            "Unit": "30 gift boxes",
+            "Price": 81.0
+        },
+        {
+            "ProductID": 21,
+            "ProductName": "Sir Rodney's Scones",
+            "Supplier": 8,
+            "Category": 3,
+            "Unit": "24 pkgs. x 4 pieces",
+            "Price": 10.0
+        },
+        {
+            "ProductID": 22,
+            "ProductName": "Gustaf's Knäckebröd",
+            "Supplier": 9,
+            "Category": 5,
+            "Unit": "24 - 500 g pkgs.",
+            "Price": 21.0
+        },
+        {
+            "ProductID": 23,
+            "ProductName": "Tunnbröd",
+            "Supplier": 9,
+            "Category": 5,
+            "Unit": "12 - 250 g pkgs.",
+            "Price": 9.0
+        },
+        {
+            "ProductID": 24,
+            "ProductName": "Guaraná Fantástica",
+            "Supplier": 10,
+            "Category": 1,
+            "Unit": "12 - 355 ml cans",
+            "Price": 4.5
+        },
+        {
+            "ProductID": 25,
+            "ProductName": "NuNuCa Nuß-Nougat-Creme",
+            "Supplier": 11,
+            "Category": 3,
+            "Unit": "20 - 450 g glasses",
+            "Price": 14.0
+        },
+        {
+            "ProductID": 26,
+            "ProductName": "Gumbär Gummibärchen",
+            "Supplier": 11,
+            "Category": 3,
+            "Unit": "100 - 250 g bags",
+            "Price": 31.23
+        },
+        {
+            "ProductID": 27,
+            "ProductName": "Schoggi Schokolade",
+            "Supplier": 11,
+            "Category": 3,
+            "Unit": "100 - 100 g pieces",
+            "Price": 43.9
+        },
+        {
+            "ProductID": 28,
+            "ProductName": "Rössle Sauerkraut",
+            "Supplier": 12,
+            "Category": 7,
+            "Unit": "25 - 825 g cans",
+            "Price": 45.6
+        },
+        {
+            "ProductID": 29,
+            "ProductName": "Thüringer Rostbratwurst",
+            "Supplier": 12,
+            "Category": 6,
+            "Unit": "50 bags x 30 sausgs.",
+            "Price": 123.79
+        },
+        {
+            "ProductID": 30,
+            "ProductName": "Nord-Ost Matjeshering",
+            "Supplier": 13,
+            "Category": 8,
+            "Unit": "10 - 200 g glasses",
+            "Price": 25.89
+        },
+        {
+            "ProductID": 31,
+            "ProductName": "Gorgonzola Telino",
+            "Supplier": 14,
+            "Category": 4,
+            "Unit": "12 - 100 g pkgs",
+            "Price": 12.5
+        },
+        {
+            "ProductID": 32,
+            "ProductName": "Mascarpone Fabioli",
+            "Supplier": 14,
+            "Category": 4,
+            "Unit": "24 - 200 g pkgs.",
+            "Price": 32.0
+        },
+        {
+            "ProductID": 33,
+            "ProductName": "Geitost",
+            "Supplier": 15,
+            "Category": 4,
+            "Unit": "500 g",
+            "Price": 2.5
+        },
+        {
+            "ProductID": 34,
+            "ProductName": "Sasquatch Ale",
+            "Supplier": 16,
+            "Category": 1,
+            "Unit": "24 - 12 oz bottles",
+            "Price": 14.0
+        },
+        {
+            "ProductID": 35,
+            "ProductName": "Steeleye Stout",
+            "Supplier": 16,
+            "Category": 1,
+            "Unit": "24 - 12 oz bottles",
+            "Price": 18.0
+        },
+        {
+            "ProductID": 36,
+            "ProductName": "Inlagd Sill",
+            "Supplier": 17,
+            "Category": 8,
+            "Unit": "24 - 250 g jars",
+            "Price": 19.0
+        },
+        {
+            "ProductID": 37,
+            "ProductName": "Gravad lax",
+            "Supplier": 17,
+            "Category": 8,
+            "Unit": "12 - 500 g pkgs.",
+            "Price": 26.0
+        },
+        {
+            "ProductID": 38,
+            "ProductName": "Côte de Blaye",
+            "Supplier": 18,
+            "Category": 1,
+            "Unit": "12 - 75 cl bottles",
+            "Price": 263.5
+        },
+        {
+            "ProductID": 39,
+            "ProductName": "Chartreuse verte",
+            "Supplier": 18,
+            "Category": 1,
+            "Unit": "750 cc per bottle",
+            "Price": 18.0
+        },
+        {
+            "ProductID": 40,
+            "ProductName": "Boston Crab Meat",
+            "Supplier": 19,
+            "Category": 8,
+            "Unit": "24 - 4 oz tins",
+            "Price": 18.4
+        },
+        {
+            "ProductID": 41,
+            "ProductName": "Jack's New England Clam Chowder",
+            "Supplier": 19,
+            "Category": 8,
+            "Unit": "12 - 12 oz cans",
+            "Price": 9.65
+        },
+        {
+            "ProductID": 42,
+            "ProductName": "Singaporean Hokkien Fried Mee",
+            "Supplier": 20,
+            "Category": 5,
+            "Unit": "32 - 1 kg pkgs.",
+            "Price": 14.0
+        },
+        {
+            "ProductID": 43,
+            "ProductName": "Ipoh Coffee",
+            "Supplier": 20,
+            "Category": 1,
+            "Unit": "16 - 500 g tins",
+            "Price": 46.0
+        },
+        {
+            "ProductID": 44,
+            "ProductName": "Gula Malacca",
+            "Supplier": 20,
+            "Category": 2,
+            "Unit": "20 - 2 kg bags",
+            "Price": 19.45
+        },
+        {
+            "ProductID": 45,
+            "ProductName": "Røgede sild",
+            "Supplier": 21,
+            "Category": 8,
+            "Unit": "1k pkg.",
+            "Price": 9.5
+        },
+        {
+            "ProductID": 46,
+            "ProductName": "Spegesild",
+            "Supplier": 21,
+            "Category": 8,
+            "Unit": "4 - 450 g glasses",
+            "Price": 12.0
+        },
+        {
+            "ProductID": 47,
+            "ProductName": "Zaanse koeken",
+            "Supplier": 22,
+            "Category": 3,
+            "Unit": "10 - 4 oz boxes",
+            "Price": 9.5
+        },
+        {
+            "ProductID": 48,
+            "ProductName": "Chocolade",
+            "Supplier": 22,
+            "Category": 3,
+            "Unit": "10 pkgs.",
+            "Price": 12.75
+        },
+        {
+            "ProductID": 49,
+            "ProductName": "Maxilaku",
+            "Supplier": 23,
+            "Category": 3,
+            "Unit": "24 - 50 g pkgs.",
+            "Price": 20.0
+        },
+        {
+            "ProductID": 50,
+            "ProductName": "Valkoinen suklaa",
+            "Supplier": 23,
+            "Category": 3,
+            "Unit": "12 - 100 g bars",
+            "Price": 16.25
+        },
+        {
+            "ProductID": 51,
+            "ProductName": "Manjimup Dried Apples",
+            "Supplier": 24,
+            "Category": 7,
+            "Unit": "50 - 300 g pkgs.",
+            "Price": 53.0
+        },
+        {
+            "ProductID": 52,
+            "ProductName": "Filo Mix",
+            "Supplier": 24,
+            "Category": 5,
+            "Unit": "16 - 2 kg boxes",
+            "Price": 7.0
+        },
+        {
+            "ProductID": 53,
+            "ProductName": "Perth Pasties",
+            "Supplier": 24,
+            "Category": 6,
+            "Unit": "48 pieces",
+            "Price": 32.8
+        },
+        {
+            "ProductID": 54,
+            "ProductName": "Tourtière",
+            "Supplier": 25,
+            "Category": 6,
+            "Unit": "16 pies",
+            "Price": 7.45
+        },
+        {
+            "ProductID": 55,
+            "ProductName": "Pâté chinois",
+            "Supplier": 25,
+            "Category": 6,
+            "Unit": "24 boxes x 2 pies",
+            "Price": 24.0
+        },
+        {
+            "ProductID": 56,
+            "ProductName": "Gnocchi di nonna Alice",
+            "Supplier": 26,
+            "Category": 5,
+            "Unit": "24 - 250 g pkgs.",
+            "Price": 38.0
+        },
+        {
+            "ProductID": 57,
+            "ProductName": "Ravioli Angelo",
+            "Supplier": 26,
+            "Category": 5,
+            "Unit": "24 - 250 g pkgs.",
+            "Price": 19.5
+        },
+        {
+            "ProductID": 58,
+            "ProductName": "Escargots de Bourgogne",
+            "Supplier": 27,
+            "Category": 8,
+            "Unit": "24 pieces",
+            "Price": 13.25
+        },
+        {
+            "ProductID": 59,
+            "ProductName": "Raclette Courdavault",
+            "Supplier": 28,
+            "Category": 4,
+            "Unit": "5 kg pkg.",
+            "Price": 55.0
+        },
+        {
+            "ProductID": 60,
+            "ProductName": "Camembert Pierrot",
+            "Supplier": 28,
+            "Category": 4,
+            "Unit": "15 - 300 g rounds",
+            "Price": 34.0
+        },
+        {
+            "ProductID": 61,
+            "ProductName": "Sirop d'érable",
+            "Supplier": 29,
+            "Category": 2,
+            "Unit": "24 - 500 ml bottles",
+            "Price": 28.5
+        },
+        {
+            "ProductID": 62,
+            "ProductName": "Tarte au sucre",
+            "Supplier": 29,
+            "Category": 3,
+            "Unit": "48 pies",
+            "Price": 49.3
+        },
+        {
+            "ProductID": 63,
+            "ProductName": "Vegie-spread",
+            "Supplier": 7,
+            "Category": 2,
+            "Unit": "15 - 625 g jars",
+            "Price": 43.9
+        },
+        {
+            "ProductID": 64,
+            "ProductName": "Wimmers gute Semmelknödel",
+            "Supplier": 12,
+            "Category": 5,
+            "Unit": "20 bags x 4 pieces",
+            "Price": 33.25
+        },
+        {
+            "ProductID": 65,
+            "ProductName": "Louisiana Fiery Hot Pepper Sauce",
+            "Supplier": 2,
+            "Category": 2,
+            "Unit": "32 - 8 oz bottles",
+            "Price": 21.05
+        },
+        {
+            "ProductID": 66,
+            "ProductName": "Louisiana Hot Spiced Okra",
+            "Supplier": 2,
+            "Category": 2,
+            "Unit": "24 - 8 oz jars",
+            "Price": 17.0
+        },
+        {
+            "ProductID": 67,
+            "ProductName": "Laughing Lumberjack Lager",
+            "Supplier": 16,
+            "Category": 1,
+            "Unit": "24 - 12 oz bottles",
+            "Price": 14.0
+        },
+        {
+            "ProductID": 68,
+            "ProductName": "Scottish Longbreads",
+            "Supplier": 8,
+            "Category": 3,
+            "Unit": "10 boxes x 8 pieces",
+            "Price": 12.5
+        },
+        {
+            "ProductID": 69,
+            "ProductName": "Gudbrandsdalsost",
+            "Supplier": 15,
+            "Category": 4,
+            "Unit": "10 kg pkg.",
+            "Price": 36.0
+        },
+        {
+            "ProductID": 70,
+            "ProductName": "Outback Lager",
+            "Supplier": 7,
+            "Category": 1,
+            "Unit": "24 - 355 ml bottles",
+            "Price": 15.0
+        },
+        {
+            "ProductID": 71,
+            "ProductName": "Fløtemysost",
+            "Supplier": 15,
+            "Category": 4,
+            "Unit": "10 - 500 g pkgs.",
+            "Price": 21.5
+        },
+        {
+            "ProductID": 72,
+            "ProductName": "Mozzarella di Giovanni",
+            "Supplier": 14,
+            "Category": 4,
+            "Unit": "24 - 200 g pkgs.",
+            "Price": 34.8
+        },
+        {
+            "ProductID": 73,
+            "ProductName": "Röd Kaviar",
+            "Supplier": 17,
+            "Category": 8,
+            "Unit": "24 - 150 g jars",
+            "Price": 15.0
+        },
+        {
+            "ProductID": 74,
+            "ProductName": "Longlife Tofu",
+            "Supplier": 4,
+            "Category": 7,
+            "Unit": "5 kg pkg.",
+            "Price": 10.0
+        },
+        {
+            "ProductID": 75,
+            "ProductName": "Rhönbräu Klosterbier",
+            "Supplier": 12,
+            "Category": 1,
+            "Unit": "24 - 0.5 l bottles",
+            "Price": 7.75
+        },
+        {
+            "ProductID": 76,
+            "ProductName": "Lakkalikööri",
+            "Supplier": 23,
+            "Category": 1,
+            "Unit": "500 ml",
+            "Price": 18.0
+        },
+        {
+            "ProductID": 77,
+            "ProductName": "Original Frankfurter grüne Soße",
+            "Supplier": 12,
+            "Category": 2,
+            "Unit": "12 boxes",
+            "Price": 13.0
+        }
+    ]
+}

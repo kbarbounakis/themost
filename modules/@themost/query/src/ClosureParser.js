@@ -22,7 +22,6 @@ import {
     SequenceExpression
 } from './expressions';
 import {parse} from 'esprima';
-import async from 'async';
 import {Args} from '@themost/common';
 import {MathJsMethodParser} from "./MathJsMethodParser";
 import {MathMethodParser} from "./MathMethodParser";
@@ -85,7 +84,27 @@ export class ClosureParser {
         const funcExpr = expr.body[0].expression.argument;
         //get named parameters
         this.namedParams = funcExpr.params;
-        return this.parseCommon(funcExpr.body);
+        const res = this.parseCommon(funcExpr.body);
+        if (res && res instanceof SequenceExpression) {
+            return res.value.map( x => {
+                return x.exprOf();
+            });
+        }
+        if (res && res instanceof ObjectExpression) {
+            return Object.keys(res).map( key => {
+                if (res.hasOwnProperty(key)) {
+                    const result = {};
+                    Object.defineProperty(result, key, {
+                        configurable: true,
+                        enumerable: true,
+                        writable: true,
+                        value: res[key].exprOf()
+                    })
+                    return result;
+                }
+            });
+        }
+        throw new Error('Invalid select closure');
     }
 
     /**
@@ -116,7 +135,7 @@ export class ClosureParser {
         }
         const closureExpr =  fnExpr.body.body[0].argument;
         //parse this expression
-        const result = his.parseCommon(closureExpr);
+        const result = this.parseCommon(closureExpr);
         //and finally return the equivalent query expression
         if (result && typeof result.exprOf === 'function') {
                 return result.exprOf();

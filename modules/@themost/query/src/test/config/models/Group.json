@@ -1,0 +1,12 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "name": "Group",
+    "title": "Groups",
+    "source": "Groups",
+    "view": "GroupsView",
+    "inherits": "Account",
+    "version": "1.0",
+    "fields": [
+
+    ]
+}

@@ -11,6 +11,7 @@ import {Args} from '@themost/common';
 import { QueryField } from './QueryField';
 import { QueryCollection } from './QueryCollection';
 import {getOwnPropertyName, isMethodOrNameReference} from './query';
+import { ClosureParser } from './ClosureParser';
 
 class InvalidLeftOperandError extends Error {
     constructor() {
@@ -135,12 +136,17 @@ export class QueryExpression {
     }
     /**
      * Starts a comparison expression by assigning left operand
-     * @param {*} field
+     * @param {*} expr
      * @returns {QueryExpression}
      */
-    where(field) {
+    where(expr) {
+        if (typeof expr === 'function') {
+            // parse closure
+            this.$match = new ClosureParser().parseFilter(expr);
+            return this;
+        }
         // set left operand
-        this._where(field);
+        this._where(expr);
         // clear where expression
         delete this.$match;
         // and finally return this;
@@ -319,7 +325,7 @@ export class QueryExpression {
         delete this.$insert;
         delete this.$update;
         // get argument
-        const args = Array.prototype.slice.call(arguments);
+        let args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
             this.$select = { };
             return this;
@@ -327,6 +333,7 @@ export class QueryExpression {
         // todo: validate select closure argument
         if (typeof args[0] === 'function') {
             const selectClosure = args[0];
+            args = new ClosureParser().parseSelect(selectClosure);
         }
         // map arguments to query fields
         this.$select = args.filter( x => x!= null ).map( x => {

@@ -164,6 +164,23 @@ export class SqlFormatter {
         return finalName.replace(/\$?(\w+)|^\$?(\w+)$/g, this.settings.nameFormat);
     }
 
+    /**
+     * @param {string} name
+     */
+    escapeNameOnly(name) {
+        let currentCollection;
+        try {
+            currentCollection = this.currectCollection;
+            this.currectCollection = null;
+            const result = this.escapeName(name);
+            this.currectCollection = currentCollection;
+            return result;
+        }
+        catch(err) {
+            this.currectCollection = currentCollection;
+            throw err;
+        }
+    }
 
     formatSelect(query) {
         Args.notNull(query, 'Query expression');
@@ -372,6 +389,8 @@ export class SqlFormatter {
     formatField(expr) {
         Args.notNull(expr, 'Field expression');
         let name = getOwnPropertyName(expr);
+        let currentCollection;
+        let result;
         Args.check(name != null, new Error('Field name cannot be empty.'));
         // field expression is simple select e.g. { "dateCreated" : 1 }
         if (expr[name] === 1) {
@@ -384,10 +403,9 @@ export class SqlFormatter {
         }
         // expression with alias e.g. { "createdAt" : "$dateCreated" }
         if (typeof field === 'string' && isMethodOrNameReference(field)) {
-            return `${this.escapeName(field)} ${this.settings.aliasKeyword} ${this.escapeName(name)}`;
+            return `${this.escapeName(field)} ${this.settings.aliasKeyword} ${this.escapeNameOnly(name)}`;
         }
         if (typeof field === 'object') {
-            let result;
             // field has an expression e.g. { "minPrice": { "$min": "$price" } }
             let funcName = getOwnPropertyName(field);
             if (isMethodOrNameReference(funcName)) {
@@ -413,7 +431,7 @@ export class SqlFormatter {
                     else {
                         result += ` `;
                     }
-                    result += this.escapeName(name);
+                    result += this.escapeNameOnly(name);
                     return result;
                 }
             }
@@ -594,6 +612,31 @@ export class SqlFormatter {
         }
         Args.check(hasWhere, new ExpectedWhereExpression());
         return result;
+    }
+
+    format(expr) {
+        if (expr.$select) {
+            if (expr.$count) {
+                return this.formatCount(expr);
+            }
+            if (expr.$limit) {
+                return this.formatLimitSelect(expr);
+            }
+            return this.formatSelect(expr);
+        }
+        if (expr.$update) {
+            return this.formatUpdate(expr);
+        }
+        if (expr.$insert) {
+            return this.formatInsert(expr);
+        }
+        if (expr.$delete) {
+            return this.formatDelete(expr);
+        }
+        if (expr.$where) {
+            return this.formatWhere(expr.$where);
+        }
+        throw new Error('Unkown expression');
     }
 
     /**
