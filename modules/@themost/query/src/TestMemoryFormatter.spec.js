@@ -120,7 +120,7 @@ export class MemoryFormatter extends SqlFormatter {
      * @param {string} p1 The string to search for
      * @returns {string}
      */
-    $indexOf(p0, p1) {
+    $indexOfBytes(p0, p1) {
         return `(INSTR(${this.escape(p0)},${this.escape(p1)})-1)`;
     }
 

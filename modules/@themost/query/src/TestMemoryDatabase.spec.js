@@ -23,6 +23,8 @@ async function migrateAsync(model) {
 }
 
 export async function initDatabase() {
+    // change NODE_ENV (do not log statement while adding data)
+    process.env.NODE_ENV = 'devel';
     await migrateAsync(Customers);
     await migrateAsync(Shippers);
     await migrateAsync(Categories);
@@ -31,4 +33,6 @@ export async function initDatabase() {
     await migrateAsync(Products);
     await migrateAsync(Orders);
     await migrateAsync(OrderDetails);
+    // restore NODE_ENV
+    process.env.NODE_ENV = 'development';
 }

@@ -47,7 +47,8 @@ export declare class QueryExpression {
     hasLimit(): boolean;
     distinct(value: any): QueryExpression;
     where(expr: any): QueryExpression;
-    where<T>(expr: (value: T) => boolean): QueryExpression;
+    where<T>(expr: (value: T) => boolean, params?: any): QueryExpression;
+    where<T,J>(expr: (value1: T, value2: J) => any, params?: any): QueryExpression;
     // noinspection JSUnusedGlobalSymbols
     injectWhere(where: any);
     delete(entity: string): QueryExpression;
@@ -60,16 +61,22 @@ export declare class QueryExpression {
     update(collection: any): QueryExpression;
     set(any: any): QueryExpression;
     select(...field: any[]): QueryExpression;
-    select<T>(expr: (value: T) => any): QueryExpression;
+    select<T>(expr: (value: T) => any, params?: any): QueryExpression;
+    select<T,J>(expr: (value1: T, value2: J) => any, params?: any): QueryExpression;
     count(alias: string): QueryExpression;
     from(alias: string): QueryExpression;
     join(collection: any): QueryExpression;
     with(localField: any, foreignField: any): QueryExpression;
     orderBy(...field: any[]): QueryExpression;
+    orderBy<T>(expr: (value: T) => any, params?: any): QueryExpression;
     orderByDescending(...field: any[]): QueryExpression;
+    orderByDescending<T>(expr: (value: T) => any, params?: any): QueryExpression;
     thenBy(...field: any[]): QueryExpression;
+    thenBy<T>(expr: (value: T) => any, params?: any): QueryExpression;
     thenByDescending(...field: any[]): QueryExpression;
+    thenByDescending<T>(expr: (value: T) => any, params?: any): QueryExpression;
     groupBy(...field: any[]): QueryExpression;
+    groupBy<T>(expr: (value: T) => any, params?: any): QueryExpression;
     or(field: any): QueryExpression;
     and(field: any): QueryExpression;
     equal(value: any): QueryExpression;

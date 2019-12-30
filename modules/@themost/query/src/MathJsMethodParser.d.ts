@@ -8,12 +8,17 @@
 import {MethodCallExpression} from "./expressions";
 
 export declare class MathJsMethodParser {
-    static round(args): MethodCallExpression
-    static ceil(args): MethodCallExpression
-    static floor(args): MethodCallExpression
-    static add(args): MethodCallExpression
-    static subtract(args): MethodCallExpression
-    static multiply(args): MethodCallExpression
-    static divide(args): MethodCallExpression
-    static bitAnd(args): MethodCallExpression
+    static round(args): MethodCallExpression;
+    static ceil(args): MethodCallExpression;
+    static floor(args): MethodCallExpression;
+    static add(args): MethodCallExpression;
+    static subtract(args): MethodCallExpression;
+    static multiply(args): MethodCallExpression;
+    static divide(args): MethodCallExpression;
+    static bitAnd(args): MethodCallExpression;
+    static mean(args): MethodCallExpression;
+    static sum(args): MethodCallExpression;
+    static min(args): MethodCallExpression;
+    static max(args): MethodCallExpression;
+    static mod(args): MethodCallExpression;
 }

@@ -9,13 +9,15 @@
 export type SelectClosure = (x: any) => any;
 export type FilterClosure = (x: any) => any;
 
+export declare function count(...args: any): number;
+
 /**
  * @class
  */
 export declare class ClosureParser {
     static binaryToExpressionOperator(binaryOperator: string): string;
-    parseSelect(func: SelectClosure): any;
-    parseFilter(func: FilterClosure): any;
+    parseSelect(func: SelectClosure, params?: any): any;
+    parseFilter(func: FilterClosure, params?: any): any;
     parseCommon(expr: any): any;
     parseLogical(expr: any): any;
     parseBinary(expr: any): any;

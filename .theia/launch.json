@@ -43,6 +43,28 @@
               "./modules/@themost/query/src/ClosureParser.parseFilter.spec.js",
           ],
           "internalConsoleOptions": "openOnSessionStart"
+      },
+      {
+          "type": "node",
+          "request": "launch",
+          "name": "TestAggregateFunctions.spec.js",
+          "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine",
+          "cwd": "${workspaceFolder}",
+          "args": [
+              "./modules/@themost/query/src/TestAggregateFunctions.spec.js",
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
+      },
+      {
+          "type": "node",
+          "request": "launch",
+          "name": "TestArithmeticFunctions.spec.js",
+          "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine",
+          "cwd": "${workspaceFolder}",
+          "args": [
+              "./modules/@themost/query/src/TestArithmeticFunctions.spec.js",
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
       }
   ]
 }

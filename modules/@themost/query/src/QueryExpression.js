@@ -137,12 +137,13 @@ export class QueryExpression {
     /**
      * Starts a comparison expression by assigning left operand
      * @param {*} expr
+     * @param {*=} params
      * @returns {QueryExpression}
      */
-    where(expr) {
+    where(expr, params) {
         if (typeof expr === 'function') {
             // parse closure
-            this.$match = new ClosureParser().parseFilter(expr);
+            this.$match = new ClosureParser().parseFilter(expr, params);
             return this;
         }
         // set left operand
@@ -333,7 +334,8 @@ export class QueryExpression {
         // todo: validate select closure argument
         if (typeof args[0] === 'function') {
             const selectClosure = args[0];
-            args = new ClosureParser().parseSelect(selectClosure);
+            const closureParams = args[1];
+            args = new ClosureParser().parseSelect(selectClosure, closureParams);
         }
         // map arguments to query fields
         this.$select = args.filter( x => x!= null ).map( x => {
@@ -469,9 +471,14 @@ export class QueryExpression {
      */
     orderBy() {
         // get arguments
-        const args = Array.prototype.slice.call(arguments);
+        let args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
             return this;
+        }
+        if (typeof args[0] === 'function') {
+            const selectClosure = args[0];
+            const closureParams = args[1];
+            args = new ClosureParser().parseSelect(selectClosure, closureParams);
         }
         // map arguments to query fields
         this.$order = args.filter( x => x!= null ).map( x => {
@@ -499,9 +506,14 @@ export class QueryExpression {
      */
     orderByDescending() {
         // get arguments
-        const args = Array.prototype.slice.call(arguments);
+        let args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
             return this;
+        }
+        if (typeof args[0] === 'function') {
+            const selectClosure = args[0];
+            const closureParams = args[1];
+            args = new ClosureParser().parseSelect(selectClosure, closureParams);
         }
         // map arguments to query fields
         this.$order = args.filter( x => x!= null ).map( x => {
@@ -529,9 +541,14 @@ export class QueryExpression {
     thenBy() {
         Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.');
         // get arguments
-        const args = Array.prototype.slice.call(arguments);
+        let args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
             return this;
+        }
+        if (typeof args[0] === 'function') {
+            const selectClosure = args[0];
+            const closureParams = args[1];
+            args = new ClosureParser().parseSelect(selectClosure, closureParams);
         }
         // map arguments to query fields
         const addOrder = args.filter( x => x!= null ).map( x => {
@@ -560,9 +577,14 @@ export class QueryExpression {
     thenByDescending() {
         Args.notNull(this.$order, 'Order expression is empty. Use orderBy() or orderByDescending() method first.');
         // get arguments
-        const args = Array.prototype.slice.call(arguments);
+        let args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
             return this;
+        }
+        if (typeof args[0] === 'function') {
+            const selectClosure = args[0];
+            const closureParams = args[1];
+            args = new ClosureParser().parseSelect(selectClosure, closureParams);
         }
         // map arguments to query fields
         const addOrder = args.filter( x => x!= null ).map( x => {
@@ -593,9 +615,14 @@ export class QueryExpression {
     /* eslint-disable-next-line no-unused-vars */
     groupBy() {
         // get arguments
-        const args = Array.prototype.slice.call(arguments);
+        let args = Array.prototype.slice.call(arguments);
         if (args.length === 0) {
             return this;
+        }
+        if (typeof args[0] === 'function') {
+            const groupByClosure = args[0];
+            const closureParams = args[1];
+            args = new ClosureParser().parseSelect(groupByClosure, closureParams);
         }
         // map arguments to query fields
         this.$group = args.filter( x => x!= null ).map( x => {

@@ -68,6 +68,12 @@ export class MathJsMethodParser {
     static bitAnd(args) {
         return new MethodCallExpression('bit', args);
     }
+    static mean(args) {
+        return new MethodCallExpression('avg', args);
+    }
+    static sum(args) {
+        return new MethodCallExpression('sum', args);
+    }
     static min(args) {
         return new MethodCallExpression('min', args);
     }

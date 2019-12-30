@@ -288,7 +288,7 @@ export class SqlFormatter {
             result += ' ON ';
             const lookupCollection = lookup.as || lookup.from;
             // format foreign field e.g. Customers.CustomerID
-            const foreignField = this.escapeName(lookupCollection + '.' + lookup.foreignField);
+            const foreignField = lookupCollection + '.' + lookup.foreignField;
             // append equality expression
             // e.g. LEFT JOIN Customers ON Customers.CustomerID = Orders.CustomerID
             result += this.$eq(`$${lookup.localField}`, `$${foreignField}`);

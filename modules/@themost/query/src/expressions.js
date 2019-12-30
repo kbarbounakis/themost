@@ -50,7 +50,7 @@ export class ArithmeticExpression {
     }
 }
 
-ArithmeticExpression.OperatorRegEx = /^(\$add|\$subtract|\$multiply|\$divide|\$mod)$/g;
+ArithmeticExpression.OperatorRegEx = /^(\$add|\$subtract|\$multiply|\$divide|\$mod|\$bit)$/g;
 
 /**
  * @class
@@ -139,62 +139,42 @@ export class ComparisonExpression {
             throw new Error('Expected comparison operator.');
 
         let p, expr, name;
-        if (this.left instanceof MethodCallExpression)
+        if ((this.left instanceof MethodCallExpression) ||
+            (this.left instanceof ArithmeticExpression))
         {
             p = {};
-            if (typeof this.right === 'undefined' || this.right===null)
-                p[this.operator]=null;
-            else if (typeof this.right.exprOf === 'function')
-                p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
-            else
-                p[this.operator]=this.right;
-
-            if (this.operator==='$eq')
-                this.left.args.push(p.$eq);
-            else
-                this.left.args.push(p);
-            //return query expression
-            return this.left.exprOf();
-        }
-        else if (this.left instanceof ArithmeticExpression)
-        {
-            p = {};
-            //build comparison expression e.g. { $gt:10 }
-            if (typeof this.right === 'undefined' || this.right===null)
-                p[this.operator]=null;
-            else if (typeof this.right.exprOf === 'function')
-                p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
-            else
-                p[this.operator]=this.right;
-
-            //get left expression
-            expr = this.left.exprOf();
-            //find argument list
-            name = Object.keys(expr)[0];
-            if (this.operator==='$eq')
-                expr[name][this.left.operator].push(p.$eq);
-            else
-                expr[name][this.left.operator].push(p);
-            //return query expression
-            return expr;
-        }
-        else if (this.left instanceof MemberExpression)
-        {
-            p = {};
-            //build comparison expression e.g. { $gt:10 }
-            if (typeof this.right === 'undefined' || this.right===null)
-                p[this.operator]=null;
-            else if (typeof this.right.exprOf === 'function') {
-                p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
+            p[this.operator] = [];
+            p[this.operator].push(this.left.exprOf());
+            if (this.right && typeof this.right.exprOf === 'function')
+            {
+                p[this.operator].push(this.right.exprOf());
             }
             else
-                p[this.operator]=this.right;
-            name = this.left.name;
-            expr = {};
-            expr[name] = p;
-            //return query expression
-            return expr;
+            {
+                p[this.operator].push(this.right == null ? null : this.right);
+                
+            }
+            return p;
         }
+        else if (this.left instanceof MemberExpression) {
+            p = { };
+            Object.defineProperty(p, this.left.name, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: {}
+            });
+            if (this.right && typeof this.right.exprOf === 'function')
+            {
+                p[this.left.name][this.operator] = this.right.exprOf();
+            }
+            else
+            {
+                p[this.left.name][this.operator] = (this.right == null ? null : this.right);
+            }
+            return p;
+        }
+        throw new Error('Comparison expression has an invalid left operand. Expected a method call, an arithmetic or a member expression.');
     }
 }
 
@@ -326,6 +306,7 @@ export class Operators {
     static NotIn = '$nin';
     static And = '$and';
     static Or = '$or';
+    static BitAnd = '$bit';
 }
 
 /**

@@ -19,12 +19,14 @@ import {
     MethodCallExpression,
     ObjectExpression,
     Operators,
-    SequenceExpression
+    SequenceExpression,
+    MemberExpression
 } from './expressions';
 import {parse} from 'esprima';
 import {Args} from '@themost/common';
 import {MathJsMethodParser} from "./MathJsMethodParser";
 import {MathMethodParser} from "./MathMethodParser";
+import {DateMethodParser} from "./DateMethodParser";
 
 const ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -43,6 +45,13 @@ const ExpressionTypes = {
     ObjectExpression:'ObjectExpression',
     SequenceExpression:'SequenceExpression'
 };
+/**
+ * @param {...*} args
+ * @returns {number}
+ */
+export function count() {
+    return arguments.length;
+}
 
 // // extend StaticMethodParser
 // const properties = Object.getOwnPropertyDescriptors(MathJsMethodParser);
@@ -68,15 +77,22 @@ export class ClosureParser {
          */
         this.parsers = [
             new MathJsMethodParser(),
-            new MathMethodParser()
+            new MathMethodParser(),
+            new DateMethodParser()
         ];
+        this.params = null;
 
     }
-
-    parseSelect(func) {
+    /**
+     * Parses a javascript expression and returns the equivalent select expression.
+     * @param {Function} func The closure expression to parse
+     * @param {*} params An object which represents closure parameters
+     */
+    parseSelect(func, params) {
         if (func == null) {
             return;
         }
+        this.params = params;
         Args.check(typeof func === 'function', new Error('Select closure must a function.'));
         //convert the given function to javascript expression
         const expr = parse('void(' + func.toString() + ')');
@@ -89,6 +105,9 @@ export class ClosureParser {
             return res.value.map( x => {
                 return x.exprOf();
             });
+        }
+        if (res && res instanceof MemberExpression) {
+            return [ res.exprOf() ];
         }
         if (res && res instanceof ObjectExpression) {
             return Object.keys(res).map( key => {
@@ -110,12 +129,14 @@ export class ClosureParser {
     /**
      * Parses a javascript expression and returns the equivalent QueryExpression instance.
      * @param {Function} func The closure expression to parse
+     * @param {*} params An object which represents closure parameters
      */
-    parseFilter(func) {
+    parseFilter(func, params) {
         const self = this;
         if (func == null) {
             return;
         }
+        this.params = params;
         //convert the given function to javascript expression
         const expr = parse('void(' + func.toString() + ')');
         //get FunctionExpression
@@ -238,6 +259,9 @@ export class ClosureParser {
             if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
                 return self.parseSequence(bodyExpression.expression);
             }
+            else if (bodyExpression.expression && bodyExpression.expression.type === 'MemberExpression') {
+                return self.parseMember(bodyExpression.expression);
+            }
         }
         else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
             // get return statement
@@ -295,6 +319,8 @@ export class ClosureParser {
               return Operators.Div;
           case '%':
               return Operators.Mod;
+          case '&':
+              return Operators.BitAnd;
           default:
               return;
       }
@@ -324,6 +350,8 @@ export class ClosureParser {
                             return left.value * right.value;
                         case Operators.Mod:
                             return left.value % right.value;
+                        case Operators.BitAnd:
+                            return left.value & right.value;
                         default:
                             throw new Error('Invalid arithmetic operator');
                     }
@@ -357,8 +385,8 @@ export class ClosureParser {
                 let value;
                 if (expr.object.object == null) {
                     //evaluate object member value e.g. item.title or item.status.id
-                    value = self.eval(memberExpressionToString(expr));
-                    return createLiteralExpression(value);
+                    value = memberExpressionToString(expr);
+                    return createMemberExpression(value);
                 }
                 if (expr.object.object.name===namedParam.name) {
                     //get closure parameter expression e.g. x.title.length
@@ -394,60 +422,44 @@ export class ClosureParser {
         expr.arguments.forEach( arg => {
             args.push(self.parseCommon(arg));
         });
-        if (typeof self.parsers[method] === 'function') {
-            return self.parsers[method](method, args);
+
+        const createMethodCall = self.parsers.map( parser => {
+                return parser.test(method);
+            }).find( m => {
+                return typeof m === 'function';
+            });
+        if (typeof createMethodCall === 'function') {
+            return createMethodCall(args);
         }
-        else {
-            switch (method) {
-                case 'getDate':
-                    method='dayOfMonth';
-                    break;
-                case 'toDate':
-                    method='date';
-                    break;
-                case 'getMonth':
-                    method='month';
-                    break;
-                case 'getYear':
-                case 'getFullYear':
-                    method='year';
-                    break;
-                case 'getMinutes':
-                    method='minute';
-                    break;
-                case 'getSeconds':
-                    method='second';
-                    break;
-                case 'getHours':
-                    method='hour';
-                    break;
-                case 'startsWith':
-                    method='startswith';
-                    break;
-                case 'endsWith':
-                    method='endswith';
-                    break;
-                case 'trim':
-                    method='trim';
-                    break;
-                case 'toUpperCase':
-                    method='toUpper';
-                    break;
-                case 'toLowerCase':
-                    method='toLower';
-                    break;
-                case 'indexOf':
-                    method='indexOfBytes';
-                    break;
-                case 'substring':
-                case 'substr':
-                    method='substr';
-                    break;
-                default:
-                    throw new Error('The specified method ('+ method +') is unsupported or is not yet implemented.');
-            }
-            return createMethodCallExpression(method, args);
+        switch (method) {
+            case 'startsWith':
+                method='startswith';
+                break;
+            case 'endsWith':
+                method='endswith';
+                break;
+            case 'trim':
+                method='trim';
+                break;
+            case 'toUpperCase':
+            case 'toLocaleUpperCase':
+                method='toUpper';
+                break;
+            case 'toLowerCase':
+            case 'toLocaleLowerCase':
+                method='toLower';
+                break;
+            case 'indexOf':
+                method='indexOfBytes';
+                break;
+            case 'substring':
+            case 'substr':
+                method='substr';
+                break;
+            default:
+                throw new Error('The specified method ('+ method +') is unsupported or is not yet implemented.');
         }
+        return createMethodCallExpression(method, args);
 
     }
 
@@ -521,8 +533,10 @@ export class ClosureParser {
     }
 
     parseIdentifier(expr) {
-        const value = this.eval(expr.name);
-        return createLiteralExpression(value);
+        if (this.params && Object.prototype.hasOwnProperty.call(this.params, expr.name)) {
+            return createLiteralExpression(this.params[expr.name]);
+        }
+        throw new Error('Identifier cannot be found or is inaccessible. Consider passing parameters if they are used inside method.');
     }
 
     parseLiteral(expr) {
