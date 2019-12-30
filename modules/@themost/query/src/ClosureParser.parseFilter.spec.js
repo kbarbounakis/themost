@@ -216,6 +216,7 @@ describe('ClosureParser.parseFilter()', () => {
         });
     });
 
+
     it('should use String.prototype.length', async () => {
         let a = new QueryExpression().select( x => {
             x.CustomerID,

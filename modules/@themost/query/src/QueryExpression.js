@@ -452,8 +452,20 @@ export class QueryExpression {
     with(localField, foreignField) {
         Args.check(this.privates.lookup != null, new Error('Join collection cannot be empty. Use join(collection) first.'));
         // set local and foreign field
-        this.privates.lookup.localField = localField;
-        this.privates.lookup.foreignField = foreignField;
+        if (typeof localField === 'function') {
+            const localFields = new ClosureParser().parseSelect(localField);
+            this.privates.lookup.localField = String.prototype.replace.call(localFields[0], /\$/,'');
+        }
+        else {
+            this.privates.lookup.localField = localField;
+        }
+        if (typeof foreignField === 'function') {
+            const foreignFields = new ClosureParser().parseSelect(foreignField);
+            this.privates.lookup.foreignField = String.prototype.replace.call(foreignFields[0], /\$/,'');
+        }
+        else {
+            this.privates.lookup.foreignField = foreignField;
+        }
         // add lookup to expand
         this.$expand = this.$expand || [];
         this.$expand.push({
@@ -962,6 +974,14 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     contains(value) {
+        return this._append({ $text: { $search: value } });
+    }
+    /**
+     * Prepares a contain expression.
+     * @param  {*} value - A value that represents the right part of the expression
+     * @returns {QueryExpression}
+     */
+    includes(value) {
         return this._append({ $text: { $search: value } });
     }
     notContains(value) {

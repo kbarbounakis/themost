@@ -65,18 +65,5 @@ describe('Aggregate Functions', () => {
         expect(result.length).toBeTruthy();
         expect(result[0].TotalProducts).toBeTruthy();
     });
-    it('should use groupBy()', async () => {
-        let a = new QueryExpression().select( x => {
-            return {
-                TotalCustomers: count(x.CustomerID),
-                Country: x.Country
-            }
-        })
-        .from('Customers')
-        .groupBy ( x => {
-            x.Country
-        });
-        let result = await new MemoryAdapter().executeAsync(a);
-        expect(result.length).toBeTruthy();
-    });
+    
 });

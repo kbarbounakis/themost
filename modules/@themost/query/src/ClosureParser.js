@@ -449,6 +449,9 @@ export class ClosureParser {
             case 'toLocaleLowerCase':
                 method='toLower';
                 break;
+            case 'includes':
+                method='includes';
+                break;
             case 'indexOf':
                 method='indexOfBytes';
                 break;

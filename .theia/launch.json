@@ -65,6 +65,17 @@
               "./modules/@themost/query/src/TestArithmeticFunctions.spec.js",
           ],
           "internalConsoleOptions": "openOnSessionStart"
+      },
+      {
+          "type": "node",
+          "request": "launch",
+          "name": "TestGroupByClause.spec.js",
+          "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine",
+          "cwd": "${workspaceFolder}",
+          "args": [
+              "./modules/@themost/query/src/TestGroupByClause.spec.js",
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
       }
   ]
 }

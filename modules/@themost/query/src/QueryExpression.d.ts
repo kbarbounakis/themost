@@ -67,6 +67,7 @@ export declare class QueryExpression {
     from(alias: string): QueryExpression;
     join(collection: any): QueryExpression;
     with(localField: any, foreignField: any): QueryExpression;
+    with<T,J>(localField: (value: T) => any, foreignField: (value: T) => any): QueryExpression;
     orderBy(...field: any[]): QueryExpression;
     orderBy<T>(expr: (value: T) => any, params?: any): QueryExpression;
     orderByDescending(...field: any[]): QueryExpression;
@@ -92,6 +93,7 @@ export declare class QueryExpression {
     startsWith(value: any): QueryExpression;
     endsWith(value: any): QueryExpression;
     contains(value: any): QueryExpression;
+    includes(value: any): QueryExpression;
     notContains(value: any): QueryExpression;
     lowerThan(value: any): QueryExpression;
     lt(value: any): QueryExpression;
