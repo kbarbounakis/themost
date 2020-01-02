@@ -158,13 +158,15 @@ export class MemoryFormatter extends SqlFormatter {
     }
 
     /**
-     * Implements concat(a,b) expression formatter.
-     * @param {*} p0
-     * @param {*} p1
+     * Implements concat(a,b,..) expression formatter.
+     * @param {*...} p0
      * @returns {string}
      */
-    $concat(p0, p1) {
-        return `(IFNULL(${this.escape(p0)},\'\') || IFNULL(${this.escape(p1)},\'\'))`;
+    $concat() {
+        const args = Array.from(arguments);
+        return '(' + args.map( arg => {
+            return `IFNULL(${this.escape(arg)},\'\')`;
+        }).join(' || ') + ')';
     }
 
     /**

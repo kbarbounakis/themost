@@ -903,13 +903,16 @@ export class SqlFormatter {
     }
 
     /**
-     * Implements concat(a,b) expression formatter.
-     * @param {*} p0
-     * @param {*} p1
+     * Implements concat(a,b,...) expression formatter.
+     * @param {*...} p0
      * @returns {string}
      */
-    $concat(p0, p1) {
-        return `CONCAT(${this.escape(p0)},${this.escape(p1)})`;
+    $concat() {
+        const args = Array.from(arguments);
+        const strArgs = args.map( arg => {
+            return this.escape(arg);
+        }).join(', ');
+        return `CONCAT(${strArgs})`;
     }
 
     /**

@@ -27,6 +27,7 @@ import {Args} from '@themost/common';
 import {MathJsMethodParser} from "./MathJsMethodParser";
 import {MathMethodParser} from "./MathMethodParser";
 import {DateMethodParser} from "./DateMethodParser";
+import {StringMethodParser} from "./StringMethodParser";
 
 const ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -78,7 +79,8 @@ export class ClosureParser {
         this.parsers = [
             new MathJsMethodParser(),
             new MathMethodParser(),
-            new DateMethodParser()
+            new DateMethodParser(),
+            new StringMethodParser()
         ];
         this.params = null;
 
@@ -431,39 +433,7 @@ export class ClosureParser {
         if (typeof createMethodCall === 'function') {
             return createMethodCall(args);
         }
-        switch (method) {
-            case 'startsWith':
-                method='startswith';
-                break;
-            case 'endsWith':
-                method='endswith';
-                break;
-            case 'trim':
-                method='trim';
-                break;
-            case 'toUpperCase':
-            case 'toLocaleUpperCase':
-                method='toUpper';
-                break;
-            case 'toLowerCase':
-            case 'toLocaleLowerCase':
-                method='toLower';
-                break;
-            case 'includes':
-                method='includes';
-                break;
-            case 'indexOf':
-                method='indexOfBytes';
-                break;
-            case 'substring':
-            case 'substr':
-                method='substr';
-                break;
-            default:
-                throw new Error('The specified method ('+ method +') is unsupported or is not yet implemented.');
-        }
-        return createMethodCallExpression(method, args);
-
+        throw new Error('The specified method ('+ method +') is unsupported or is not yet implemented.');
     }
 
     parseMethod(expr) {
