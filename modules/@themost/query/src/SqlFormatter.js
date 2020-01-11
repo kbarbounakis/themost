@@ -391,7 +391,11 @@ export class SqlFormatter {
             return res;
         }).join(', ');
         result += ')';
+        // add collection name as alias
+        const selectCollection = Object.assign(new QueryCollection(), query.$collection);
+        result += ' ' + this.escapeCollection(selectCollection.name);
         // format lookups
+        this.currectCollection = selectCollection.name;
         if (query.$expand && query.$expand.length) {
             query.$expand.forEach(expand => {
                 result += ' ' + this.formatLookup(expand.$lookup, expand.$direction);
@@ -411,6 +415,7 @@ export class SqlFormatter {
                 });
             }
         }
+        this.currectCollection = null;
         return result;
     }
 

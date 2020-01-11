@@ -78,7 +78,8 @@ describe('Format Select Expressions', () => {
         expect(result[0].total).toBeTruthy();
     });
 
-    fit('should use QueryExpression.fixed()', async () => {
+    it('should use QueryExpression.fixed()', async () => {
+        let FixedProduct = new QueryCollection('FixedProduct');
         let Products = new QueryCollection('Products');
         let a = new QueryExpression().select( () => {
             return {
@@ -87,12 +88,36 @@ describe('Format Select Expressions', () => {
                 ProductName: 'Test Product'
             }
         })
-        .from('FixedProduct')
+        .from(FixedProduct)
         .join(Products)
         .with(x => x.ProductID, x => x.ProductID)
+        .where( x => {
+            return Products.Category === 2;
+        })
         .fixed();
         let result = await new MemoryAdapter().executeAsync(a);
         expect(result.length).toBeTruthy();
+        // use two joins
+        let Categories = new QueryCollection('Categories');
+        a = new QueryExpression().select( () => {
+            return {
+                ProductID: 4,
+                Price: 12,
+                ProductName: 'Test Product'
+            }
+        })
+        .from(FixedProduct)
+        .join(Products)
+        .with(x => x.ProductID, x => x.ProductID)
+        .join(Categories)
+        .with(x => Products.Category, x => x.CategoryID)
+        .where( x => {
+            return Categories.CategoryName === 'Condiments';
+        })
+        .fixed();
+        result = await new MemoryAdapter().executeAsync(a);
+        expect(result.length).toBeTruthy();
+
     });
 
 });

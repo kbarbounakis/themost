@@ -9,7 +9,9 @@
     "karma": "karma",
     "test": "jasmine",
     "jasmine-node": "jasmine-node",
-    "serve:wiki": "gulp serve"
+    "serve:wiki": "gulp serve",
+    "build-query": "cd ./modules/@themost/query && npm run build",
+    "build-common": "cd ./modules/@themost/common && npm run build"
   },
   "engines": {
     "node": ">= 5.4.1"
