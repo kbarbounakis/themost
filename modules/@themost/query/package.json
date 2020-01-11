@@ -11,7 +11,8 @@
     "build": "rollup -c ./rollup.config.js -m",
     "watch": "rollup -c ./rollup.config.js -m -w",
     "test": "karma start",
-    "jasmine": "jasmine"
+    "jasmine": "jasmine",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",

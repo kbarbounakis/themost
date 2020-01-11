@@ -1,14 +1,15 @@
 {
   "name": "@themost/xml",
   "version": "3.0.1-dev.1",
-  "description": "MOST Web Framework Xml Module",
+  "description": "MOST Web Framework Codename Zero Gravity Xml",
   "main": "dist/themost_xml.js",
   "types": "dist/themost_xml.d.ts",
   "scripts": {
     "build": "rollup -c ./rollup.config.js -m",
     "watch": "rollup -c ./rollup.config.js -m -w",
     "test": "karma start",
-    "jasmine": "jasmine"
+    "jasmine": "jasmine",
+    "prepublish": "npm run build"
   },
   "peerDependencies": {},
   "repository": {
