@@ -39,6 +39,7 @@ export declare class XNodeType {
 export declare class XNode {
     constructor(type: string, name: string, opt_value?: any, opt_owner?: any);
     nodeName: string;
+    nodeType: number;
     appendChild(node: XNode): XNode;
     replaceChild(newNode: XNode, oldNode: XNode): XNode;
     insertBefore(newNode: XNode, oldNode: XNode): XNode;
@@ -64,7 +65,7 @@ export declare class XNode {
 
 }
 
-export declare class XDocument {
+export declare class XDocument extends XNode {
     constructor();
     static loadXML(xml: string): XDocument;
     documentElement: XNode;
