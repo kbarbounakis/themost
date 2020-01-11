@@ -1,0 +1,31 @@
+{
+    "$schema": "https://themost-framework.github.io/themost/models/2018/2/schema.json",
+    "name": "User",
+    "title": "Users",
+    "source": "Users",
+    "view": "UsersView",
+    "version": "1.0",
+    "inherits": "Account",
+    "fields": [
+        {
+            "name": "Enabled",
+            "type": "Boolean",
+            "nullable": false,
+            "value": "javascript:return true;"
+        },
+        {
+            "name": "Groups",
+            "many": true,
+            "mapping": {
+                "associationAdapter": "GroupMembers",
+                "associationType": "junction",
+                "associationObjectField": "Group",
+                "associationValueField": "Member",
+                "parentModel": "Group",
+                "parentField": "ID",
+                "childModel": "User",
+                "childField": "ID"
+            }
+        }
+    ]
+}
