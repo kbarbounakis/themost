@@ -6,7 +6,13 @@
   "main": "index.js",
   "scripts": {
     "test": "jasmine",
-    "serve:wiki": "gulp serve"
+    "serve:wiki": "gulp serve",
+    "build-query": "cd ./modules/@themost/query && npm run build",
+    "test-query": "cd ./modules/@themost/query && npm test",
+    "build-common": "cd ./modules/@themost/common3 && npm run build",
+    "test-common": "cd ./modules/@themost/common3 && npm test",
+    "build-xml": "cd ./modules/@themost/xml && npm run build",
+    "test-xml": "cd ./modules/@themost/xml && npm test"
   },
   "engines": {
     "node": ">= 5.4.1"
@@ -64,6 +70,30 @@
     "gulp": "^4.0.0",
     "gulp-connect": "^5.7.0",
     "jasmine": "^3.5.0",
-    "jasmine-spec-reporter": "^4.2.1"
+    "jasmine-core": "^3.5.0",
+    "jasmine-node": "^3.0.0",
+    "jasmine-spec-reporter": "^4.2.1",
+    "karma": "^4.3.0",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-jasmine": "^2.0.1",
+    "karma-jasmine-html-reporter": "^1.4.2",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-webpack": "^4.0.2",
+    "mathjs": "^6.2.3",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.19.4",
+    "puppeteer-core": "^1.20.0",
+    "rollup": "^1.27.13",
+    "rollup-plugin-auto-external": "^2.0.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-commonjs": "^10.0.1",
+    "rollup-plugin-dts": "^1.1.13",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "sql.js": "^1.0.1",
+    "supertest": "^3.4.2",
+    "typescript": "^3.7.3",
+    "webpack": "^4.41.0",
+    "webpack-karma-jasmine": "^3.0.8"
   }
 }
