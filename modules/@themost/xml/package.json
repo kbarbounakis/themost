@@ -1,8 +1,15 @@
 {
   "name": "@themost/xml",
-  "version": "2.3.1",
+  "version": "3.0.1-dev.1",
   "description": "MOST Web Framework Xml Module",
-  "main": "index.js",
+  "main": "dist/themost_xml.js",
+  "types": "dist/themost_xml.d.ts",
+  "scripts": {
+    "build": "rollup -c ./rollup.config.js -m",
+    "watch": "rollup -c ./rollup.config.js -m -w",
+    "test": "karma start",
+    "jasmine": "jasmine"
+  },
   "peerDependencies": {},
   "repository": {
     "type": "git",
@@ -14,20 +21,26 @@
     "url": "https://github.com/themost-framework/themost/issues"
   },
   "homepage": "https://github.com/themost-framework/themost#readme",
-  "dependencies": {},
+  "dependencies": {
+    "core-js": "^2.6.11"
+  },
   "devDependencies": {},
   "eslintConfig": {
+    "parser": "babel-eslint",
     "env": {
       "browser": true,
       "node": true,
-      "es6": false,
+      "es6": true,
       "jquery": true
     },
     "globals": {
       "describe": false,
       "it": false,
+      "fdescribe": false,
+      "fit": false,
       "before": false,
-      "after": false
+      "after": false,
+      "expect": false
     },
     "extends": "eslint:recommended"
   }

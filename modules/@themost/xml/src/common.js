@@ -1,40 +1,34 @@
 /**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2019, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 
-/**
- * XML Common Functions and Constants
- */
-/**
- * @class
- * @constructor
- */
-function XmlCommon() {
-    //constants
-    this.DOM_ELEMENT_NODE = 1;
-    this.DOM_ATTRIBUTE_NODE = 2;
-    this.DOM_TEXT_NODE = 3;
-    this.DOM_CDATA_SECTION_NODE = 4;
-    // noinspection JSUnusedGlobalSymbols
-    this.DOM_ENTITY_REFERENCE_NODE = 5;
-    // noinspection JSUnusedGlobalSymbols
-    this.DOM_ENTITY_NODE = 6;
-    this.DOM_PROCESSING_INSTRUCTION_NODE = 7;
-    this.DOM_COMMENT_NODE = 8;
-    this.DOM_DOCUMENT_NODE = 9;
-    // noinspection JSUnusedGlobalSymbols
-    this.DOM_DOCUMENT_TYPE_NODE = 10;
-    this.DOM_DOCUMENT_FRAGMENT_NODE = 11;
-    // noinspection JSUnusedGlobalSymbols
-    this.DOM_NOTATION_NODE = 12;
 
-    this.REGEXP_UNICODE = function () {
-        var tests = [' ', '\u0120', -1,  // Konquerer 3.4.0 fails here.
+class XmlCommon {
+
+    //constants
+    static DOM_ELEMENT_NODE = 1;
+    static DOM_ATTRIBUTE_NODE = 2;
+    static DOM_TEXT_NODE = 3;
+    static DOM_CDATA_SECTION_NODE = 4;
+    // noinspection JSUnusedGlobalSymbols
+    static DOM_ENTITY_REFERENCE_NODE = 5;
+    // noinspection JSUnusedGlobalSymbols
+    static DOM_ENTITY_NODE = 6;
+    static DOM_PROCESSING_INSTRUCTION_NODE = 7;
+    static DOM_COMMENT_NODE = 8;
+    static DOM_DOCUMENT_NODE = 9;
+    // noinspection JSUnusedGlobalSymbols
+    static DOM_DOCUMENT_TYPE_NODE = 10;
+    static DOM_DOCUMENT_FRAGMENT_NODE = 11;
+    // noinspection JSUnusedGlobalSymbols
+    static DOM_NOTATION_NODE = 12;
+
+    static REGEXP_UNICODE = function () {
+        const tests = [' ', '\u0120', -1,  // Konquerer 3.4.0 fails here.
             '!', '\u0120', -1,
             '\u0120', '\u0120', 0,
             '\u0121', '\u0120', -1,
@@ -46,7 +40,7 @@ function XmlCommon() {
             '\u0122', '[\u0120\u0121]', -1,
             '\u0121', '[\u0120-\u0121]', 0,  // Safari 2.0.3 fails here.
             '\u0122', '[\u0120-\u0121]', -1];
-        for (var i = 0; i < tests.length; i += 3) {
+        for (let i = 0; i < tests.length; i += 3) {
             if (tests[i].search(new RegExp(tests[i + 1])) !== tests[i + 2]) {
                 return false;
             }
@@ -54,14 +48,14 @@ function XmlCommon() {
         return true;
     }();
 
-    this.XML_S = '[ \t\r\n]+';
-    this.XML_EQ = '(' + this.XML_S + ')?=(' + this.XML_S + ')?';
-    this.XML_CHAR_REF = '&#[0-9]+;|&#x[0-9a-fA-F]+;';
+    static XML_S = '[ \t\r\n]+';
+    static XML_EQ = '(' + XmlCommon.XML_S + ')?=(' + XmlCommon.XML_S + ')?';
+    static XML_CHAR_REF = '&#[0-9]+;|&#x[0-9a-fA-F]+;';
 
     // XML 1.0 tokens.
 
-    this.XML10_VERSION_INFO = this.XML_S + 'version' + this.XML_EQ + '("1\\.0"|' + "'1\\.0')";
-    this.XML10_BASE_CHAR = (this.REGEXP_UNICODE) ?
+    static XML10_VERSION_INFO = XmlCommon.XML_S + 'version' + XmlCommon.XML_EQ + '("1\\.0"|' + "'1\\.0')";
+    static XML10_BASE_CHAR = (XmlCommon.REGEXP_UNICODE) ?
         '\u0041-\u005a\u0061-\u007a\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff' +
         '\u0100-\u0131\u0134-\u013e\u0141-\u0148\u014a-\u017e\u0180-\u01c3' +
         '\u01cd-\u01f0\u01f4-\u01f5\u01fa-\u0217\u0250-\u02a8\u02bb-\u02c1\u0386' +
@@ -97,10 +91,10 @@ function XmlCommon() {
         '\u1ff2-\u1ff4\u1ff6-\u1ffc\u2126\u212a-\u212b\u212e\u2180-\u2182' +
         '\u3041-\u3094\u30a1-\u30fa\u3105-\u312c\uac00-\ud7a3' :
         'A-Za-z';
-    this.XML10_IDEOGRAPHIC = (this.REGEXP_UNICODE) ?
+    static XML10_IDEOGRAPHIC = (XmlCommon.REGEXP_UNICODE) ?
         '\u4e00-\u9fa5\u3007\u3021-\u3029' :
         '';
-    this.XML10_COMBINING_CHAR = (this.REGEXP_UNICODE) ?
+    static XML10_COMBINING_CHAR = (XmlCommon.REGEXP_UNICODE) ?
         '\u0300-\u0345\u0360-\u0361\u0483-\u0486\u0591-\u05a1\u05a3-\u05b9' +
         '\u05bb-\u05bd\u05bf\u05c1-\u05c2\u05c4\u064b-\u0652\u0670\u06d6-\u06dc' +
         '\u06dd-\u06df\u06e0-\u06e4\u06e7-\u06e8\u06ea-\u06ed\u0901-\u0903\u093c' +
@@ -117,94 +111,89 @@ function XmlCommon() {
         '\u0f3e\u0f3f\u0f71-\u0f84\u0f86-\u0f8b\u0f90-\u0f95\u0f97\u0f99-\u0fad' +
         '\u0fb1-\u0fb7\u0fb9\u20d0-\u20dc\u20e1\u302a-\u302f\u3099\u309a' :
         '';
-    this.XML10_DIGIT = (this.REGEXP_UNICODE) ?
+    static XML10_DIGIT = (XmlCommon.REGEXP_UNICODE) ?
         '\u0030-\u0039\u0660-\u0669\u06f0-\u06f9\u0966-\u096f\u09e6-\u09ef' +
         '\u0a66-\u0a6f\u0ae6-\u0aef\u0b66-\u0b6f\u0be7-\u0bef\u0c66-\u0c6f' +
         '\u0ce6-\u0cef\u0d66-\u0d6f\u0e50-\u0e59\u0ed0-\u0ed9\u0f20-\u0f29' :
         '0-9';
-    this.XML10_EXTENDER = (this.REGEXP_UNICODE) ?
+    static XML10_EXTENDER = (XmlCommon.REGEXP_UNICODE) ?
         '\u00b7\u02d0\u02d1\u0387\u0640\u0e46\u0ec6\u3005\u3031-\u3035' +
         '\u309d-\u309e\u30fc-\u30fe' :
         '';
-    this.XML10_LETTER = this.XML10_BASE_CHAR + this.XML10_IDEOGRAPHIC;
-    this.XML10_NAME_CHAR = this.XML10_LETTER + this.XML10_DIGIT + '\\._:' +
-        this.XML10_COMBINING_CHAR + this.XML10_EXTENDER + '-';
-    this.XML10_NAME = '[' + this.XML10_LETTER + '_:][' + this.XML10_NAME_CHAR + ']*';
+    static XML10_LETTER = XmlCommon.XML10_BASE_CHAR + XmlCommon.XML10_IDEOGRAPHIC;
+    static XML10_NAME_CHAR = XmlCommon.XML10_LETTER + XmlCommon.XML10_DIGIT + '\\._:' +
+        XmlCommon.XML10_COMBINING_CHAR + XmlCommon.XML10_EXTENDER + '-';
+    static XML10_NAME = '[' + XmlCommon.XML10_LETTER + '_:][' + XmlCommon.XML10_NAME_CHAR + ']*';
 
-    this.XML10_ENTITY_REF = '&' + this.XML10_NAME + ';';
-    this.XML10_REFERENCE = this.XML10_ENTITY_REF + '|' + this.XML_CHAR_REF;
-    this.XML10_ATT_VALUE = '"(([^<&"]|' + this.XML10_REFERENCE + ')*)"|' +
-        "'(([^<&']|" + this.XML10_REFERENCE + ")*)'";
-    this.XML10_ATTRIBUTE =
-        '(' + this.XML10_NAME + ')' + this.XML_EQ + '(' + this.XML10_ATT_VALUE + ')';
+    static XML10_ENTITY_REF = '&' + XmlCommon.XML10_NAME + ';';
+    static XML10_REFERENCE = XmlCommon.XML10_ENTITY_REF + '|' + XmlCommon.XML_CHAR_REF;
+    static XML10_ATT_VALUE = '"(([^<&"]|' + XmlCommon.XML10_REFERENCE + ')*)"|' +
+        "'(([^<&']|" + XmlCommon.XML10_REFERENCE + ")*)'";
+    static XML10_ATTRIBUTE =
+        '(' + XmlCommon.XML10_NAME + ')' + XmlCommon.XML_EQ + '(' + XmlCommon.XML10_ATT_VALUE + ')';
 
     // XML 1.1 tokens.
 
-    this.XML11_VERSION_INFO = this.XML_S + 'version' + this.XML_EQ + '("1\\.1"|' + "'1\\.1')";
-    this.XML11_NAME_START_CHAR = (this.REGEXP_UNICODE) ?
+    static XML11_VERSION_INFO = XmlCommon.XML_S + 'version' + XmlCommon.XML_EQ + '("1\\.1"|' + "'1\\.1')";
+    static XML11_NAME_START_CHAR = (XmlCommon.REGEXP_UNICODE) ?
         ':A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d' +
         '\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff' +
         '\uf900-\ufdcf\ufdf0-\ufffd' :
         ':A-Z_a-z';
-    this.XML11_NAME_CHAR = this.XML11_NAME_START_CHAR +
-        ((this.REGEXP_UNICODE) ? '\\.0-9\u00b7\u0300-\u036f\u203f-\u2040-' : '\\.0-9-');
-    this.XML11_NAME = '[' + this.XML11_NAME_START_CHAR + '][' + this.XML11_NAME_CHAR + ']*';
+    static XML11_NAME_CHAR = XmlCommon.XML11_NAME_START_CHAR +
+        ((XmlCommon.REGEXP_UNICODE) ? '\\.0-9\u00b7\u0300-\u036f\u203f-\u2040-' : '\\.0-9-');
+    static XML11_NAME = '[' + XmlCommon.XML11_NAME_START_CHAR + '][' + XmlCommon.XML11_NAME_CHAR + ']*';
 
-    this.XML11_ENTITY_REF = '&' + this.XML11_NAME + ';';
-    this.XML11_REFERENCE = this.XML11_ENTITY_REF + '|' + this.XML_CHAR_REF;
-    this.XML11_ATT_VALUE = '"(([^<&"]|' + this.XML11_REFERENCE + ')*)"|' +
-        "'(([^<&']|" + this.XML11_REFERENCE + ")*)'";
-    this.XML11_ATTRIBUTE =
-        '(' + this.XML11_NAME + ')' + this.XML_EQ + '(' + this.XML11_ATT_VALUE + ')';
+    static XML11_ENTITY_REF = '&' + XmlCommon.XML11_NAME + ';';
+    static XML11_REFERENCE = XmlCommon.XML11_ENTITY_REF + '|' + XmlCommon.XML_CHAR_REF;
+    static XML11_ATT_VALUE = '"(([^<&"]|' + XmlCommon.XML11_REFERENCE + ')*)"|' +
+        "'(([^<&']|" + XmlCommon.XML11_REFERENCE + ")*)'";
+    static XML11_ATTRIBUTE =
+        '(' + XmlCommon.XML11_NAME + ')' + XmlCommon.XML_EQ + '(' + XmlCommon.XML11_ATT_VALUE + ')';
 
     // XML namespace tokens.
     // Used in XML parser and XPath parser.
 
-    this.XML_NC_NAME_CHAR = this.XML10_LETTER + this.XML10_DIGIT + '\\._' +
-        this.XML10_COMBINING_CHAR + this.XML10_EXTENDER + '-';
-    this.XML_NC_NAME = '[' + this.XML10_LETTER + '_][' + this.XML_NC_NAME_CHAR + ']*';
+    static XML_NC_NAME_CHAR = XmlCommon.XML10_LETTER + XmlCommon.XML10_DIGIT + '\\._' +
+        XmlCommon.XML10_COMBINING_CHAR + XmlCommon.XML10_EXTENDER + '-';
+    static XML_NC_NAME = '[' + XmlCommon.XML10_LETTER + '_][' + XmlCommon.XML_NC_NAME_CHAR + ']*';
 
-    this.XML10_TAGNAME_REGEXP = new RegExp('^(' + this.XML10_NAME + ')');
-    this.XML10_ATTRIBUTE_REGEXP = new RegExp(this.XML10_ATTRIBUTE, 'g');
-    this.XML11_TAGNAME_REGEXP = new RegExp('^(' + this.XML11_NAME + ')');
-    this.XML11_ATTRIBUTE_REGEXP = new RegExp(this.XML11_ATTRIBUTE, 'g');
+    static XML10_TAGNAME_REGEXP = new RegExp('^(' + XmlCommon.XML10_NAME + ')');
+    static XML10_ATTRIBUTE_REGEXP = new RegExp(XmlCommon.XML10_ATTRIBUTE, 'g');
+    static XML11_TAGNAME_REGEXP = new RegExp('^(' + XmlCommon.XML11_NAME + ')');
+    static XML11_ATTRIBUTE_REGEXP = new RegExp(XmlCommon.XML11_ATTRIBUTE, 'g');
 
+    constructor() {
 
+    }
+
+    //Escape XML special markup characters: tag delimiter < > and entity
+    //reference start delimiter &. The escaped string can be used in XML
+    //text portions (i.e. between tags).
+    static escapeText(s) {
+        return ('' + s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * Escape XML special markup characters: tag delimiter < > entity reference start delimiter & and quotes ".
+     * The escaped string can be used in double quoted XML attribute value portions (i.e. in attributes within start tags).
+     * @param {string} s
+     * @returns {XML|string|void}
+     */
+    static escapeAttr(s) {
+        return XmlCommon.xmlEscapeText(s).replace(/"/g, '&quot;');
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * Escape markup in XML text, but don't touch entity references. The escaped string can be used as XML text (i.e. between tags).
+     * @param {string} s
+     * @returns {XML|string}
+     */
+    static escapeTags(s) {
+        return s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
 }
 
-
-//Escape XML special markup characters: tag delimiter < > and entity
-//reference start delimiter &. The escaped string can be used in XML
-//text portions (i.e. between tags).
-XmlCommon.prototype.escapeText = function (s) {
-    return ('' + s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-};
-
-
-// noinspection JSUnusedGlobalSymbols
-/**
- * Escape XML special markup characters: tag delimiter < > entity reference start delimiter & and quotes ".
- * The escaped string can be used in double quoted XML attribute value portions (i.e. in attributes within start tags).
- * @param {string} s
- * @returns {XML|string|void}
- */
-XmlCommon.prototype.escapeAttr = function (s) {
-    return this.xmlEscapeText(s).replace(/"/g, '&quot;');
-};
-
-// noinspection JSUnusedGlobalSymbols
-/**
- * Escape markup in XML text, but don't touch entity references. The escaped string can be used as XML text (i.e. between tags).
- * @param {string} s
- * @returns {XML|string}
- */
-XmlCommon.prototype.escapeTags = function (s) {
-    return s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-};
-
-var xmlCommon = new XmlCommon();
-
-if (typeof exports !== 'undefined') {
-    module.exports = xmlCommon;
-}
-
+export {XmlCommon};

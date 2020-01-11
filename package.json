@@ -11,7 +11,9 @@
     "jasmine-node": "jasmine-node",
     "serve:wiki": "gulp serve",
     "build-query": "cd ./modules/@themost/query && npm run build",
-    "build-common": "cd ./modules/@themost/common && npm run build"
+    "build-common": "cd ./modules/@themost/common && npm run build",
+    "build-xml": "cd ./modules/@themost/xml && npm run build",
+    "test-xml": "cd ./modules/@themost/xml && npm test"
   },
   "engines": {
     "node": ">= 5.4.1"

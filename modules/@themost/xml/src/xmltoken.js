@@ -1,42 +1,41 @@
 /**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2019, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-    var REGEXP_UNICODE = function() {
-        var tests = [' ', '\u0120', -1,  // Konquerer 3.4.0 fails here.
-            '!', '\u0120', -1,
-            '\u0120', '\u0120', 0,
-            '\u0121', '\u0120', -1,
-            '\u0121', '\u0120|\u0121', 0,
-            '\u0122', '\u0120|\u0121', -1,
-            '\u0120', '[\u0120]', 0,  // Safari 2.0.3 fails here.
-            '\u0121', '[\u0120]', -1,
-            '\u0121', '[\u0120\u0121]', 0,  // Safari 2.0.3 fails here.
-            '\u0122', '[\u0120\u0121]', -1,
-            '\u0121', '[\u0120-\u0121]', 0,  // Safari 2.0.3 fails here.
-            '\u0122', '[\u0120-\u0121]', -1];
-        for (var i = 0; i < tests.length; i += 3) {
-            if (tests[i].search(new RegExp(tests[i + 1])) !== tests[i + 2]) {
-                return false;
-            }
+const REGEXP_UNICODE = function () {
+    const tests = [' ', '\u0120', -1,  // Konquerer 3.4.0 fails here.
+        '!', '\u0120', -1,
+        '\u0120', '\u0120', 0,
+        '\u0121', '\u0120', -1,
+        '\u0121', '\u0120|\u0121', 0,
+        '\u0122', '\u0120|\u0121', -1,
+        '\u0120', '[\u0120]', 0,  // Safari 2.0.3 fails here.
+        '\u0121', '[\u0120]', -1,
+        '\u0121', '[\u0120\u0121]', 0,  // Safari 2.0.3 fails here.
+        '\u0122', '[\u0120\u0121]', -1,
+        '\u0121', '[\u0120-\u0121]', 0,  // Safari 2.0.3 fails here.
+        '\u0122', '[\u0120-\u0121]', -1];
+    for (let i = 0; i < tests.length; i += 3) {
+        if (tests[i].search(new RegExp(tests[i + 1])) !== tests[i + 2]) {
+            return false;
         }
-        return true;
-    }();
+    }
+    return true;
+}();
 
 // Common tokens in XML 1.0 and XML 1.1.
 
-    var XML_S = '[ \t\r\n]+';
-    var XML_EQ = '(' + XML_S + ')?=(' + XML_S + ')?';
-    var XML_CHAR_REF = '&#[0-9]+;|&#x[0-9a-fA-F]+;';
+const XML_S = '[ \t\r\n]+';
+const XML_EQ = '(' + XML_S + ')?=(' + XML_S + ')?';
+const XML_CHAR_REF = '&#[0-9]+;|&#x[0-9a-fA-F]+;';
 
 // XML 1.0 tokens.
 
-    var XML10_VERSION_INFO = XML_S + 'version' + XML_EQ + '("1\\.0"|' + "'1\\.0')";
-    var XML10_BASE_CHAR = (REGEXP_UNICODE) ?
+const XML10_VERSION_INFO = XML_S + 'version' + XML_EQ + '("1\\.0"|' + "'1\\.0')";
+const XML10_BASE_CHAR = (REGEXP_UNICODE) ?
     '\u0041-\u005a\u0061-\u007a\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u00ff' +
     '\u0100-\u0131\u0134-\u013e\u0141-\u0148\u014a-\u017e\u0180-\u01c3' +
     '\u01cd-\u01f0\u01f4-\u01f5\u01fa-\u0217\u0250-\u02a8\u02bb-\u02c1\u0386' +
@@ -71,11 +70,11 @@
     '\u1fbe\u1fc2-\u1fc4\u1fc6-\u1fcc\u1fd0-\u1fd3\u1fd6-\u1fdb\u1fe0-\u1fec' +
     '\u1ff2-\u1ff4\u1ff6-\u1ffc\u2126\u212a-\u212b\u212e\u2180-\u2182' +
     '\u3041-\u3094\u30a1-\u30fa\u3105-\u312c\uac00-\ud7a3' :
-        'A-Za-z';
-    var XML10_IDEOGRAPHIC = (REGEXP_UNICODE) ?
-        '\u4e00-\u9fa5\u3007\u3021-\u3029' :
-        '';
-    var XML10_COMBINING_CHAR = (REGEXP_UNICODE) ?
+    'A-Za-z';
+const XML10_IDEOGRAPHIC = (REGEXP_UNICODE) ?
+    '\u4e00-\u9fa5\u3007\u3021-\u3029' :
+    '';
+const XML10_COMBINING_CHAR = (REGEXP_UNICODE) ?
     '\u0300-\u0345\u0360-\u0361\u0483-\u0486\u0591-\u05a1\u05a3-\u05b9' +
     '\u05bb-\u05bd\u05bf\u05c1-\u05c2\u05c4\u064b-\u0652\u0670\u06d6-\u06dc' +
     '\u06dd-\u06df\u06e0-\u06e4\u06e7-\u06e8\u06ea-\u06ed\u0901-\u0903\u093c' +
@@ -91,27 +90,27 @@
     '\u0eb4-\u0eb9\u0ebb-\u0ebc\u0ec8-\u0ecd\u0f18-\u0f19\u0f35\u0f37\u0f39' +
     '\u0f3e\u0f3f\u0f71-\u0f84\u0f86-\u0f8b\u0f90-\u0f95\u0f97\u0f99-\u0fad' +
     '\u0fb1-\u0fb7\u0fb9\u20d0-\u20dc\u20e1\u302a-\u302f\u3099\u309a' :
-        '';
-    var XML10_DIGIT = (REGEXP_UNICODE) ?
+    '';
+const XML10_DIGIT = (REGEXP_UNICODE) ?
     '\u0030-\u0039\u0660-\u0669\u06f0-\u06f9\u0966-\u096f\u09e6-\u09ef' +
     '\u0a66-\u0a6f\u0ae6-\u0aef\u0b66-\u0b6f\u0be7-\u0bef\u0c66-\u0c6f' +
     '\u0ce6-\u0cef\u0d66-\u0d6f\u0e50-\u0e59\u0ed0-\u0ed9\u0f20-\u0f29' :
-        '0-9';
-    var XML10_EXTENDER = (REGEXP_UNICODE) ?
+    '0-9';
+const XML10_EXTENDER = (REGEXP_UNICODE) ?
     '\u00b7\u02d0\u02d1\u0387\u0640\u0e46\u0ec6\u3005\u3031-\u3035' +
     '\u309d-\u309e\u30fc-\u30fe' :
-        '';
-    var XML10_LETTER = XML10_BASE_CHAR + XML10_IDEOGRAPHIC;
-    var XML10_NAME_CHAR = XML10_LETTER + XML10_DIGIT + '\\._:' +
-        XML10_COMBINING_CHAR + XML10_EXTENDER + '-';
-    var XML10_NAME = '[' + XML10_LETTER + '_:][' + XML10_NAME_CHAR + ']*';
+    '';
+const XML10_LETTER = XML10_BASE_CHAR + XML10_IDEOGRAPHIC;
+const XML10_NAME_CHAR = XML10_LETTER + XML10_DIGIT + '\\._:' +
+    XML10_COMBINING_CHAR + XML10_EXTENDER + '-';
+const XML10_NAME = '[' + XML10_LETTER + '_:][' + XML10_NAME_CHAR + ']*';
 
-    var XML10_ENTITY_REF = '&' + XML10_NAME + ';';
-    var XML10_REFERENCE = XML10_ENTITY_REF + '|' + XML_CHAR_REF;
-    var XML10_ATT_VALUE = '"(([^<&"]|' + XML10_REFERENCE + ')*)"|' +
-        "'(([^<&']|" + XML10_REFERENCE + ")*)'";
-    var XML10_ATTRIBUTE =
-        '(' + XML10_NAME + ')' + XML_EQ + '(' + XML10_ATT_VALUE + ')';
+const XML10_ENTITY_REF = '&' + XML10_NAME + ';';
+const XML10_REFERENCE = XML10_ENTITY_REF + '|' + XML_CHAR_REF;
+const XML10_ATT_VALUE = '"(([^<&"]|' + XML10_REFERENCE + ')*)"|' +
+    "'(([^<&']|" + XML10_REFERENCE + ")*)'";
+const XML10_ATTRIBUTE =
+    '(' + XML10_NAME + ')' + XML_EQ + '(' + XML10_ATT_VALUE + ')';
 
 // XML 1.1 tokens.
 // TODO: NameStartChar also includes \u10000-\ueffff.
@@ -120,41 +119,41 @@
 // surrogate pairs, but any browser doesn't support surrogate pairs in
 // character classes of regular expression, so avoid including them for now.
 
-    var XML11_VERSION_INFO = XML_S + 'version' + XML_EQ + '("1\\.1"|' + "'1\\.1')";
-    var XML11_NAME_START_CHAR = (REGEXP_UNICODE) ?
+const XML11_VERSION_INFO = XML_S + 'version' + XML_EQ + '("1\\.1"|' + "'1\\.1')";
+const XML11_NAME_START_CHAR = (REGEXP_UNICODE) ?
     ':A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d' +
     '\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff' +
     '\uf900-\ufdcf\ufdf0-\ufffd' :
-        ':A-Z_a-z';
-    var XML11_NAME_CHAR = XML11_NAME_START_CHAR +
-        ((REGEXP_UNICODE) ? '\\.0-9\u00b7\u0300-\u036f\u203f-\u2040-' : '\\.0-9-');
-    var XML11_NAME = '[' + XML11_NAME_START_CHAR + '][' + XML11_NAME_CHAR + ']*';
+    ':A-Z_a-z';
+const XML11_NAME_CHAR = XML11_NAME_START_CHAR +
+    ((REGEXP_UNICODE) ? '\\.0-9\u00b7\u0300-\u036f\u203f-\u2040-' : '\\.0-9-');
+const XML11_NAME = '[' + XML11_NAME_START_CHAR + '][' + XML11_NAME_CHAR + ']*';
 
-    var XML11_ENTITY_REF = '&' + XML11_NAME + ';';
-    var XML11_REFERENCE = XML11_ENTITY_REF + '|' + XML_CHAR_REF;
-    var XML11_ATT_VALUE = '"(([^<&"]|' + XML11_REFERENCE + ')*)"|' +
-        "'(([^<&']|" + XML11_REFERENCE + ")*)'";
-    var XML11_ATTRIBUTE =
-        '(' + XML11_NAME + ')' + XML_EQ + '(' + XML11_ATT_VALUE + ')';
+const XML11_ENTITY_REF = '&' + XML11_NAME + ';';
+const XML11_REFERENCE = XML11_ENTITY_REF + '|' + XML_CHAR_REF;
+const XML11_ATT_VALUE = '"(([^<&"]|' + XML11_REFERENCE + ')*)"|' +
+    "'(([^<&']|" + XML11_REFERENCE + ")*)'";
+const XML11_ATTRIBUTE =
+    '(' + XML11_NAME + ')' + XML_EQ + '(' + XML11_ATT_VALUE + ')';
 
 // XML Namespace tokens.
 // Used in XML parser and XPath parser.
 
-    var XML_NC_NAME_CHAR = XML10_LETTER + XML10_DIGIT + '\\._' +
-        XML10_COMBINING_CHAR + XML10_EXTENDER + '-';
-    var XML_NC_NAME = '[' + XML10_LETTER + '_][' + XML_NC_NAME_CHAR + ']*';
+const XML_NC_NAME_CHAR = XML10_LETTER + XML10_DIGIT + '\\._' +
+    XML10_COMBINING_CHAR + XML10_EXTENDER + '-';
+const XML_NC_NAME = '[' + XML10_LETTER + '_][' + XML_NC_NAME_CHAR + ']*';
 
-    if (typeof exports !== 'undefined')
-    {
-        module.exports.XML10_VERSION_INFO = XML10_VERSION_INFO;
-        module.exports.XML10_NAME = XML10_NAME;
-        module.exports.XML10_ATTRIBUTE = XML10_ATTRIBUTE;
-        module.exports.XML11_VERSION_INFO = XML11_VERSION_INFO;
-        module.exports.XML11_NAME = XML11_NAME;
-        module.exports.XML11_ATTRIBUTE = XML11_ATTRIBUTE;
-        module.exports.XML_NC_NAME = XML_NC_NAME;
-    }
+const XML_TOKEN = {
+    XML10_VERSION_INFO: XML10_VERSION_INFO,
+    XML10_NAME: XML10_NAME,
+    XML10_ATTRIBUTE: XML10_ATTRIBUTE,
+    XML11_VERSION_INFO: XML11_VERSION_INFO,
+    XML11_NAME: XML11_NAME,
+    XML11_ATTRIBUTE: XML11_ATTRIBUTE,
+    XML_NC_NAME: XML_NC_NAME
+}
 
+export const XML_TOKEN;
 
 
 
