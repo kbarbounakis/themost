@@ -33,6 +33,7 @@ export declare class QueryExpression {
     $match?: any;
     // noinspection JSUnusedGlobalSymbols
     $fixed?: any;
+    $count?: string;
     $limit?: number;
     $skip?: number;
 
@@ -45,12 +46,14 @@ export declare class QueryExpression {
     hasFields(): boolean;
     // noinspection JSUnusedGlobalSymbols
     hasLimit(): boolean;
-    distinct(value: any): QueryExpression;
+    distinct(value?: boolean): QueryExpression;
+    fixed(value?: boolean): QueryExpression;
+    count(value?: boolean): QueryExpression;
     where(expr: any): QueryExpression;
     where<T>(expr: (value: T) => boolean, params?: any): QueryExpression;
     where<T,J>(expr: (value1: T, value2: J) => any, params?: any): QueryExpression;
     // noinspection JSUnusedGlobalSymbols
-    injectWhere(where: any);
+    injectWhere(where: any): QueryExpression;
     delete(entity: string): QueryExpression;
     insert(any: any): QueryExpression;
     // noinspection JSUnusedGlobalSymbols

@@ -210,7 +210,7 @@ export class MemoryFormatter extends SqlFormatter {
         return `CEIL(${this.escape(p0)})`;
     }
 
-    $startswith(p0, p1) {
+    $startsWith(p0, p1) {
         return `LIKE('${this.escape(p1, true)}%',${this.escape(p0)})`;
     }
 
@@ -218,7 +218,7 @@ export class MemoryFormatter extends SqlFormatter {
         return `LIKE('%${this.escape(p1, true)}%',${this.escape(p0)})`;
     }
 
-    $endswith(p0, p1) {
+    $endsWith(p0, p1) {
         return `LIKE('%${this.escape(p1, true)}',${this.escape(p0)})`;
     }
 

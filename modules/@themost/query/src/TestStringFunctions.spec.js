@@ -99,6 +99,22 @@ describe('String Functions', () => {
         });
     });
 
+    it('should use String.prototype.includes()', async () => {
+        let a = new QueryExpression().select( x => {
+            x.CustomerID,
+            x.CustomerName,
+            x.ContactName
+        })
+        .from('Customers').where( x => {
+            return x.CustomerName.includes('Holdings') === true;
+        });
+        let result = await new MemoryAdapter().executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.CustomerName.includes('Holdings')).toBeTruthy();
+        });
+    });
+
     it('should use String.prototype.length', async () => {
         let a = new QueryExpression().select( x => {
             x.CustomerID,
@@ -116,13 +132,14 @@ describe('String Functions', () => {
     });
 
     it('should use String.prototype.trim()', async () => {
+        const Customers = new QueryCollection('Customers');
         let a = new QueryExpression().select( x => {
             x.CustomerID,
             x.CustomerName,
             x.ContactName,
             x.City
         })
-        .from('Customers').where( x => {
+        .from(Customers).where( x => {
             return x.City.trim() === 'Nantes';
         });
         let result = await new MemoryAdapter().executeAsync(a);
@@ -132,7 +149,7 @@ describe('String Functions', () => {
         });
     });
 
-    fit('should use String.prototype.concat()', async () => {
+    it('should use String.prototype.concat()', async () => {
         let a = new QueryExpression().select( x => {
             x.CustomerID,
             x.CustomerName,

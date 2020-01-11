@@ -87,6 +87,17 @@
               "./modules/@themost/query/src/TestStringFunctions.spec.js",
           ],
           "internalConsoleOptions": "openOnSessionStart"
+      },
+      {
+          "type": "node",
+          "request": "launch",
+          "name": "TestFormatSelect.spec.js",
+          "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine",
+          "cwd": "${workspaceFolder}",
+          "args": [
+              "./modules/@themost/query/src/TestFormatSelect.spec.js",
+          ],
+          "internalConsoleOptions": "openOnSessionStart"
       }
   ]
 }

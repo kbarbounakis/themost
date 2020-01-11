@@ -16,11 +16,11 @@ export class StringMethodParser extends PrototypeMethodParser {
     }
 
     startsWith(args) {
-        return new MethodCallExpression('startswith', args);
+        return new MethodCallExpression('startsWith', args);
     }
 
     endsWith(args) {
-        return new MethodCallExpression('endswith', args);
+        return new MethodCallExpression('endsWith', args);
     }
 
     toLowerCase(args) {

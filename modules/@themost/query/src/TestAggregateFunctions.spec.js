@@ -44,12 +44,13 @@ describe('Aggregate Functions', () => {
     });
 
     it('should use sum()', async () => {
+        const OrderDetails = new QueryCollection('Order_Details');
         let a = new QueryExpression().select( x => {
             return {
                 TotalQuantity: sum(x.Quantity)
             }
         })
-        .from('Order_Details');
+        .from(OrderDetails);
         let result = await new MemoryAdapter().executeAsync(a);
         expect(result.length).toBeTruthy();
         expect(result[0].TotalQuantity).toBeTruthy();

@@ -341,9 +341,9 @@ export class SqlFormatter {
         let sql=this.formatSelect(expr);
         if (expr.$limit) {
             if (expr.$skip) {
-                return ` LIMIT ${expr.$skip}, ${expr.$limit}`
+                return sql + ` LIMIT ${expr.$skip}, ${expr.$limit}`
             }
-            return ` LIMIT ${expr.$limit}`
+            return sql + ` LIMIT ${expr.$limit}`
         }
         return sql;
     }
@@ -358,12 +358,12 @@ export class SqlFormatter {
         // validate select expression
         Args.check(query.$select != null, new ExpectedSelectExpression());
         // get count alias
-        const alias = this.$count || "__count__";
+        const alias = query.$count || 'total';
         // format select statement (ignore paging parameters even if there are exist)
         const sql = this.formatSelect(query);
         // return final count expression by setting the derived sql statement as sub-query
-        // e.g. SELECT COUNT(*) AS `__count__` FROM (SELECT * FROM `UserData`) `c0`
-        return `SELECT COUNT(*) AS ${this.escapeName(alias)} FROM (${sql}) ${this.escapeName("c0")}`;
+        // e.g. SELECT COUNT(*) AS `total` FROM (SELECT * FROM `UserData`) `c0`
+        return `SELECT COUNT(*) AS ${this.escapeName(alias)} FROM (${sql}) ${this.escapeName('c0')}`;
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -379,17 +379,44 @@ export class SqlFormatter {
         const selectFields = Object.keys(query.$select);
         // validate select expression
         Args.check(selectFields.length, new Error('Invalid query expression. A fixed query expects at least one valid select expression.'));
-        let result = 'SELECT ';
+        let result = 'SELECT * FROM (SELECT ';
         result += selectFields.map( key => {
-            return this.escape(query.$select[key]);
+            let res = this.escape(query.$select[key]);
+            if (this.settings.aliasKeyword) {
+                res += ` ${this.settings.aliasKeyword} ${this.escapeNameOnly(key)}`;
+            }
+            else {
+                res += ` ${this.escapeNameOnly(key)}`;
+            }
+            return res;
         }).join(', ');
+        result += ')';
+        // format lookups
+        if (query.$expand && query.$expand.length) {
+            query.$expand.forEach(expand => {
+                result += ' ' + this.formatLookup(expand.$lookup, expand.$direction);
+            });
+        }
+        // format where
+        if (query.$match != null) {
+            if (query.$prepared == null) {
+                result += ' WHERE ' + this.formatWhere(query.$match);
+            }
+            else {
+                result += ' WHERE ' + this.formatWhere({
+                    $and: [
+                        query.$prepared,
+                        query.$match
+                    ]
+                });
+            }
+        }
         return result;
     }
 
     formatField(expr) {
         Args.notNull(expr, 'Field expression');
         let name = getOwnPropertyName(expr);
-        let currentCollection;
         let result;
         Args.check(name != null, new Error('Field name cannot be empty.'));
         // field expression is simple select e.g. { "dateCreated" : 1 }
@@ -618,6 +645,9 @@ export class SqlFormatter {
         if (expr.$select) {
             if (expr.$count) {
                 return this.formatCount(expr);
+            }
+            if (expr.$fixed) {
+                return this.formatFixedSelect(expr);
             }
             if (expr.$limit) {
                 return this.formatLimitSelect(expr);
@@ -881,7 +911,7 @@ export class SqlFormatter {
      * @returns {string}
      */
     $text(p0, p1) {
-        return `(${this.escape(left)} REGEXP \'${this.escape(p1, true)}\')`;
+        return `(${this.escape(p0)} REGEXP \'${this.escape(p1, true)}\')`;
     }
 
     /**

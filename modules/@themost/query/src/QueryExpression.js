@@ -125,13 +125,43 @@ export class QueryExpression {
         return typeof this.$limit === 'number' && this.$limit > 0;
     }
     /**
+     * @param {Boolean=} value
      * @returns {QueryExpression}
      */
     distinct(value) {
-        if (typeof value === 'undefined')
+        if (typeof value === 'undefined') {
             this.$distinct = true;
-        else
+        }
+        else {
             this.$distinct = value || false;
+        }
+        return this;
+    }
+    /**
+     * @param {Boolean=} value
+     * @returns {QueryExpression}
+     */
+    fixed(value) {
+        if (typeof value === 'undefined') {
+            this.$fixed = true;
+        }
+        else {
+            this.$fixed = value || false;
+        }
+        return this;
+    }
+    /**
+     * Prepares an aggregated query which is going to count records by specifying the alias of the count attribute
+     * @param {string=} alias
+     * @returns {QueryExpression}
+     */
+    count(alias) {
+        if (typeof value === 'undefined') {
+            this.$count = 'total';
+        }
+        else {
+            this.$count = alias;
+        }
         return this;
     }
     /**
@@ -163,6 +193,7 @@ export class QueryExpression {
         if (where == null)
             return this;
         this.$match = where;
+        return this;
     }
     /**
      * Initializes a delete query and sets the entity name that is going to be used in this query.
@@ -349,15 +380,6 @@ export class QueryExpression {
         }).reduce( (obj, value) => {
             return Object.assign({ }, obj, value);
         });
-        return this;
-    }
-    /**
-     * Prepares an aggregated query which is going to count records by specifying the alias of the count attribute
-     * @param {string} alias - A string which represents the alias of the count attribute
-     * @returns QueryExpression
-     */
-    count(alias) {
-        this.$count = alias;
         return this;
     }
     /**
