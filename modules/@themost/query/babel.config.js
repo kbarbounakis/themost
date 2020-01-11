@@ -11,7 +11,8 @@ module.exports = function (api) {
                         "browsers": "> 0.25%, not dead"
                     },
                     "modules": false,
-                    "useBuiltIns": "usage"
+                    "useBuiltIns": "usage",
+                    "corejs": 2
                 }
             ]
         ],

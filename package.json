@@ -11,7 +11,9 @@
     "jasmine-node": "jasmine-node",
     "serve:wiki": "gulp serve",
     "build-query": "cd ./modules/@themost/query && npm run build",
+    "test-query": "cd ./modules/@themost/query && npm test",
     "build-common": "cd ./modules/@themost/common && npm run build",
+    "test-common": "cd ./modules/@themost/common && npm test",
     "build-xml": "cd ./modules/@themost/xml && npm run build",
     "test-xml": "cd ./modules/@themost/xml && npm test"
   },
