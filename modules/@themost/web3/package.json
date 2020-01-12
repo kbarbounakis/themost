@@ -1,0 +1,41 @@
+{
+  "name": "@themost/web",
+  "version": "3.0.1-dev.1",
+  "description": "MOST Web Framework Codename Zero Gravity Web Server",
+  "main": "dist/themost_web.js",
+  "types": "dist/themost_web.d.ts",
+  "scripts": {
+    "build": "rollup -c ./rollup.config.js -m",
+    "watch": "rollup -c ./rollup.config.js -m -w",
+    "test": "jasmine",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@themost/common": "^3.0.1-dev.1",
+    "@themost/query": "^3.0.1-dev.1",
+    "@themost/xml": "^3.0.1-dev.1",
+    "@themost/data": "^2.3.1",
+    "@themost/client": "^2.5.0",
+    "@themost/node": "^2.5.0"
+  },
+  "engines": {
+    "node": ">=6.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/themost-framework/themost.git"
+  },
+  "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/themost-framework/themost/issues"
+  },
+  "homepage": "https://github.com/themost-framework/themost#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^3.5.0",
+    "jasmine": "^3.5.0"
+  }
+}

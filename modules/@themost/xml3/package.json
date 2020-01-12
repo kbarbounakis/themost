@@ -1,8 +1,9 @@
 {
-  "name": "@themost/common",
+  "name": "@themost/xml",
   "version": "3.0.1-dev.1",
-  "description": "MOST Web Framework Codename Zero Gravity Common",
-  "main": "dist/themost_common.js",
+  "description": "MOST Web Framework Codename Zero Gravity Xml",
+  "main": "dist/themost_xml.js",
+  "types": "dist/themost_xml.d.ts",
   "scripts": {
     "build": "rollup -c ./rollup.config.js -m",
     "watch": "rollup -c ./rollup.config.js -m -w",
@@ -22,12 +23,28 @@
   },
   "homepage": "https://github.com/themost-framework/themost#readme",
   "dependencies": {
-    "async": "^2.5.0",
-    "blueimp-md5": "^2.7.0",
-    "events": "^1.1.1",
-    "hashmap": "^2.3.0",
-    "lodash": "^4.17.4",
-    "sprintf": "^0.1.5"
+    "core-js": "^2.6.11"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "jasmine": "^3.5.0"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true,
+      "jquery": true
+    },
+    "globals": {
+      "describe": false,
+      "it": false,
+      "fdescribe": false,
+      "fit": false,
+      "before": false,
+      "after": false,
+      "expect": false
+    },
+    "extends": "eslint:recommended"
+  }
 }

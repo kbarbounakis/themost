@@ -11,8 +11,8 @@
     "test-query": "cd ./modules/@themost/query3 && npm test",
     "build-common": "cd ./modules/@themost/common3 && npm run build",
     "test-common": "cd ./modules/@themost/common3 && npm test",
-    "build-xml": "cd ./modules/@themost/xml && npm run build",
-    "test-xml": "cd ./modules/@themost/xml && npm test"
+    "build-xml": "cd ./modules/@themost/xml3 && npm run build",
+    "test-xml": "cd ./modules/@themost/xml3 && npm test"
   },
   "engines": {
     "node": ">= 5.4.1"
@@ -54,15 +54,15 @@
     "@babel/register": "^7.7.4",
     "@babel/runtime": "^7.7.6",
     "@themost/client": "^2.4.1",
-    "@themost/common": "file:./modules/@themost/common",
+    "@themost/common": "file:./modules/@themost/common3",
     "@themost/data": "file:modules/@themost/data",
     "@themost/express": "^1.5.3",
     "@themost/node": "^2.5.0",
-    "@themost/query": "file:./modules/@themost/query",
+    "@themost/query": "file:./modules/@themost/query3",
     "@themost/sqlite": "^2.2.1",
     "@themost/test": "^1.0.5",
-    "@themost/web": "file:modules/@themost/web",
-    "@themost/xml": "file:modules/@themost/xml",
+    "@themost/web": "file:modules/@themost/web3",
+    "@themost/xml": "file:modules/@themost/xml3",
     "@types/jasmine": "^3.5.0",
     "babel-eslint": "^10.0.3",
     "eslint": "^6.7.2",

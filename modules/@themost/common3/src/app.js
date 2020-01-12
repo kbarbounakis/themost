@@ -5,8 +5,8 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {AbstractMethodError} from "./errors";
-import {AbstractClassError} from "./errors";
+import {AbstractMethodError} from './errors';
+import {AbstractClassError} from './errors';
 
 /**
  *
@@ -68,6 +68,7 @@ class IApplication {
  */
 // eslint-disable-next-line no-unused-vars
 class IApplicationService {
+    // eslint-disable-next-line no-unused-vars
     constructor(app) {
         if (this.constructor === IApplicationService.prototype.constructor) {
             throw new AbstractClassError();
