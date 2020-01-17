@@ -453,10 +453,4 @@ class DefaultDataCacheStrategy {
 
 LangUtils.inherits(DefaultDataCacheStrategy, DataCacheStrategy);
 
-
-if (typeof exports !== 'undefined') {
-
-    module.exports.DataCache = DataCache;
-    module.exports.DataCacheStrategy = DataCacheStrategy;
-    module.exports.DefaultDataCacheStrategy = DefaultDataCacheStrategy;
-}
+export {DataCache, DataCacheStrategy, DefaultDataCacheStrategy};

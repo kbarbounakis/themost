@@ -1,12 +1,20 @@
 {
   "name": "@themost/data",
-  "version": "2.5.2",
+  "version": "3.0.1-dev.1",
   "description": "MOST Web Framework Codename Blueshift - Data module",
-  "main": "index.js",
+  "main": "dist/themost_xml.js",
+  "types": "dist/themost_xml.d.ts",
+  "scripts": {
+    "build": "rollup -c ./rollup.config.js -m",
+    "watch": "rollup -c ./rollup.config.js -m -w",
+    "test": "karma start",
+    "test-node": "jasmine",
+    "prepublishOnly": "npm run build"
+  },
   "peerDependencies": {
-    "@themost/common": "^2.5.0",
-    "@themost/query": "^2.5.0",
-    "@themost/xml": "^2.5.0"
+    "@themost/common": "^3.0.1-dev.1",
+    "@themost/query": "^3.0.1-dev.1",
+    "@themost/xml": "^3.0.1-dev.1"
   },
   "engines": {
     "node": ">=6.9.0"

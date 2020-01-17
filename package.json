@@ -12,7 +12,9 @@
     "build-common": "cd ./modules/@themost/common3 && npm run build",
     "test-common": "cd ./modules/@themost/common3 && npm test",
     "build-xml": "cd ./modules/@themost/xml3 && npm run build",
-    "test-xml": "cd ./modules/@themost/xml3 && npm test"
+    "test-xml": "cd ./modules/@themost/xml3 && npm test",
+    "build-data": "cd ./modules/@themost/data && npm run build",
+    "test-data": "cd ./modules/@themost/data && npm test-node"
   },
   "engines": {
     "node": ">= 5.4.1"
