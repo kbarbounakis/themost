@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -9,16 +8,16 @@
 ///
 import _ from "lodash";
 import Symbol from 'symbol';
-import {TraceUtils} from '@themost/common/utils';
+import {TraceUtils} from '@themost/common';
 import path from "path";
 import pluralize from 'pluralize';
-import {LangUtils} from '@themost/common/utils';
-import {Args} from '@themost/common/utils';
-import {ConfigurationBase} from '@themost/common/config';
-import {ConfigurationStrategy} from '@themost/common/config';
-import {PathUtils} from '@themost/common/utils';
-import {RandomUtils} from '@themost/common/utils';
-import {AbstractMethodError} from '@themost/common/errors';
+import {LangUtils} from '@themost/common';
+import {Args} from '@themost/common';
+import {ConfigurationBase} from '@themost/common';
+import {ConfigurationStrategy} from '@themost/common';
+import {PathUtils} from '@themost/common';
+import {RandomUtils} from '@themost/common';
+import {AbstractMethodError} from '@themost/common';
 import {DataCacheStrategy} from './data-cache';
 import {DefaultDataCacheStrategy} from './data-cache';
 
@@ -936,20 +935,12 @@ class DefaultModelClassLoaderStrategy {
 
 LangUtils.inherits(DefaultModelClassLoaderStrategy,ModelClassLoaderStrategy);
 
-const cfg = {
 
-};
-
-Object.defineProperty(cfg, 'current', {
-    get: function() {
-        return DataConfiguration.getCurrent();
-    }, configurable:false, enumerable:false
-    });
 /**
  * Gets the current data configuration
  * @returns DataConfiguration - An instance of DataConfiguration class which represents the current data configuration
  */
-cfg.getCurrent = () => {
+function getCurrent() {
     return DataConfiguration.getCurrent();
 };
 /**
@@ -957,15 +948,8 @@ cfg.getCurrent = () => {
  * @param {DataConfiguration} configuration
  * @returns DataConfiguration - An instance of DataConfiguration class which represents the current data configuration
  */
-cfg.setCurrent = configuration => {
+function setCurrent(configuration) {
     return DataConfiguration.setCurrent(configuration);
-};
-/**
- * Creates an instance of DataConfiguration class
- * @returns {DataConfiguration} - Returns an instance of DataConfiguration class
- */
-cfg.createInstance= () => {
-    return new DataConfiguration();
 };
 
 /**
@@ -974,20 +958,24 @@ cfg.createInstance= () => {
  * @param {string} name - A string which represents the name of the data configuration
  * @returns {DataConfiguration}
  */
-cfg.getNamedConfiguration = name => {
+function getNamedConfiguration(name) {
     return DataConfiguration.getNamedConfiguration(name);
 };
 
-cfg.DataTypePropertiesConfiguration = DataTypePropertiesConfiguration;
-cfg.DataTypeConfiguration = DataTypeConfiguration;
-cfg.DataAdapterTypeConfiguration = DataAdapterTypeConfiguration;
-cfg.DataAdapterConfiguration = DataAdapterConfiguration;
-cfg.AuthSettingsConfiguration = AuthSettingsConfiguration;
-cfg.DataConfiguration = DataConfiguration;
-cfg.DataConfigurationStrategy = DataConfigurationStrategy;
-cfg.SchemaLoaderStrategy = SchemaLoaderStrategy;
-cfg.DefaultSchemaLoaderStrategy = DefaultSchemaLoaderStrategy;
-cfg.ModelClassLoaderStrategy = ModelClassLoaderStrategy;
-cfg.DefaultModelClassLoaderStrategy = DefaultModelClassLoaderStrategy;
+export {
+    getCurrent,
+    setCurrent,
+    getNamedConfiguration,
+    DataTypePropertiesConfiguration,
+    DataTypeConfiguration,
+    DataAdapterTypeConfiguration,
+    DataAdapterConfiguration,
+    AuthSettingsConfiguration,
+    DataConfiguration,
+    DataConfigurationStrategy,
+    SchemaLoaderStrategy,
+    DefaultSchemaLoaderStrategy,
+    ModelClassLoaderStrategy,
+    DefaultModelClassLoaderStrategy
+};
 
-export default cfg;

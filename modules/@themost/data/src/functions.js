@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -7,11 +6,10 @@
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import types from './types';
-import {TraceUtils} from '@themost/common/utils';
+import {parsers} from './types';
+import {TraceUtils} from '@themost/common';
 import _ from 'lodash';
 import Q from "q";
-
 
 const functions = { };
 
@@ -290,7 +288,7 @@ class FunctionContext {
                 if (err) {
                     TraceUtils.log(err);
                     //try to get undefined user
-                    parser = types.parsers['parse' + userModel.field('id').type];
+                    parser = parsers['parse' + userModel.field('id').type];
                     if (typeof parser === 'function')
                         undefinedUser = parser(null);
                     //set id for next calls
@@ -302,7 +300,7 @@ class FunctionContext {
                 }
                 else if (_.isNil(result)) {
                     //try to get undefined user
-                    parser = types.parsers['parse' + userModel.field('id').type];
+                    parser = parsers['parse' + userModel.field('id').type];
                     if (typeof parser === 'function')
                         undefinedUser = parser(null);
                     //set id for next calls

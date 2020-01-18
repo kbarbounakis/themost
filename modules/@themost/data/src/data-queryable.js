@@ -1,24 +1,22 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import async from 'async';
 
 import {sprintf} from 'sprintf';
 import Symbol from 'symbol';
 import _ from "lodash";
-import {TextUtils} from "@themost/common/utils";
+import {TextUtils} from "@themost/common";
 import mappingExtensions from './data-mapping-extensions';
 import {DataAssociationMapping} from './types';
-import {DataError} from "@themost/common/errors";
-import {QueryField} from '@themost/query/query';
-import {QueryEntity} from '@themost/query/query';
-import {QueryUtils} from '@themost/query/utils';
+import {DataError} from "@themost/common";
+import {QueryField} from '@themost/query';
+import {QueryEntity} from '@themost/query';
+import {QueryUtils} from '@themost/query';
 import Q from 'q';
 import hash from 'object-hash';
 const aliasProperty = Symbol('alias');
@@ -3444,8 +3442,4 @@ function valueInternal(callback) {
     });
 }
 
-if (typeof exports !== 'undefined')
-{
-    module.exports.DataQueryable = DataQueryable;
-    module.exports.DataAttributeResolver = DataAttributeResolver;
-}
+export {DataQueryable, DataAttributeResolver};

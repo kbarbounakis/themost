@@ -1,19 +1,15 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import {sprintf} from 'sprintf';
-
 import _ from 'lodash';
-import {SequentialEventEmitter} from "@themost/common/emitter";
-import {LangUtils} from "@themost/common/utils";
-import {AbstractClassError} from '@themost/common/errors';
-import {AbstractMethodError} from '@themost/common/errors';
+import {SequentialEventEmitter} from "@themost/common";
+import {LangUtils} from "@themost/common";
+import {AbstractClassError} from '@themost/common';
+import {AbstractMethodError} from '@themost/common';
 
 const types = { };
 
@@ -607,11 +603,13 @@ function DataModelMigration() {
  * @param {*=} obj - An object that contains relation mapping attributes
  * @constructor
  */
-function DataAssociationMapping(obj) {
-    this.cascade = 'none';
-    this.associationType = 'association';
-    //this.select = [];
-    if (typeof obj === 'object') { _.assign(this, obj); }
+class DataAssociationMapping {
+    constructor(obj) {
+        this.cascade = 'none';
+        this.associationType = 'association';
+        //this.select = [];
+        if (typeof obj === 'object') { _.assign(this, obj); }
+    }
 }
 
 
@@ -824,22 +822,7 @@ const DataCachingType = {
     Conditional: 'conditional'
 };
 
-types.PrivilegeType = PrivilegeType;
-types.DataObjectState = DataObjectState;
-types.DataCachingType = DataCachingType;
-types.DataAdapter = DataAdapter;
-types.DataContext = DataContext;
-types.DataContextEmitter = DataContextEmitter;
-types.DataEventArgs = DataEventArgs;
-types.DataEventListener = DataEventListener;
-types.DataModelMigration = DataModelMigration;
-types.DataAssociationMapping = DataAssociationMapping;
-types.DataField=DataField;
-types.DataResultSet=DataResultSet;
-types.DataModelEventListener=DataModelEventListener;
-types.DataModelPrivilege=DataModelPrivilege;
-// noinspection JSUnusedGlobalSymbols
-types.parsers = {
+const parsers = {
     parseInteger: function(val) {
         if (_.isNil(val))
             return 0;
@@ -921,4 +904,20 @@ types.parsers = {
     }
 };
 
-export default types;
+export {
+    parsers,
+    PrivilegeType,
+    DataObjectState,
+    DataCachingType,
+    DataAdapter,
+    DataContext,
+    DataContextEmitter,
+    DataEventArgs,
+    DataEventListener,
+    DataModelMigration,
+    DataAssociationMapping,
+    DataField,
+    DataResultSet,
+    DataModelEventListener,
+    DataModelPrivilege
+}

@@ -1,19 +1,14 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import {LangUtils} from '@themost/common/utils';
-
 import _ from 'lodash';
-import {QueryUtils} from '@themost/query/utils';
-import types from './types';
+import {QueryUtils} from '@themost/query';
+import {DataAssociationMapping} from './types';
 import {DataQueryable} from './data-queryable';
-
 
 /**
  * @classdesc Represents a one-to-many association between two models.
@@ -91,76 +86,72 @@ import {DataQueryable} from './data-queryable';
  * @property {DataObject} parent - Gets or sets the parent data object
  * @property {DataAssociationMapping} mapping - Gets or sets the mapping definition of this data object association.
  */
-function HasManyAssociation(obj, association)
-{
-    /**
-     * @type {DataObject}
-     * @private
-     */
-    let parent_ = obj;
-    /**
-     * Gets or sets the parent data object
-     * @type DataObject
-     */
-    Object.defineProperty(this, 'parent', { get: function () {
-        return parent_;
-    }, set: function (value) {
-        parent_ = value;
-    }, configurable: false, enumerable: false});
-    const self = this;
-
-    if (typeof association === 'string') {
-        //infer mapping from field name
-        //set relation mapping
-        if (self.parent!=null) {
-            const model = self.parent.getModel();
-            if (model!=null)
-                self.mapping = model.inferMapping(association);
+class HasManyAssociation extends DataQueryable {
+    constructor(obj, association)
+    {
+        super();
+        /**
+         * @type {DataObject}
+         * @private
+         */
+        let parent_ = obj;
+        /**
+         * Gets or sets the parent data object
+         * @type DataObject
+         */
+        Object.defineProperty(this, 'parent', { get: function () {
+            return parent_;
+        }, set: function (value) {
+            parent_ = value;
+        }, configurable: false, enumerable: false});
+        const self = this;
+    
+        if (typeof association === 'string') {
+            //infer mapping from field name
+            //set relation mapping
+            if (self.parent!=null) {
+                const model = self.parent.getModel();
+                if (model!=null)
+                    self.mapping = model.inferMapping(association);
+            }
         }
-    }
-    else if (typeof association === 'object' && association !=null) {
-        //get the specified mapping
-        if (association instanceof types.DataAssociationMapping)
-            self.mapping = association;
-        else
-            self.mapping = _.assign(new types.DataAssociationMapping(), association);
-    }
-
-    let q = null;
-    //override query property
-    Object.defineProperty(this, 'query', {
-        get:function() {
-            //if query is already defined
-            if (q!=null)
-            //return this query
+        else if (typeof association === 'object' && association !=null) {
+            //get the specified mapping
+            if (association instanceof DataAssociationMapping)
+                self.mapping = association;
+            else
+                self.mapping = _.assign(new DataAssociationMapping(), association);
+        }
+    
+        let q = null;
+        //override query property
+        Object.defineProperty(this, 'query', {
+            get:function() {
+                //if query is already defined
+                if (q!=null)
+                //return this query
+                    return q;
+                if (typeof self.mapping === 'undefined' || self.mapping==null)
+                    throw new Error('Data association mapping cannot be empty at this context.');
+                //prepare query by selecting the foreign key of the related object
+                q = QueryUtils.query(self.model.viewAdapter).where(self.mapping.childField).equal(self.parent[self.mapping.parentField]).prepare();
                 return q;
-            if (typeof self.mapping === 'undefined' || self.mapping==null)
-                throw new Error('Data association mapping cannot be empty at this context.');
-            //prepare query by selecting the foreign key of the related object
-            q = QueryUtils.query(self.model.viewAdapter).where(self.mapping.childField).equal(self.parent[self.mapping.parentField]).prepare();
-            return q;
-        }, configurable:false, enumerable:false
-    });
-
-    let m = null;
-    //override model property
-    Object.defineProperty(this, 'model', {
-        get:function() {
-            //if query is already defined
-            if (m!=null)
-            //return this query
+            }, configurable:false, enumerable:false
+        });
+    
+        let m = null;
+        //override model property
+        Object.defineProperty(this, 'model', {
+            get:function() {
+                //if query is already defined
+                if (m!=null)
+                //return this query
+                    return m;
+                m = self.parent.context.model(self.mapping.childModel);
                 return m;
-            m = self.parent.context.model(self.mapping.childModel);
-            return m;
-        }, configurable:false, enumerable:false
-    });
-}
-LangUtils.inherits(HasManyAssociation, DataQueryable);
-
-if (typeof exports !== 'undefined')
-{
-    module.exports = {
-        HasManyAssociation:HasManyAssociation
-    };
+            }, configurable:false, enumerable:false
+        });
+    }
 }
 
+export {HasManyAssociation};

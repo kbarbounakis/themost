@@ -1,30 +1,20 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import async from 'async';
-
 import sprintf from 'sprintf';
 import _ from 'lodash';
-import {QueryUtils} from '@themost/query/utils';
-import {QueryField} from '@themost/query/query';
-import {QueryFieldRef} from '@themost/query/query';
-import {NotNullError} from "@themost/common/errors";
-import {UniqueConstraintError} from "@themost/common/errors";
-import {TraceUtils} from "@themost/common/utils";
-import {TextUtils} from "@themost/common/utils";
-import {DataCacheStrategy} from "./data-cache";
-
-/**
- * @module @themost/data/data-listeners
- * @ignore
- */
-
+import {QueryUtils} from '@themost/query';
+import {QueryField} from '@themost/query';
+import {QueryFieldRef} from '@themost/query';
+import {NotNullError} from "@themost/common";
+import {UniqueConstraintError} from "@themost/common";
+import {TraceUtils} from "@themost/common";
+import {TextUtils} from "@themost/common";
 /**
  * @classdesc Represents an event listener for validating not nullable fields. This listener is automatically  registered in all data models.
  * @class
@@ -803,16 +793,11 @@ class DataModelSubTypesListener {
     }
 }
 
-if (typeof exports !== 'undefined')
-{
-    module.exports = {
-        NotNullConstraintListener:NotNullConstraintListener,
-        UniqueConstraintListener:UniqueConstraintListener,
-        CalculatedValueListener:CalculatedValueListener,
-        DataCachingListener:DataCachingListener,
-        DefaultValueListener:DefaultValueListener,
-        DataModelCreateViewListener:DataModelCreateViewListener,
-        DataModelSeedListener:DataModelSeedListener,
-        DataModelSubTypesListener:DataModelSubTypesListener
-    };
-}
+export { NotNullConstraintListener,
+    UniqueConstraintListener,
+    CalculatedValueListener,
+    DataCachingListener,
+    DefaultValueListener,
+    DataModelCreateViewListener,
+    DataModelSeedListener,
+    DataModelSubTypesListener };

@@ -1,19 +1,15 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import _ from "lodash";
-
-import {TraceUtils} from '@themost/common/utils';
-import {LangUtils} from '@themost/common/utils';
+import {TraceUtils} from '@themost/common';
+import {LangUtils} from '@themost/common';
 import {DataContext} from './types';
-import {DataConfigurationStrategy} from './data-configuration';
-import cfg from './data-configuration';
+import {DataConfigurationStrategy, DataConfiguration} from './data-configuration';
 import Symbol from 'symbol';
 const nameProperty = Symbol('name');
 
@@ -45,8 +41,9 @@ const nameProperty = Symbol('name');
  * @augments {DataContext}
  * @property {DataAdapter} db - Gets a data adapter based on the current configuration settings.
  */
-class DefaultDataContext {
+class DefaultDataContext extends DataContext {
     constructor() {
+        super();
         /**
          * @type {DataAdapter|*}
          */
@@ -147,7 +144,7 @@ class DefaultDataContext {
      * @returns {ConfigurationBase|*}
      */
     getConfiguration() {
-        return cfg.current;
+        return DataConfiguration.getCurrent();
     }
 
     /**
@@ -305,7 +302,7 @@ class NamedDataContext {
      * @returns {DataConfiguration}
      */
     getConfiguration() {
-        return cfg.getNamedConfiguration(this.name);
+        return DataConfiguration.getNamedConfiguration(this.name);
     }
 
     /**
@@ -336,11 +333,5 @@ class NamedDataContext {
     }
 }
 
-LangUtils.inherits(NamedDataContext, DataContext);
 
-
-if (typeof exports !== 'undefined')
-{
-    module.exports.DefaultDataContext = DefaultDataContext;
-    module.exports.NamedDataContext = NamedDataContext;
-}
+export { DefaultDataContext, NamedDataContext };

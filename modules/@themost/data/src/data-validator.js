@@ -1,41 +1,33 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import _ from 'lodash';
-
 import sprintf from 'sprintf';
-import {LangUtils} from '@themost/common/utils';
 import {DataConfigurationStrategy} from './data-configuration';
-import conf from './data-configuration';
 
-const validators = { };
-/**
- * @class
- * @property {*} target - Gets or sets the target data object
- * @constructor
- */
-function DataValidator() {
-    let context_;
-    /**
-     * Sets the current data context.
-     * @param {DataContext|*} context
-     */
-    this.setContext = context => {
-        context_ = context;
-    };
-    /**
-     * Gets the current data context, if any.
-     * @returns {DataContext|*}
-     */
-    this.getContext = () => {
-        return context_;
-    };
+class DataValidator {
+    constructor() {
+        let _context;
+        /**
+         * Sets the current data context.
+         * @param {DataContext|*} context
+         */
+        this.setContext = context => {
+            _context = context;
+        };
+        /**
+         * Gets the current data context, if any.
+         * @returns {DataContext|*}
+         */
+        this.getContext = () => {
+            return _context;
+        };
+    }
+    
 }
 
 function zeroPad_(number, length) {
@@ -93,10 +85,10 @@ function zeroPad_(number, length) {
 }
  </code></pre>
  */
-class PatternValidator {
+class PatternValidator extends DataValidator {
     constructor(pattern) {
+        super();
         this.pattern = pattern;
-        PatternValidator.super_.call(this);
     }
 
     /**
@@ -142,7 +134,6 @@ class PatternValidator {
     }
 }
 
-LangUtils.inherits(PatternValidator, DataValidator);
 PatternValidator.DefaultMessage = "The value seems to be invalid.";
 
 /**
@@ -190,10 +181,10 @@ PatternValidator.DefaultMessage = "The value seems to be invalid.";
 }
  </code></pre>
  */
-class MinLengthValidator {
+class MinLengthValidator extends DataValidator {
     constructor(length) {
+        super();
         this.minLength = length;
-        MinLengthValidator.super_.call(this);
     }
 
     /**
@@ -224,8 +215,6 @@ class MinLengthValidator {
         }
     }
 }
-
-LangUtils.inherits(MinLengthValidator,DataValidator);
 
 MinLengthValidator.DefaultMessage = "The value is too short. It should have %s characters or more.";
 
@@ -284,10 +273,10 @@ MinLengthValidator.DefaultMessage = "The value is too short. It should have %s c
 }
  </code></pre>
  */
-class MaxLengthValidator {
+class MaxLengthValidator extends DataValidator {
     constructor(length) {
+        super();
         this.maxLength = length;
-        MaxLengthValidator.super_.call(this);
     }
 
     /**
@@ -319,8 +308,6 @@ class MaxLengthValidator {
         }
     }
 }
-
-LangUtils.inherits(MaxLengthValidator, DataValidator);
 
 MaxLengthValidator.DefaultMessage = "The value is too long. It should have %s characters or fewer.";
 
@@ -370,10 +357,10 @@ MaxLengthValidator.DefaultMessage = "The value is too long. It should have %s ch
 }
  </code></pre>
  */
-class MinValueValidator {
+class MinValueValidator extends DataValidator {
     constructor(min) {
+        super();
         this.minValue = min;
-        MinValueValidator.super_.call(this);
     }
 
     /**
@@ -402,8 +389,6 @@ class MinValueValidator {
         }
     }
 }
-
-LangUtils.inherits(MinValueValidator, DataValidator);
 
 MinValueValidator.DefaultMessage = "The value should be greater than or equal to %s.";
 
@@ -453,10 +438,10 @@ MinValueValidator.DefaultMessage = "The value should be greater than or equal to
 }
  </code></pre>
  */
-class MaxValueValidator {
+class MaxValueValidator extends DataValidator {
     constructor(max) {
+        super();
         this.maxValue = max;
-        MaxValueValidator.super_.call(this);
     }
 
     /**
@@ -485,9 +470,6 @@ class MaxValueValidator {
         }
     }
 }
-
-LangUtils.inherits(MaxValueValidator, DataValidator);
-
 
 MaxValueValidator.DefaultMessage = "The value should be lower or equal to %s.";
 
@@ -540,11 +522,11 @@ MaxValueValidator.DefaultMessage = "The value should be lower or equal to %s.";
 }
  </code></pre>
  */
-class RangeValidator {
+class RangeValidator extends DataValidator {
     constructor(min, max) {
+        super();
         this.minValue = min;
         this.maxValue = max;
-        RangeValidator.super_.call(this);
     }
 
     /**
@@ -590,8 +572,6 @@ class RangeValidator {
         }
     }
 }
-
-LangUtils.inherits(RangeValidator, DataValidator);
 
 RangeValidator.DefaultMessage = "The value should be between %s to %s.";
 
@@ -682,9 +662,9 @@ RangeValidator.DefaultMessage = "The value should be between %s to %s.";
 }
  </code></pre>
  */
-class DataTypeValidator {
+class DataTypeValidator extends DataValidator {
     constructor(type) {
-        DataTypeValidator.super_.call(this);
+        super();
         /**
          * @name DataTypeValidator#type
          * @type {*}
@@ -776,8 +756,6 @@ class DataTypeValidator {
         }
     }
 }
-
-LangUtils.inherits(DataTypeValidator, DataValidator);
 
 /**
  * @class
@@ -1067,9 +1045,9 @@ class DataValidatorListener {
 }
  </code></pre>
  */
-class RequiredValidator {
+class RequiredValidator extends DataValidator {
     constructor() {
-        RequiredValidator.super_.call(this);
+        super();
     }
 
     /**
@@ -1102,21 +1080,16 @@ class RequiredValidator {
     }
 }
 
-LangUtils.inherits(RequiredValidator, DataValidator);
-
-validators.PatternValidator = PatternValidator;
-validators.DataValidator = DataValidator;
-validators.MaxValueValidator = MaxValueValidator;
-validators.MinValueValidator = MinValueValidator;
-validators.MaxLengthValidator = MaxLengthValidator;
-validators.MinLengthValidator = MinLengthValidator;
-validators.RangeValidator = RangeValidator;
-validators.RequiredValidator = RequiredValidator;
-validators.DataTypeValidator = DataTypeValidator;
-validators.DataValidatorListener = DataValidatorListener;
-
-
-export default validators;
-
+export {
+    PatternValidator,
+    DataValidator,
+    MaxValueValidator,
+    MinValueValidator,
+    MinLengthValidator,
+    RangeValidator,
+    RequiredValidator,
+    DataTypeValidator,
+    DataValidatorListener,
+}
 
 

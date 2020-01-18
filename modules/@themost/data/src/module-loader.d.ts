@@ -7,8 +7,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 export declare abstract class ModuleLoader {
-    abstract require(modulePath: string): any;
-
+    abstract require(modulePath: string): any; 
 }
 
 export declare class DefaultModuleLoader extends  ModuleLoader {

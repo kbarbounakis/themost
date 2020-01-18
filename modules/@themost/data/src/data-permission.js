@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -7,21 +6,15 @@
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import {QueryEntity} from '@themost/query/query';
-
-import {QueryUtils} from '@themost/query/utils';
+import {QueryEntity} from '@themost/query';
+import {QueryUtils} from '@themost/query';
 import async from 'async';
-import {AccessDeniedError} from "@themost/common/errors";
-import {RandomUtils} from "@themost/common/utils";
+import {AccessDeniedError} from "@themost/common";
+import {RandomUtils} from "@themost/common";
 import {DataConfigurationStrategy} from "./data-configuration";
 import _ from "lodash";
 import {DataCacheStrategy} from "./data-cache";
 import Q from 'q';
-/**
- * @module @themost/data/data-permission
- * @ignore
- */
-
 /**
  * @class
  * @constructor
@@ -856,13 +849,5 @@ function effectiveAccounts(context, callback) {
     }
 }
 
-const perms = {
-    DataPermissionEventArgs:DataPermissionEventArgs,
-    DataPermissionEventListener:DataPermissionEventListener,
-    PermissionMask:PermissionMask
-};
-
-if (typeof exports !== 'undefined') {
-    module.exports = perms;
-}
+export {DataPermissionEventArgs, DataPermissionEventListener, PermissionMask}
 

@@ -8,7 +8,7 @@
 
 export const parseBoolean = require('./types').parsers.parseBoolean;
 import async from 'async';
-import { DataError } from '@themost/common/errors';
+import { DataError } from '@themost/common';
 import _ from 'lodash';
 
 class DataObjectAssociationListener {

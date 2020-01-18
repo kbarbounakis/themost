@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -8,14 +7,8 @@
  */
 ///
 import _ from "lodash";
-
-import {DataNotFoundError} from "@themost/common/errors";
+import {DataNotFoundError} from "@themost/common";
 import async from "async";
-
-/**
- * @module @themost/data/data-state-validator
- * @ignore
- */
 
 /**
  * @class
@@ -283,13 +276,4 @@ function mapKey_(obj, callback) {
         callback(err, objectFound);
     });
 }
-
-if (typeof exports !== 'undefined')
-{
-    module.exports = {
-        /**
-         * @constructs DataStateValidatorListener
-         */
-        DataStateValidatorListener:DataStateValidatorListener
-    };
-}
+export {DataStateValidatorListener};

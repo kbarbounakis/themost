@@ -1,18 +1,14 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import {LangUtils} from '@themost/common/utils';
-
 import _ from 'lodash';
 import Q from 'q';
 import async from 'async';
-import {QueryField} from '@themost/query/query';
+import {QueryField} from '@themost/query';
 import {DataAssociationMapping} from './types';
 import {DataConfigurationStrategy} from './data-configuration';
 import {DataQueryable} from './data-queryable';
@@ -109,8 +105,9 @@ import {DataObjectJunction} from './data-object-junction';
  * @property {DataObject} parent - Gets or sets the parent data object associated with this instance of DataObjectJunction class.
  * @property {DataAssociationMapping} mapping - Gets or sets the mapping definition of this data object association.
  */
-class HasParentJunction {
+class HasParentJunction extends DataQueryable {
     constructor(obj, association) {
+        super();
         const self = this;
 
         /**
@@ -368,7 +365,6 @@ class HasParentJunction {
     }
 }
 
-LangUtils.inherits(HasParentJunction, DataQueryable);
 
 /**
  * @this HasParentJunction
@@ -554,8 +550,4 @@ function remove_(obj, callback) {
     });
 }
 
-
-if (typeof exports !== 'undefined')
-{
-    module.exports.HasParentJunction = HasParentJunction;
-}
+export {HasParentJunction};

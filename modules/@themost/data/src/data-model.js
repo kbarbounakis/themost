@@ -1,22 +1,19 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import _ from "lodash";
-
 import {sprintf} from 'sprintf';
 import Symbol from 'symbol';
 import path from "path";
 import pluralize from "pluralize";
 import async from 'async';
-import {QueryUtils} from '@themost/query/utils';
-import {OpenDataParser} from '@themost/query/odata';
-import types from './types';
+import {QueryUtils} from '@themost/query';
+import {OpenDataParser} from '@themost/query';
+import {parsers, DataModelMigration} from './types';
 import {DataAssociationMapping} from './types';
 import dataListeners from './data-listeners';
 import validators from './data-validator';
@@ -29,13 +26,13 @@ const DataObjectAssociationListener = dataAssociations.DataObjectAssociationList
 import {DataModelView} from './data-model-view';
 import {DataFilterResolver} from './data-filter-resolver';
 import Q from "q";
-import {SequentialEventEmitter} from "@themost/common/emitter";
-import {LangUtils} from "@themost/common/utils";
-import {TraceUtils} from "@themost/common/utils";
-import {DataError} from "@themost/common/errors";
+import {SequentialEventEmitter} from "@themost/common";
+import {LangUtils} from "@themost/common";
+import {TraceUtils} from "@themost/common";
+import {DataError} from "@themost/common";
 import {DataConfigurationStrategy} from './data-configuration';
 import {ModelClassLoaderStrategy} from './data-configuration';
-import {ModuleLoaderStrategy as ModuleLoader} from '@themost/common/config';
+import {ModuleLoaderStrategy as ModuleLoader} from '@themost/common';
 const mappingsProperty = Symbol('mappings');
 import {DataPermissionEventListener} from './data-permission';
 import {DataField} from './types';
@@ -1275,7 +1272,7 @@ class DataModel {
 
         if ((fields===null) || (fields.length===0))
             throw new Error("Migration is not valid for this model. The model has no fields.");
-        const migration = new types.DataModelMigration();
+        const migration = new DataModelMigration();
         migration.add = _.map(fields, x => {
             return _.assign({ }, x);
         });
@@ -1738,7 +1735,7 @@ class DataModel {
     getReferenceMappings(deep) {
         const self = this;
         const context = self.context;
-        deep = (typeof deep === 'undefined') ? true : types.parsers.parseBoolean(deep);
+        deep = (typeof deep === 'undefined') ? true : parsers.parseBoolean(deep);
         const d = Q.defer();
         process.nextTick(() => {
             const referenceMappings = [];
@@ -2160,7 +2157,7 @@ function convertInternal_(obj) {
     const self = this;
 
     //get type parsers (or default type parsers)
-    const parsers = self.parsers || types.parsers;
+    const localParsers = self.parsers || parsers;
 
     let parser;
     let value;
@@ -2168,7 +2165,7 @@ function convertInternal_(obj) {
         value = obj[x.name];
         if (value) {
             //get parser for this type
-            parser = parsers['parse'.concat(x.type)];
+            parser = localParsers['parse'.concat(x.type)];
             //if a parser exists
             if (typeof parser === 'function')
             //parse value
@@ -2188,7 +2185,7 @@ function convertInternal_(obj) {
                                 const field = associatedModel.field(mapping.parentField);
                                 if (field) {
                                     //parse raw value
-                                    parser = parsers['parse'.concat(field.type)];
+                                    parser = localParsers['parse'.concat(field.type)];
                                     if (typeof parser === 'function')
                                         obj[x.name] = parser(value);
                                 }
@@ -2365,7 +2362,7 @@ function castForValidation_(obj, state) {
         let name;
         self.attributes.filter(x => {
             if (x.model!==self.name) {
-                if (types.parsers.parseBoolean(x.cloned) === false)
+                if (parsers.parseBoolean(x.cloned) === false)
                         return false;
             }
             return (!x.readonly) ||
@@ -3126,8 +3123,7 @@ function validate_(obj, state, callback) {
     });
 }
 
-if (typeof exports !== 'undefined') {
-    module.exports.DataModel = DataModel;
-}
+export {DataModel};
+
 
 

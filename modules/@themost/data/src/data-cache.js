@@ -8,11 +8,11 @@
  */
 ///
 import _ from 'lodash';
-import {LangUtils} from "@themost/common/utils";
-import {Args} from "@themost/common/utils";
-import {SequentialEventEmitter} from "@themost/common/emitter";
-import {AbstractMethodError} from '@themost/common/errors';
-import {ConfigurationStrategy} from '@themost/common/config';
+import {LangUtils} from "@themost/common";
+import {Args} from "@themost/common";
+import {SequentialEventEmitter} from "@themost/common";
+import {AbstractMethodError} from '@themost/common';
+import {ConfigurationStrategy} from '@themost/common';
 import Symbol from "symbol";
 import Q from 'q';
 const currentProperty = Symbol("current");

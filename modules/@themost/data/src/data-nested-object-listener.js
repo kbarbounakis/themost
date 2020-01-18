@@ -6,14 +6,10 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import _ from "lodash";
-
-import {QueryUtils} from '@themost/query/utils';
+import _ from 'lodash';
+import {QueryUtils} from '@themost/query';
 import async from "async";
-import {DataError} from '@themost/common/errors';
-
-
+import {DataError} from '@themost/common';
 /**
  * 
  * @param attr
@@ -588,8 +584,4 @@ function afterSaveMany_(attr, event, callback) {
     }
 }
 
-
-if (typeof exports !== 'undefined')
-{
-    module.exports.DataNestedObjectListener = DataNestedObjectListener;
-}
+export {DataNestedObjectListener};

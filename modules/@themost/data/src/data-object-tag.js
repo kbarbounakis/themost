@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -7,13 +6,12 @@
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import {LangUtils} from '@themost/common/utils';
-
+import {LangUtils} from '@themost/common';
 import {DataConfigurationStrategy} from './data-configuration';
-import {QueryField} from '@themost/query/query';
+import {QueryField} from '@themost/query';
 import _ from 'lodash';
 import Q from 'q';
-import types from './types';
+import {DataAssociationMapping} from './types';
 import {DataObjectJunction} from "./data-object-junction";
 import {DataQueryable} from './data-queryable';
 
@@ -130,10 +128,10 @@ class DataObjectTag {
         }
         else if (typeof association === 'object' && association !=null) {
             //get the specified mapping
-            if (association instanceof types.DataAssociationMapping)
+            if (association instanceof DataAssociationMapping)
                 self.mapping = association;
             else
-                self.mapping = _.assign(new types.DataAssociationMapping(), association);
+                self.mapping = _.assign(new DataAssociationMapping(), association);
         }
         //validate mapping
         let baseModel_;
@@ -500,10 +498,4 @@ function remove_(obj, callback) {
         return self.getBaseModel().silent(self.$silent).remove(items, callback);
     });
 }
-
-if (typeof exports !== 'undefined')
-{
-    module.exports = {
-        DataObjectTag:DataObjectTag
-    };
-}
+export {DataObjectTag};

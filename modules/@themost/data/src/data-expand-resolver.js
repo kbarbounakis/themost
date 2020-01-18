@@ -8,12 +8,6 @@
  */
 ///
 import _ from 'lodash';
-
-/**
- * @module @themost/data/data-expand-resolver
- * @ignore
- */
-
 /**
  * @param {string} s
  * @returns {Array}
@@ -114,13 +108,8 @@ class DataExpandResolver {
     }
 }
 
-
-if (typeof exports !== 'undefined')
-{
-    module.exports = {
-        DataExpandResolver:DataExpandResolver,
-        testExpandExpression: function(s) {
-            return DataExpandResolver.prototype.testExpandExpression(s);
-        }
-    };
+function testExpandExpression(s) {
+    return DataExpandResolver.prototype.testExpandExpression(s);
 }
+
+export {DataExpandResolver, testExpandExpression};

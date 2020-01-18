@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -10,11 +9,6 @@
 import Q from 'q';
 
 import functions from './functions';
-
-/**
- * @module @themost/data/data-filter-resolver
- * @ignore
- */
 
 /**
  * @ignore
@@ -91,16 +85,12 @@ class DataFilterResolver {
         }
 
     }
+    /**
+     * @param {Function} callback
+     */
+    user(callback) {
+        return this.me(callback);
+    }
 }
 
-/**
- * @param {Function} callback
- */
-DataFilterResolver.prototype.user = DataFilterResolver.prototype.me;
-
-if (typeof exports !== 'undefined')
-{
-    module.exports = {
-        DataFilterResolver:DataFilterResolver
-    };
-}
+export {DataFilterResolver};

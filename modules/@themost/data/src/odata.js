@@ -1,18 +1,12 @@
 /**
- * @licence
- * MOST Web Framework
- * A JavaScript Web Framework
- * http://themost.io
+ * MOST Web Framework 2.0 Codename Blueshift
+ * Copyright (c) 2017, THEMOST LP All rights reserved
  *
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com, Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Released under the BSD-3-Clause license
- * Date: 2017-11-10
+ * Use of this source code is governed by an BSD-3-Clause license that can be
+ * found in the LICENSE file at https://themost.io/license
  */
-///
 import Symbol from 'symbol';
-
-import {LangUtils} from '@themost/common/utils';
+import {LangUtils} from '@themost/common';
 import {sprintf} from 'sprintf';
 import Q from 'q';
 import pluralize from 'pluralize';
@@ -2453,7 +2447,6 @@ class EdmMapping {
 //exports
 
 export {EdmType};
-
 export {EdmMultiplicity};
 export {EntitySetKind};
 export {ProcedureConfiguration};

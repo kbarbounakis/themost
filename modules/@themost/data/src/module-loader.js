@@ -1,14 +1,10 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import {LangUtils} from '@themost/common/utils';
-
 import Symbol from 'symbol';
 import path from 'path';
 const executionPathProperty = Symbol('executionPath');
@@ -43,9 +39,9 @@ class ModuleLoader {
  * @augments ModuleLoader
  * @extends ModuleLoader
  */
-class DefaultModuleLoader {
+class DefaultModuleLoader extends ModuleLoader {
     constructor(executionPath) {
-        DefaultModuleLoader.super_.bind(this)();
+        super();
         this[executionPathProperty] = path.resolve(executionPath) || process.cwd();
     }
 
@@ -68,10 +64,4 @@ class DefaultModuleLoader {
         return require(path.join(this.getExecutionPath(),modulePath));
     }
 }
-
-LangUtils.inherits(DefaultModuleLoader, ModuleLoader);
-
-if (typeof module !== 'undefined') {
-    module.exports.ModuleLoader = ModuleLoader;
-    module.exports.DefaultModuleLoader = DefaultModuleLoader;
-}
+export {DefaultModuleLoader, ModuleLoader};

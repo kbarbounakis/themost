@@ -1,14 +1,11 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import {LangUtils} from '@themost/common/utils';
-
+import {LangUtils} from '@themost/common';
 import _ from 'lodash';
 import {QueryExpression} from '@themost/query';
 import {QueryField} from '@themost/query';
@@ -61,8 +58,9 @@ import {DataQueryable} from './data-queryable';
  * @param {string|*} association A string that represents the name of the field which holds association mapping or the association mapping itself.
  * @property {DataObject} parent Gets or sets the parent data object
  */
-class HasOneAssociation {
+class HasOneAssociation extends DataQueryable {
     constructor(obj, association) {
+        super();
         /**
          * @type {DataObject}
          * @private
@@ -193,9 +191,4 @@ class HasOneAssociation {
     }
 }
 
-LangUtils.inherits(HasOneAssociation, DataQueryable);
-
-if (typeof exports !== 'undefined')
-{
-    module.exports.HasOneAssociation = HasOneAssociation;
-}
+export {HasOneAssociation};

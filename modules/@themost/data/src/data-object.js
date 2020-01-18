@@ -1,14 +1,11 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import {sprintf} from 'sprintf';
-
 import _ from "lodash";
 import Q from 'q';
 import Symbol from 'symbol';
@@ -17,9 +14,8 @@ import {DataObjectTag} from './data-object-tag';
 import {HasManyAssociation} from './has-many-association';
 import {HasOneAssociation} from './has-one-association';
 import {HasParentJunction} from './has-parent-junction';
-import {SequentialEventEmitter} from "@themost/common/emitter";
-import {LangUtils} from "@themost/common/utils";
-import {DataError} from "@themost/common/errors";
+import {SequentialEventEmitter} from "@themost/common";
+import {DataError} from "@themost/common";
 
 const selectorsProperty = Symbol('selectors');
 const typeProperty = Symbol('type');
@@ -153,8 +149,9 @@ function attrOf_(name, callback) {
  * @property {DataModel} $$model - The data model which is associated with this object.
  * @property {*} $$id - Gets the identifier of this object based on the associated model's primary key
  */
-class DataObject {
+class DataObject extends SequentialEventEmitter {
     constructor(type, obj) {
+        super();
         const self = this;
         /**
          * @name DataObject#context
@@ -802,30 +799,7 @@ class DataObject {
             }
         });
     }
-
-    /**
-     * Sets a boolean which indicates whether the next data operation will be executed in silent mode.
-     * @param {boolean=} value
-     * @returns DataObject
-     * @example
-     context.model("Person").where("email").equal("alexis.rees@example.com").getTypedItem()
-            .then(function(person) {
-                //...
-                return person.silent().save().then(function() {
-                    return done();
-                });
-            }).catch(function(err) {
-                return done(err);
-            });
-     */
-    silent(value) {
-        this.getModel().silent(value);
-        return this;
-    }
 }
 
-LangUtils.inherits(DataObject, SequentialEventEmitter);
+export {DataObject};
 
-if (typeof exports !== 'undefined') {
-    module.exports.DataObject = DataObject;
-}

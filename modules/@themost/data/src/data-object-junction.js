@@ -1,18 +1,15 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
-import {LangUtils} from '@themost/common/utils';
-
+import {LangUtils} from '@themost/common';
 import _ from 'lodash';
 import Q from 'q';
 import async from 'async';
-import {QueryField} from '@themost/query/query';
+import {QueryField} from '@themost/query';
 import {DataAssociationMapping} from './types';
 import {DataQueryable} from './data-queryable';
 import {DataConfigurationStrategy} from './data-configuration';
@@ -718,8 +715,4 @@ function removeSingleObject_(obj, callback) {
        }
    });
 }
-
-if (typeof exports !== 'undefined')
-{
-    module.exports.DataObjectJunction = DataObjectJunction;
-}
+export {DataObjectJunction};

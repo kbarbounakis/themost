@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 2.0 Codename Blueshift
  * Copyright (c) 2017, THEMOST LP All rights reserved
  *
@@ -8,16 +7,10 @@
  */
 ///
 import async from 'async';
-
 import {HasParentJunction} from './has-parent-junction';
 import {DataObjectJunction} from './data-object-junction';
-import {DataError} from '@themost/common/errors';
+import {DataError} from '@themost/common';
 import _ from 'lodash';
-
-/**
- * @module @themost/data/data-ref-object-listener
- * @ignore
- */
 
 /**
  * @class
@@ -239,7 +232,4 @@ function beforeRemoveChildConnectedObjects(event, mapping, callback) {
         });
 }
 
-if (typeof exports !== 'undefined')
-{
-    module.exports.DataReferencedObjectListener = DataReferencedObjectListener;
-}
+export {DataReferencedObjectListener};
