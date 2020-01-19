@@ -1,13 +1,13 @@
 /**
- * @license
  * MOST Web Framework 3.0 Codename Zero Gravity
  * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import { DataContext } from "./DataContext";
 import {ConfigurationBase} from "@themost/common";
+import { DataContextBase, DataModelBase } from "./DataModelBase";
+import {DataAdapter} from "./DataAdapter";
 
 export declare interface SystemQueryOptions {
     $filter?: string;
@@ -48,7 +48,7 @@ export declare class EdmMultiplicity {
     static One: string;
     static Unknown: string;
     static ZeroOrOne: string;
-    static parse(value: string);
+    static parse(value: string): string;
 }
 
 
@@ -59,18 +59,18 @@ export declare class EntitySetKind {
     static ActionImport: string;
 }
 
-export class EdmMapping {
-    static entityType(name: string);
-    static action(name: string, returnType: any);
-    static func(name: string, returnType: any);
-    static param(name: string, type: string, nullable?: boolean, fromBody?: boolean);
-    static navigationProperty(name: string, type: string, multiplicity: string);
-    static property(name: string, type: string, nullable?: boolean);
+export declare class EdmMapping {
+    static entityType(name: string): void;
+    static action(name: string, returnType: any): void;
+    static func(name: string, returnType: any): void;
+    static param(name: string, type: string, nullable?: boolean, fromBody?: boolean): void;
+    static navigationProperty(name: string, type: string, multiplicity: string): void;
+    static property(name: string, type: string, nullable?: boolean): void;
     static hasOwnAction(obj: any, name: string): Function;
     static hasOwnNavigationProperty(obj: any, name: string): any;
     static hasOwnFunction(obj: any, name: string): Function;
-    static getOwnFunctions(obj): Array<Function>;
-    static getOwnActions(obj): Array<Function>;
+    static getOwnFunctions(obj: any): Array<Function>;
+    static getOwnActions(obj: any): Array<Function>;
 }
 
 export declare interface ProcedureParameter {
@@ -110,11 +110,11 @@ export declare class ProcedureConfiguration {
     isComposable?: boolean;
 }
 
-export declare class ActionConfiguration extends ProcedureConfiguration{
+export declare class ActionConfiguration extends ProcedureConfiguration {
 
 }
 
-export declare class FunctionConfiguration extends ProcedureConfiguration{
+export declare class FunctionConfiguration extends ProcedureConfiguration {
 
 }
 
@@ -150,8 +150,8 @@ export declare class EntityTypeConfiguration {
     removeNavigationProperty(name: string): EntityTypeConfiguration;
     hasKey(name: string, type: string): EntityTypeConfiguration;
     removeKey(name: string): EntityTypeConfiguration;
-    mapInstance(context: DataContext, any: any): any;
-    mapInstanceSet(context: DataContext, any: any): any;
+    mapInstance(context: DataContextBase, any: any): any;
+    mapInstanceSet(context: DataContextBase, any: any): any;
 
 }
 
@@ -161,7 +161,7 @@ export declare class EntitySetConfiguration {
     kind: string;
     url: string;
     readonly entityType: EntityTypeConfiguration;
-    hasUrl(url: string);
+    hasUrl(url: string): any;
     getUrl(): string;
     getBuilder(): any;
     getEntityTypePropertyList(): Map<string, EntityTypeProperty>;
@@ -169,16 +169,16 @@ export declare class EntitySetConfiguration {
     getEntityTypeIgnoredPropertyList():Array<string>;
     getEntityTypeNavigationProperty(name: string, deep?: boolean): EntityTypeNavigationProperty;
     getEntityTypeNavigationPropertyList(): Map<string, EntityTypeNavigationProperty>;
-    hasContextLink(contextLinkFunc: (context: DataContext) => string);
-    hasIdLink(idLinkFunc: (context: DataContext) => string);
-    hasReadLink(readLinkFunc: (context: DataContext) => string);
-    hasEditLink(editLinkFunc: (context: DataContext) => string);
-    mapInstance(context: DataContext, any: any): any;
-    mapInstanceSet(context: DataContext, any: any): any;
-    mapInstanceProperty(context: DataContext, any: any): any;
+    hasContextLink(contextLinkFunc: (context: DataContextBase) => string): void;
+    hasIdLink(idLinkFunc: (context: DataContextBase) => string): void;
+    hasReadLink(readLinkFunc: (context: DataContextBase) => string): void;
+    hasEditLink(editLinkFunc: (context: DataContextBase) => string): void;
+    mapInstance(context: DataContextBase, any: any): any;
+    mapInstanceSet(context: DataContextBase, any: any): any;
+    mapInstanceProperty(context: DataContextBase, any: any): any;
 }
 
-export declare class SingletonConfiguration extends EntitySetConfiguration{
+export declare class SingletonConfiguration extends EntitySetConfiguration {
     constructor(builder: any, entityType: string, name: string);
 }
 
@@ -205,15 +205,20 @@ export declare class ODataModelBuilder {
     getEdm(): Promise<SchemaConfiguration>;
     clean(all?: boolean): ODataModelBuilder;
     getEdmDocument(): Promise<any>;
-    hasContextLink(contextLinkFunc: (context: DataContext) => string);
-    hasJsonFormatter(jsonFormatterFunc: (context: DataContext, entitySet: EntitySetConfiguration, instance: any, options?: ModelBuilderJsonFormatterOptions)=> any);
+    hasContextLink(contextLinkFunc: (context: DataContextBase) => string): void;
+    hasJsonFormatter(jsonFormatterFunc: (context: DataContextBase, 
+        entitySet: EntitySetConfiguration, 
+        instance: any, options?: ModelBuilderJsonFormatterOptions)=> any): void;
 }
 
-export declare class EntityDataContext extends DataContext {
-
+export declare class EntityDataContext implements DataContextBase {
+    model(name: string):DataModelBase;
+    db: DataAdapter;
+    getConfiguration(): ConfigurationBase;
+    finalize(callback?: (err?: Error) => void): void;
 }
 
-export declare class ODataConventionModelBuilder extends ODataModelBuilder{
+export declare class ODataConventionModelBuilder extends ODataModelBuilder {
 
 }
 

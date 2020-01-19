@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 module.exports = function (api) {
     api.cache(false);
     return {

@@ -7,14 +7,13 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {DataModel} from "./data-model";
-import {DataObject} from "./data-object";
+import { DataModelBase, DataObjectBase } from "./DataModelBase";
 
 export declare function DataAdapterCallback(err?:Error, result?:any);
 
 export declare class DataEventArgs {
-    model: DataModel;
-    target: DataObject;
+    model: DataModelBase;
+    target: DataObjectBase;
     state: number;
     emitter?: any;
     query?: any;
