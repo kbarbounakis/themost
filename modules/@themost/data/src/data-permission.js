@@ -6,11 +6,9 @@
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import {QueryEntity} from '@themost/query';
-import {QueryUtils} from '@themost/query';
+import {QueryEntity, QueryUtils} from '@themost/query';
 import async from 'async';
 import {AccessDeniedError} from '@themost/common';
-import {RandomUtils} from '@themost/common';
 import {DataConfigurationStrategy} from './data-configuration';
 import _ from 'lodash';
 import {DataCacheStrategy} from './data-cache';

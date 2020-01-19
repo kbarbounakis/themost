@@ -5,10 +5,8 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {sprintf} from 'sprintf';
 import _ from 'lodash';
 import Q from 'q';
-import Symbol from 'symbol';
 import {DataObjectJunction} from './data-object-junction';
 import {DataObjectTag} from './data-object-tag';
 import {HasManyAssociation} from './has-many-association';
@@ -549,7 +547,7 @@ class DataObject extends SequentialEventEmitter {
                     }
                     else {
                         if (model.constraints.length===0) {
-                            callback(new Error( sprintf('The value of property [%s] cannot be retrieved. The target data model has no constraints defined.', name)));
+                            callback(new Error( `The value of property ${name} cannot be retrieved. The target data model has no constraints defined.`));
                         }
                         else {
                             const arr = model.constraints.filter(x => {
@@ -566,7 +564,7 @@ class DataObject extends SequentialEventEmitter {
                                 return valid;
                             });
                             if (arr.length===0) {
-                                callback(new Error( sprintf('The value of property [%s] cannot be retrieved. The target data model has constraints but the required properties are missing.', name)));
+                                callback(new Error(`The value of property ${name} cannot be retrieved. The target data model has constraints but the required properties are missing.`));
                             }
                             else {
                                 //get first constraint

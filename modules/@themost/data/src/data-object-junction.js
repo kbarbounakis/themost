@@ -10,7 +10,7 @@ import _ from 'lodash';
 import Q from 'q';
 import async from 'async';
 import {QueryField} from '@themost/query';
-import {DataAssociationMapping} from './types';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataQueryable} from './data-queryable';
 import {DataConfigurationStrategy} from './data-configuration';
 
@@ -112,7 +112,7 @@ class DataObjectJunction {
          * @type {DataObject}
          * @private
          */
-        let parent_ = obj;
+        let _parent = obj;
         const DataModel = require('./data-model').DataModel;
 
         /**
@@ -120,9 +120,9 @@ class DataObjectJunction {
          * @type DataObject
          */
         Object.defineProperty(this, 'parent', { get: function () {
-            return parent_;
+            return _parent;
         }, set: function (value) {
-            parent_ = value;
+            _parent = value;
         }, configurable: false, enumerable: false});
         const self = this;
         let model;

@@ -9,7 +9,7 @@ import _ from 'lodash';
 import Q from 'q';
 import async from 'async';
 import {QueryField} from '@themost/query';
-import {DataAssociationMapping} from './types';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataConfigurationStrategy} from './data-configuration';
 import {DataQueryable} from './data-queryable';
 import {DataObjectJunction} from './data-object-junction';

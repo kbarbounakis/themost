@@ -8,7 +8,7 @@
  */
 import {DataQueryable} from "./data-queryable";
 import {DataObject} from "./data-object";
-import {DataAssociationMapping, DataField} from "./types";
+import {DataAssociationMapping} from "./DataAssociationMapping";
 import {DataModel} from "./data-model";
 
 export declare class HasParentJunction extends DataQueryable {
@@ -19,5 +19,5 @@ export declare class HasParentJunction extends DataQueryable {
     getObjectField(): string;
     insert(obj: any): Promise<any>;
     remove(obj: any): Promise<any>;
-    migrate(callback: (err?: Error) => void);
+    migrate(callback: (err?: Error) => void): void;
 }

@@ -8,7 +8,8 @@
  */
 import {DataQueryable} from "./data-queryable";
 import {DataObject} from "./data-object";
-import {DataAssociationMapping, DataField} from "./types";
+import {DataAssociationMapping} from "./DataAssociationMapping";
+import {DataField} from './DataField';
 import {DataModel} from "./data-model";
 
 export declare class DataObjectJunction extends DataQueryable {

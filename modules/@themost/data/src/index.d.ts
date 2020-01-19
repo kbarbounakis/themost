@@ -6,6 +6,13 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
+export * from './DataModelBase';
+export * from './DataField';
+export * from './DataModelPrivilege';
+export * from './DataAssociationMapping';
+export * from './DataContext';
+export * from './DataContextEmitter';
+export * from './DataAdapter';
 export * from './data-configuration';
 export * from './types';
 export * from './data-model';

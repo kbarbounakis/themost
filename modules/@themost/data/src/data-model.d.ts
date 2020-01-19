@@ -1,17 +1,16 @@
 /**
- * @license
  * MOST Web Framework 3.0 Codename Zero Gravity
  * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {DataAssociationMapping, DataContext, DataField} from "./types";
+import {DataAssociationMapping} from "./DataAssociationMapping";
+import {DataField} from './DataField';
 import {SequentialEventEmitter} from "@themost/common";
-import {DataQueryable} from "./data-queryable";
-import {DataObject} from "./data-object";
+import { DataModelBase, DataContextBase, DataQueryableBase, DataObjectBase } from "./DataModelBase";
 
-export declare class DataModel extends SequentialEventEmitter{
+export declare class DataModel extends SequentialEventEmitter implements DataModelBase {
     constructor(obj:any);
 
     hidden?: boolean;
@@ -24,7 +23,7 @@ export declare class DataModel extends SequentialEventEmitter{
     constraints?: Array<any>;
     views?: Array<any>;
     privileges?: Array<any>;
-    context: DataContext;
+    context: DataContextBase;
     readonly sourceAdapter?: string;
     readonly viewAdapter?: string;
     silent(value?: boolean): DataModel;
@@ -39,19 +38,20 @@ export declare class DataModel extends SequentialEventEmitter{
     initialize(): void;
     clone(): DataModel;
     join(model: string): DataModel;
-    where(attr: string): DataQueryable;
-    search(text: string): DataQueryable;
-    asQueryable(): DataQueryable;
+    where(attr: string): DataQueryableBase;
+    search(text: string): DataQueryableBase;
+    asQueryable(): DataQueryableBase;
     filter(params: any, callback?: (err?: Error, res?: any) => void): void;
-    find(obj: any):DataQueryable;
-    select(...attr: any[]): DataQueryable;
-    orderBy(attr: any): DataQueryable;
-    orderByDescending(attr: any): DataQueryable;
-    take(n: number): DataQueryable;
+    find(obj: any):DataQueryableBase;
+    select(...attr: any[]): DataQueryableBase;
+    orderBy(attr: any): DataQueryableBase;
+    orderByDescending(attr: any): DataQueryableBase;
+    take(n: number): DataQueryableBase;
     getList():Promise<any>;
-    skip(n: number): DataQueryable;
+    skip(n: number): DataQueryableBase;
     base(): DataModel;
-    convert(obj: any): DataObject;
+    convert(obj: any): DataObjectBase;
+    convert<T>(obj: any): T;
     cast(obj: any, state: number): any;
     save(obj: any): Promise<any>;
     inferState(obj: any, callback: (err?: Error, res?: any) => void): void;
@@ -70,7 +70,8 @@ export declare class DataModel extends SequentialEventEmitter{
     getSubTypes(): Promise<string>;
     getReferenceMappings(deep?: boolean): Array<any>;
     getAttribute(name: string);
-    getTypedItems(): Promise<DataObject|any>;
+    getTypedItems(): Promise<DataObjectBase|any>;
+    getTypedItems<T>(): Promise<T>;
     getItems(): Promise<any>;
     getTypedList():Promise<any>;
 }

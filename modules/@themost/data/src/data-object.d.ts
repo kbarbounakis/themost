@@ -1,10 +1,11 @@
 import {DataQueryable} from "./data-queryable";
-import {DataContext} from "./types";
+import { DataContext } from "./DataContext";
+import { DataContextBase, DataObjectBase } from "./DataModelBase";
 
-export declare class DataObject {
+export declare class DataObject implements DataObjectBase {
     context:DataContext;
-    silent(value?:boolean):DataObject;
-    selector(name:string, selector:Function):DataObject;
+    silent(value?:boolean):this;
+    selector(name:string, selector:Function):this;
     is(selector:string):Promise<any>
     getType():string
     getId():any
@@ -14,6 +15,6 @@ export declare class DataObject {
     getModel(): any;
     getAdditionalModel():Promise<any>;
     getAdditionalObject():Promise<DataObject|any>;
-    attr(name: string, callback?:(err?: Error,res?: any) => void);
-    property(name: string);
+    attr(name: string, callback?:(err?: Error,res?: any) => void): any;
+    property(name: string): any;
 }

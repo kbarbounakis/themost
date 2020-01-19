@@ -12,7 +12,9 @@ import pluralize from 'pluralize';
 import async from 'async';
 import {QueryUtils} from '@themost/query';
 import {OpenDataParser} from '@themost/query';
-import {parsers, DataModelMigration, DataAssociationMapping} from './types';
+import {parsers} from './types';
+import {DataModelMigration} from './DataModelMigration';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {CalculatedValueListener, 
     DefaultValueListener,
     DataCachingListener,
@@ -35,7 +37,6 @@ import {DataModelView} from './data-model-view';
 import {DataFilterResolver} from './data-filter-resolver';
 import Q from 'q';
 import {SequentialEventEmitter} from '@themost/common';
-import {LangUtils} from '@themost/common';
 import {TraceUtils} from '@themost/common';
 import {DataError} from '@themost/common';
 import {DataConfigurationStrategy} from './data-configuration';
@@ -43,7 +44,6 @@ import {ModelClassLoaderStrategy} from './data-configuration';
 import {ModuleLoaderStrategy as ModuleLoader} from '@themost/common';
 const mappingsProperty = Symbol('mappings');
 import {DataPermissionEventListener} from './data-permission';
-import {DataField} from './types';
 
 
 /**
@@ -256,9 +256,9 @@ function EmptyQueryExpression() {
  * @augments SequentialEventEmitter
  * @param {*=} obj An object instance that holds data model attributes. This parameter is optional.
  */
-class DataModel {
+class DataModel extends SequentialEventEmitter {
     constructor(obj) {
-
+        super();
         this.hidden = false;
         this.sealed = false;
         this.abstract = false;
@@ -773,8 +773,7 @@ class DataModel {
      * @returns {Promise|*}
      */
     getList() {
-        const result = new DataQueryable(this);
-        return result.list();
+        return new DataQueryable(this).list();
     }
 
     /**
@@ -981,7 +980,7 @@ class DataModel {
                         _.assign(o, src);
                     }
                     if (typeConvert)
-                        convertInternal_.call(self, o);
+                        _convertInternal.call(self, o);
                     o.context = self.context;
                     o.$$type = self.name;
                     arr.push(o);
@@ -999,7 +998,7 @@ class DataModel {
                 _.assign(result, src);
             }
             if (typeConvert)
-                convertInternal_.call(self, result);
+                _convertInternal.call(self, result);
             result.context = self.context;
             result.$$type = self.name;
             return result;
@@ -1034,7 +1033,7 @@ class DataModel {
      * @returns {*} - Returns an object which is going to be against the underlying database.
      */
     cast(obj, state) {
-       return cast_.call(this, obj, state);
+       return _cast.call(this, obj, state);
     }
 
     /**
@@ -1848,26 +1847,7 @@ class DataModel {
         return d.promise;
     }
 
-    /**
-     * Gets a result set that contains a collection of DataObject instances by executing the defined query.
-     * @returns {Promise|*}
-     */
-    getList() {
-        const self = this;
-        const d = Q.defer();
-        process.nextTick(() => {
-            const q = new DataQueryable(self);
-            q.list().then(result => {
-                return d.resolve(result);
-            }).catch(err => {
-                return d.reject(err);
-            });
-        });
-        return d.promise;
-    }
 }
-
-LangUtils.inherits(DataModel, SequentialEventEmitter);
 
 /**
  * @this DataModel
@@ -2156,7 +2136,7 @@ function filterInternal(params, callback) {
  * @private
  * @param {*} obj
  */
-function convertInternal_(obj) {
+function _convertInternal(obj) {
     const self = this;
 
     //get type parsers (or default type parsers)
@@ -2182,7 +2162,7 @@ function convertInternal_(obj) {
                         if (associatedModel) {
                             if (typeof value === 'object') {
                                 //set associated key value (e.g. primary key value)
-                                convertInternal_.call(associatedModel, value);
+                                _convertInternal.call(associatedModel, value);
                             }
                             else {
                                 const field = associatedModel.field(mapping.parentField);
@@ -2275,14 +2255,14 @@ function getDataObjectClass_() {
  * @returns {*}
  * @private
  */
-function cast_(obj, state) {
+function _cast(obj, state) {
     const self = this;
     if (obj==null)
         return {};
     if (typeof obj === 'object' && obj instanceof Array)
     {
         return obj.map(x => {
-            return cast_.call(self, x, state);
+            return _cast.call(self, x, state);
         });
     }
     else
@@ -2347,14 +2327,14 @@ function cast_(obj, state) {
  * @returns {*}
  * @private
  */
-function castForValidation_(obj, state) {
+function _castForValidation(obj, state) {
     const self = this;
     if (obj==null)
         return {};
     if (typeof obj === 'object' && obj instanceof Array)
     {
         return obj.map(x => {
-            return castForValidation_.call(self, x, state);
+            return _castForValidation.call(self, x, state);
         });
     }
     else
@@ -2502,7 +2482,7 @@ function saveSingleObject_(obj, callback) {
         }
     }
     if (obj.$state === 4) {
-        return removeSingleObject_.call(self, obj, callback);
+        return _removeSingleObject.call(self, obj, callback);
     }
     //get object state before any other operation
     const state = obj.$state ? obj.$state : (obj[self.primaryKey]!=null ? 2 : 1);
@@ -2741,7 +2721,7 @@ function remove_(obj, callback) {
         const db = self.context.db;
         db.executeInTransaction(cb => {
             async.eachSeries(arr, (item, removeCallback) => {
-                removeSingleObject_.call(self, item, err => {
+                _removeSingleObject.call(self, item, err => {
                     if (err) {
                         removeCallback.call(self, err);
                         return;
@@ -2767,7 +2747,7 @@ function remove_(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function removeSingleObject_(obj, callback) {
+function _removeSingleObject(obj, callback) {
    const self = this;
    callback = callback || (() => {});
    if (obj==null) {
@@ -2851,7 +2831,7 @@ function removeBaseObject_(obj, callback) {
     else {
         base.silent();
         //perform operation
-        removeSingleObject_.call(base, obj, (err, result) => {
+        _removeSingleObject.call(base, obj, (err, result) => {
             callback.call(self, err, result);
         });
     }
@@ -2997,7 +2977,7 @@ function validate_(obj, state, callback) {
         return callback();
     }
     //get object copy (based on the defined state)
-    const objCopy = castForValidation_.call (self, obj, state);
+    const objCopy = _castForValidation.call (self, obj, state);
 
     const attributes = self.attributes.filter(x => {
         if (x.model!==self.name) {

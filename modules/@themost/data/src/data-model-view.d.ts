@@ -7,7 +7,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import {DataModel} from "./data-model";
-import {DataField} from "./types";
+import {DataField} from "./DataField";
 
 export declare class DataModelView {
     constructor(model:DataModel);

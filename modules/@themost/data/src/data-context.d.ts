@@ -1,4 +1,5 @@
-import {DataAdapter, DataContext} from "./types";
+import {DataAdapter} from "./DataAdapter";
+import { DataContext } from "./DataContext";
 
 export declare class DefaultDataContext extends DataContext {
     constructor();

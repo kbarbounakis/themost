@@ -7,7 +7,7 @@
  */
 import _ from 'lodash';
 import {QueryUtils} from '@themost/query';
-import {DataAssociationMapping} from './types';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataQueryable} from './data-queryable';
 
 /**

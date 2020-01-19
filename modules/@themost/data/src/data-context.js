@@ -7,7 +7,7 @@
  */
 import _ from 'lodash';
 import {TraceUtils} from '@themost/common';
-import {DataContext} from './types';
+import {DataContext} from './DataContext';
 import {DataConfigurationStrategy, DataConfiguration} from './data-configuration';
 const nameProperty = Symbol('name');
 
@@ -184,9 +184,9 @@ class DefaultDataContext extends DataContext {
  * @augments DataContext
  * @property {DataAdapter} db - Gets a data adapter based on the given adapter's name.
  */
-class NamedDataContext {
+class NamedDataContext extends DataContext {
     constructor(name) {
-        NamedDataContext.super_.bind(this)();
+        super();
         /**
          * @type {DataAdapter}
          * @private

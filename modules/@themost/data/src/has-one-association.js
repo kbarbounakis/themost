@@ -8,7 +8,7 @@
 import _ from 'lodash';
 import {QueryExpression} from '@themost/query';
 import {QueryField} from '@themost/query';
-import {DataAssociationMapping} from './types';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataQueryable} from './data-queryable';
 
 /**

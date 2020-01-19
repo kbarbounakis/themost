@@ -7,7 +7,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import {DataQueryable} from "./data-queryable";
-import {DataAssociationMapping} from "./types";
+import {DataAssociationMapping} from "./DataAssociationMapping";
 import {DataObject} from "./data-object";
 
 export declare class HasManyAssociation extends DataQueryable{

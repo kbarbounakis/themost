@@ -11,7 +11,7 @@ import {DataConfigurationStrategy} from './data-configuration';
 import {QueryField} from '@themost/query';
 import _ from 'lodash';
 import Q from 'q';
-import {DataAssociationMapping} from './types';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataObjectJunction} from './data-object-junction';
 import {DataQueryable} from './data-queryable';
 

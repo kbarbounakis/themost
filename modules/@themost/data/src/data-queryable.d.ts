@@ -1,9 +1,9 @@
-import {DataModel} from "./data-model";
-import {DataContextEmitter} from "./types";
+import { DataContextEmitter } from "./DataContextEmitter";
+import { DataQueryableBase, DataModelBase } from "./DataModelBase";
 
-export declare class DataQueryable implements DataContextEmitter {
-    constructor(model: DataModel);
-    readonly model: DataModel;
+export declare class DataQueryable implements DataContextEmitter, DataQueryableBase {
+    constructor(model: DataModelBase);
+    readonly model: DataModelBase;
     clone(): DataQueryable;
     where(attr: string): DataQueryable;
     search(text: string): DataQueryable;

@@ -7,7 +7,7 @@
  */
 ///
 import _ from 'lodash';
-import {DataField} from './types';
+import {DataField} from './DataField';
 
 /**
  * @class DataModelView

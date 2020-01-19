@@ -14,7 +14,7 @@ import _ from 'lodash';
 import moment from 'moment';
 const parseBoolean = require('./types').parsers.parseBoolean;
 import {DataModel} from './data-model';
-import {DataContext} from './types';
+import {DataContext} from './DataContext';
 import {XDocument} from '@themost/xml';
 // noinspection JSUnusedLocalSymbols
 const entityTypesProperty = Symbol('entityTypes');

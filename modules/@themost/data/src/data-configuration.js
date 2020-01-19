@@ -7,11 +7,9 @@
  */
 ///
 import _ from 'lodash';
-import Symbol from 'symbol';
 import {TraceUtils} from '@themost/common';
 import path from 'path';
 import pluralize from 'pluralize';
-import {LangUtils} from '@themost/common';
 import {Args} from '@themost/common';
 import {ConfigurationBase} from '@themost/common';
 import {ConfigurationStrategy} from '@themost/common';
@@ -284,9 +282,9 @@ function AuthSettingsConfiguration() {
  * @augments ConfigurationBase
  *
  */
-class DataConfiguration {
+class DataConfiguration extends ConfigurationBase {
     constructor(configPath) {
-        DataConfiguration.super_.bind(this)(configPath);
+        super(configPath);
         //use default data configuration strategy
         this.useStrategy(DataConfigurationStrategy,DataConfigurationStrategy);
     }
@@ -341,18 +339,16 @@ class DataConfiguration {
     }
 }
 
-LangUtils.inherits(DataConfiguration, ConfigurationBase);
-
 /**
  * @class
  * @constructor
  * @param {ConfigurationBase} config
  * @augments {ConfigurationStrategy}
  */
-class DataConfigurationStrategy {
+class DataConfigurationStrategy extends DataConfigurationStrategy {
     constructor(config) {
 
-        DataConfigurationStrategy.super_.bind(this)(config);
+        super(config);
 
         ///register other strategies
         if (!config.hasStrategy(SchemaLoaderStrategy)) {
@@ -625,17 +621,15 @@ class DataConfigurationStrategy {
     }
 }
 
-LangUtils.inherits(DataConfigurationStrategy,ConfigurationStrategy);
-
 /**
  * @class
  * @constructor
  * @param {ConfigurationBase} config
  * @augments ConfigurationStrategy
  */
-class SchemaLoaderStrategy {
+class SchemaLoaderStrategy extends ConfigurationStrategy {
     constructor(config) {
-        SchemaLoaderStrategy.super_.bind(this)(config);
+        super(config);
         this[modelsProperty] = {};
         this.setModelDefinition({
             'name':'Migration', 'title':'Data Model Migrations', 'id': 14,
@@ -699,17 +693,15 @@ class SchemaLoaderStrategy {
     }
 }
 
-LangUtils.inherits(SchemaLoaderStrategy,ConfigurationStrategy);
-
 /**
  * @class
  * @constructor
  * @param {ConfigurationBase} config
  * @augments ConfigurationStrategy
  */
-class DefaultSchemaLoaderStrategy {
+class DefaultSchemaLoaderStrategy extends SchemaLoaderStrategy {
     constructor(config) {
-        DefaultSchemaLoaderStrategy.super_.bind(this)(config);
+        super(config);
         this[modelPathProperty] = PathUtils.join(config.getConfigurationPath(), 'models');
         // set default options
         this.options = {
@@ -830,7 +822,6 @@ class DefaultSchemaLoaderStrategy {
     }
 }
 
-LangUtils.inherits(DefaultSchemaLoaderStrategy,SchemaLoaderStrategy);
 
 /**
  * @class
@@ -838,9 +829,9 @@ LangUtils.inherits(DefaultSchemaLoaderStrategy,SchemaLoaderStrategy);
  * @param {ConfigurationBase} config
  * @augments ConfigurationStrategy
  */
-class ModelClassLoaderStrategy {
+class ModelClassLoaderStrategy extends ConfigurationStrategy {
     constructor(config) {
-        ModelClassLoaderStrategy.super_.bind(this)(config);
+        super(config);
     }
 
     /**
@@ -853,7 +844,6 @@ class ModelClassLoaderStrategy {
     }
 }
 
-LangUtils.inherits(ModelClassLoaderStrategy,ConfigurationStrategy);
 
 /**
  * @class
@@ -861,9 +851,9 @@ LangUtils.inherits(ModelClassLoaderStrategy,ConfigurationStrategy);
  * @param {ConfigurationBase} config
  * @augments ModelClassLoaderStrategy
  */
-class DefaultModelClassLoaderStrategy {
+class DefaultModelClassLoaderStrategy extends ModelClassLoaderStrategy {
     constructor(config) {
-        DefaultModelClassLoaderStrategy.super_.bind(this)(config);
+        super(config);
     }
 
     /**
@@ -933,8 +923,6 @@ class DefaultModelClassLoaderStrategy {
         return DataObjectClass;
     }
 }
-
-LangUtils.inherits(DefaultModelClassLoaderStrategy,ModelClassLoaderStrategy);
 
 
 /**

@@ -7,7 +7,8 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import {DataQueryable} from "./data-queryable";
-import {DataAssociationMapping, DataField} from "./types";
+import {DataAssociationMapping} from "./DataAssociationMapping";
+import {DataField} from './DataField';
 import {DataModel} from "./data-model";
 import {DataObject} from "./data-object";
 

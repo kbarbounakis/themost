@@ -6,13 +6,10 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import async from 'async';
-
 import {sprintf} from 'sprintf';
-import Symbol from 'symbol';
 import _ from 'lodash';
-import {TextUtils} from '@themost/common';
 import mappingExtensions from './data-mapping-extensions';
-import {DataAssociationMapping} from './types';
+import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataError} from '@themost/common';
 import {QueryField} from '@themost/query';
 import {QueryEntity} from '@themost/query';
