@@ -8,7 +8,7 @@
 import _ from 'lodash';
 import {TraceUtils} from '@themost/common';
 import {DataContext} from './DataContext';
-import {DataConfigurationStrategy, DataConfiguration} from './data-configuration';
+import {DataConfigurationStrategy, DataConfiguration} from './DataConfiguration';
 const nameProperty = Symbol('name');
 
 /**
@@ -157,7 +157,7 @@ class DefaultDataContext extends DataContext {
         const obj = self.getConfiguration().getStrategy(DataConfigurationStrategy).model(name);
         if (_.isNil(obj))
             return null;
-        const DataModel = require('./data-model').DataModel;
+        const DataModel = require('./DataModel').DataModel;
         const model = new DataModel(obj);
         //set model context
         model.context = self;
@@ -313,7 +313,7 @@ class NamedDataContext extends DataContext {
         const obj = self.getConfiguration().getStrategy(DataConfigurationStrategy).model(name);
         if (_.isNil(obj))
             return null;
-        const DataModel = require('./data-model').DataModel;
+        const DataModel = require('./DataModel').DataModel;
         const model = new DataModel(obj);
         //set model context
         model.context = self;

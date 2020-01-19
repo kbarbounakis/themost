@@ -6,18 +6,20 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {DataQueryable} from "./data-queryable";
-import {DataObject} from "./data-object";
+import {DataQueryable} from "./DataQueryable";
 import {DataAssociationMapping} from "./DataAssociationMapping";
-import {DataModel} from "./data-model";
+import {DataField} from './DataField';
+import {DataModel} from "./DataModel";
+import {DataObject} from "./DataObject";
 
-export declare class HasParentJunction extends DataQueryable {
+export declare class DataObjectTag extends DataQueryable {
     parent: DataObject;
     mapping: DataAssociationMapping;
     getBaseModel(): DataModel;
-    getValueField(): string;
     getObjectField(): string;
+    getValueField(): string;
     insert(obj: any): Promise<any>;
     remove(obj: any): Promise<any>;
-    migrate(callback: (err?: Error) => void): void;
+    removeAll(): Promise<any>;
+    migrate(callback: (err?: Error) => void);
 }

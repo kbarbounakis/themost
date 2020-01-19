@@ -7,8 +7,8 @@
  */
 ///
 import async from 'async';
-import {HasParentJunction} from './has-parent-junction';
-import {DataObjectJunction} from './data-object-junction';
+import {HasParentJunction} from './HasParentJunction';
+import {DataObjectJunction} from './DataObjectJunction';
 import {DataError} from '@themost/common';
 import _ from 'lodash';
 

@@ -6,10 +6,10 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {DataQueryable} from "./data-queryable";
+import {DataQueryable} from "./DataQueryable";
 import {DataAssociationMapping} from "./DataAssociationMapping";
-import {DataObject} from "./data-object";
-import {DataModel} from "./data-model";
+import {DataObject} from "./DataObject";
+import {DataModel} from "./DataModel";
 
 export declare class HasOneAssociation extends DataQueryable{
     constructor(parent: any, association: DataAssociationMapping);

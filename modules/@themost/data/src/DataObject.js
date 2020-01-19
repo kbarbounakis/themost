@@ -7,11 +7,11 @@
  */
 import _ from 'lodash';
 import Q from 'q';
-import {DataObjectJunction} from './data-object-junction';
-import {DataObjectTag} from './data-object-tag';
-import {HasManyAssociation} from './has-many-association';
-import {HasOneAssociation} from './has-one-association';
-import {HasParentJunction} from './has-parent-junction';
+import {DataObjectJunction} from './DataObjectJunction';
+import {DataObjectTag} from './DataObjectTag';
+import {HasManyAssociation} from './HasManyAssociation';
+import {HasOneAssociation} from './HasOneAssociation';
+import {HasParentJunction} from './HasParentJunction';
 import {SequentialEventEmitter} from '@themost/common';
 import {DataError} from '@themost/common';
 

@@ -6,8 +6,8 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {DataModel} from "./data-model";
-import {DataQueryable} from "./data-queryable";
+import {DataModel} from "./DataModel";
+import {DataQueryable} from "./DataQueryable";
 import {BeforeExecuteEventListener, BeforeRemoveEventListener, BeforeSaveEventListener, DataEventArgs} from "./types";
 
 export declare class DataPermissionEventArgs {

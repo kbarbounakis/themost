@@ -139,7 +139,7 @@ class DataObjectAssociationListener {
                                 return cb();
                             }
                             if (x.mapping.childModel === event.model.name) {
-                                const HasParentJunction = require('./has-parent-junction').HasParentJunction;
+                                const HasParentJunction = require('./HasParentJunction').HasParentJunction;
                                 junction = new HasParentJunction(obj, x.mapping);
                                 if (event.state === 1 || event.state === 2) {
                                     const toBeRemoved = [];
@@ -170,8 +170,8 @@ class DataObjectAssociationListener {
                             }
                             else if (x.mapping.parentModel === event.model.name) {
                                 if (event.state === 1 || event.state === 2) {
-                                    const DataObjectJunction = require('./data-object-junction').DataObjectJunction;
-                                    const DataObjectTag = require('./data-object-tag').DataObjectTag;
+                                    const DataObjectJunction = require('./DataObjectJunction').DataObjectJunction;
+                                    const DataObjectTag = require('./DataObjectTag').DataObjectTag;
                                     if (typeof x.mapping.childModel === 'undefined') {
                                         /**
                                          * @type {DataObjectTag}

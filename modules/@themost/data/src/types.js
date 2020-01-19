@@ -20,7 +20,7 @@ const types = { };
  * @property {*} query - Represents the underlying query expression. This property may be null.
  * @property {DataObject|*} previous - Represents the underlying data object.
  */
-function DataEventArgs() {
+class DataEventArgs {
     //
 }
 
@@ -158,7 +158,7 @@ const FloatRegex =/^[+-]?\d+(\.\d+)?$/g;
 };
  *
  */
-function DataModelEventListener() {
+class DataModelEventListener {
 
 }
 /**
@@ -196,10 +196,12 @@ const PrivilegeType = {
  * @property {Array} value - An array of objects which represents the query results.
  * @constructor
   */
-function DataResultSet() {
-    this.total = 0;
-    this.skip = 0;
-    this.value = [];
+class DataResultSet {
+    constructor() {
+        this.total = 0;
+        this.skip = 0;
+        this.value = [];
+    }
 }
 
 /**

@@ -7,13 +7,13 @@
  */
 ///
 import {LangUtils} from '@themost/common';
-import {DataConfigurationStrategy} from './data-configuration';
+import {DataConfigurationStrategy} from './DataConfiguration';
 import {QueryField} from '@themost/query';
 import _ from 'lodash';
 import Q from 'q';
 import {DataAssociationMapping} from './DataAssociationMapping';
-import {DataObjectJunction} from './data-object-junction';
-import {DataQueryable} from './data-queryable';
+import {DataObjectJunction} from './DataObjectJunction';
+import {DataQueryable} from './DataQueryable';
 
 /**
  * @classdesc Represents a collection of values associated with a data object e.g. a collection of tags of an article, a set of skills of a person etc.
@@ -105,7 +105,7 @@ class DataObjectTag {
          */
         let parent_ = obj;
         let model;
-        const DataModel = require('./data-model').DataModel;
+        const DataModel = require('./DataModel').DataModel;
 
         /**
          * Gets or sets the parent data object

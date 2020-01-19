@@ -7,7 +7,7 @@
  */
 import _ from 'lodash';
 import sprintf from 'sprintf';
-import {DataConfigurationStrategy} from './data-configuration';
+import {DataConfigurationStrategy} from './DataConfiguration';
 
 class DataValidator {
     constructor() {

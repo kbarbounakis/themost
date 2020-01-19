@@ -16,8 +16,8 @@ import {ConfigurationStrategy} from '@themost/common';
 import {PathUtils} from '@themost/common';
 import {RandomUtils} from '@themost/common';
 import {AbstractMethodError} from '@themost/common';
-import {DataCacheStrategy} from './data-cache';
-import {DefaultDataCacheStrategy} from './data-cache';
+import {DataCacheStrategy} from './DataCache';
+import {DefaultDataCacheStrategy} from './DataCache';
 
 const modelsProperty = Symbol('models');
 const modelPathProperty = Symbol('modelPath');
@@ -899,7 +899,7 @@ class DefaultModelClassLoaderStrategy extends ModelClassLoaderStrategy {
                             if (_.isNil(model['inherits'])) {
                                 if (_.isNil(model['implements'])) {
                                     //use default DataObject class
-                                    modelDefinition[dataObjectClassProperty] = DataObjectClass = interopRequireDefault('./data-object').DataObject;
+                                    modelDefinition[dataObjectClassProperty] = DataObjectClass = interopRequireDefault('./DataObject').DataObject;
                                 }
                                 else {
                                     //use implemented data model class

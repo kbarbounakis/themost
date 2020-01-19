@@ -11,8 +11,8 @@ import Q from 'q';
 import async from 'async';
 import {QueryField} from '@themost/query';
 import {DataAssociationMapping} from './DataAssociationMapping';
-import {DataQueryable} from './data-queryable';
-import {DataConfigurationStrategy} from './data-configuration';
+import {DataQueryable} from './DataQueryable';
+import {DataConfigurationStrategy} from './DataConfiguration';
 
 /**
  * @classdesc Represents a many-to-many association between two data models.
@@ -113,7 +113,7 @@ class DataObjectJunction {
          * @private
          */
         let _parent = obj;
-        const DataModel = require('./data-model').DataModel;
+        const DataModel = require('./DataModel').DataModel;
 
         /**
          * Gets or sets the parent data object

@@ -6,8 +6,6 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import _ from 'lodash';
-import {sprintf} from 'sprintf';
-import path from 'path';
 import pluralize from 'pluralize';
 import async from 'async';
 import {QueryUtils} from '@themost/query';
@@ -27,23 +25,23 @@ import {
     RequiredValidator,
     MaxLengthValidator,
     DataTypeValidator
-} from './data-validator';
-import {DataObjectAssociationListener} from './data-associations';
-import {DataNestedObjectListener} from './data-nested-object-listener';
-import {DataReferencedObjectListener} from './data-ref-object-listener';
-import {DataQueryable} from './data-queryable';
-import {DataAttributeResolver} from './data-queryable';
-import {DataModelView} from './data-model-view';
-import {DataFilterResolver} from './data-filter-resolver';
+} from './DataValidator';
+import {DataObjectAssociationListener} from './DataObjectAssociationListener';
+import {DataNestedObjectListener} from './DataNestedObjectListener';
+import {DataReferencedObjectListener} from './DataReferencedObjectListener';
+import {DataQueryable} from './DataQueryable';
+import {DataAttributeResolver} from './DataQueryable';
+import {DataModelView} from './DataModelView';
+import {DataFilterResolver} from './DataFilterResolver';
 import Q from 'q';
 import {SequentialEventEmitter} from '@themost/common';
 import {TraceUtils} from '@themost/common';
 import {DataError} from '@themost/common';
-import {DataConfigurationStrategy} from './data-configuration';
-import {ModelClassLoaderStrategy} from './data-configuration';
+import {DataConfigurationStrategy} from './DataConfiguration';
+import {ModelClassLoaderStrategy} from './DataConfiguration';
 import {ModuleLoaderStrategy as ModuleLoader} from '@themost/common';
 const mappingsProperty = Symbol('mappings');
-import {DataPermissionEventListener} from './data-permission';
+import {DataPermissionEventListener} from './DataPermissionEventListener';
 
 
 /**
@@ -51,7 +49,7 @@ import {DataPermissionEventListener} from './data-permission';
  * @param {DataField} field
  * @private
  */
-function inferTagMapping_(field) {
+function _inferTagMapping(field) {
     /**
      * @type {DataModel|*}
      */
@@ -282,7 +280,7 @@ class DataModel extends SequentialEventEmitter {
          * @type {DataContext}
          * @private
          */
-        let context_ = null;
+        let _context = null;
         const self = this;
 
         /**
@@ -291,14 +289,14 @@ class DataModel extends SequentialEventEmitter {
          */
 
         Object.defineProperty(this, 'context', { get: function() {
-            return context_;
+            return _context;
         }, set: function(value) {
-            context_ = value;
-            if (_.isNil(context_)) {
-                unregisterContextListeners.bind(this)();
+            _context = value;
+            if (_.isNil(_context)) {
+                _unregisterContextListeners.bind(this)();
             }
             else {
-                registerContextListeners.bind(this)();
+                _registerContextListeners.bind(this)();
             }
         }, enumerable: false, configurable: false});
 
@@ -322,7 +320,7 @@ class DataModel extends SequentialEventEmitter {
             return _.isString(self.view) ? self.view :  self.name.concat('Data');
         }, enumerable: false, configurable: false});
 
-        let silent_ = false;
+        let _silent = false;
         /**
          * Prepares a silent data operation (for query, update, insert, delete etc).
          * In a silent execution, permission check will be omitted.
@@ -332,14 +330,14 @@ class DataModel extends SequentialEventEmitter {
          */
         this.silent = function(value) {
             if (typeof value === 'undefined')
-                silent_ = true;
+                _silent = true;
             else
-                silent_ = !!value;
+                _silent = !!value;
             return this;
         };
 
         Object.defineProperty(this, '$silent', { get: function() {
-            return silent_;
+            return _silent;
         }, enumerable: false, configurable: false});
 
         /**
@@ -580,7 +578,7 @@ class DataModel extends SequentialEventEmitter {
 
     /**
      * Initializes a where statement and returns an instance of DataQueryable class.
-     * @param {String|*} attr - A string that represents the name of a field
+     * @param {*} attr - A string that represents the name of a field
      * @returns DataQueryable
     */
     where(attr) {
@@ -590,7 +588,7 @@ class DataModel extends SequentialEventEmitter {
 
     /**
      * Initializes a full-text search statement and returns an instance of DataQueryable class.
-     * @param {String} text - A string that represents the text to search for
+     * @param {string} text - A string that represents the text to search for
      * @returns DataQueryable
      */
     search(text) {
@@ -622,10 +620,10 @@ class DataModel extends SequentialEventEmitter {
      */
     filter(params, callback) {
         if (typeof callback === 'function') {
-            return filterInternal.bind(this)(params, callback);
+            return _filterInternal.bind(this)(params, callback);
         }
         else {
-            return Q.nbind(filterInternal, this)(params);
+            return Q.nbind(_filterInternal, this)(params);
         }
     }
 
@@ -965,10 +963,9 @@ class DataModel extends SequentialEventEmitter {
          * @ignore
          */
         const DataObjectTypeCtor = self.getDataObjectType();
-
+        let src;
         if (_.isArray(obj)) {
             const arr = [];
-            let src;
             obj.forEach(x => {
                 if (typeof x !== 'undefined' && x!=null) {
                     const o = new DataObjectTypeCtor();
@@ -1135,7 +1132,7 @@ class DataModel extends SequentialEventEmitter {
         const self = this;
         if (typeof callback === 'undefined') {
             return Q.Promise((resolve, reject) => {
-                return save_.bind(self)( obj, err => {
+                return _save.bind(self)( obj, err => {
                     if (err) {
                         return reject(err);
                     }
@@ -1143,7 +1140,7 @@ class DataModel extends SequentialEventEmitter {
                 });
             });
         }
-        return save_.bind(self)(obj, callback);
+        return _save.bind(self)(obj, callback);
     }
 
     /**
@@ -1154,7 +1151,7 @@ class DataModel extends SequentialEventEmitter {
      */
     inferState(obj, callback) {
         const self = this;
-        const DataStateValidatorListener = require('./data-state-validator').DataStateValidatorListener;
+        const DataStateValidatorListener = require('./DataStateValidatorListener').DataStateValidatorListener;
         const e = { model:self, target:obj };
         DataStateValidatorListener.prototype.beforeSave(e, err => {
             //if error return error
@@ -1187,14 +1184,14 @@ class DataModel extends SequentialEventEmitter {
     update(obj, callback) {
         if (typeof callback !== 'function') {
             const d = Q.defer();
-            update_.call(this, obj, (err, result) => {
+            _update.call(this, obj, (err, result) => {
                 if (err) { return d.reject(err); }
                 d.resolve(result);
             });
             return d.promise;
         }
         else {
-            return update_.call(this, obj, callback);
+            return _update.call(this, obj, callback);
         }
     }
 
@@ -1207,14 +1204,14 @@ class DataModel extends SequentialEventEmitter {
     insert(obj, callback) {
         if (typeof callback !== 'function') {
             const d = Q.defer();
-            insert_.call(this, obj, (err, result) => {
+            _insert.call(this, obj, (err, result) => {
                 if (err) { return d.reject(err); }
                 d.resolve(result);
             });
             return d.promise;
         }
         else {
-            return insert_.call(this, obj, callback);
+            return _insert.call(this, obj, callback);
         }
     }
 
@@ -1235,14 +1232,14 @@ class DataModel extends SequentialEventEmitter {
     remove(obj, callback) {
         if (typeof callback !== 'function') {
             const d = Q.defer();
-            remove_.call(this, obj, (err, result) => {
+            _remove.call(this, obj, (err, result) => {
                 if (err) { return d.reject(err); }
                 d.resolve(result);
             });
             return d.promise;
         }
         else {
-            return remove_.call(this, obj, callback);
+            return _remove.call(this, obj, callback);
         }
     }
 
@@ -1286,7 +1283,7 @@ class DataModel extends SequentialEventEmitter {
         migration.version = _.isNil(self.version) ? '0.0' : self.version;
         migration.appliesTo = self.sourceAdapter;
         migration.model = self.name;
-        migration.description = sprintf('%s migration (version %s)', this.title, migration.version);
+        migration.description = `${this.title} migration (version ${migration.version})`;
         if (context===null)
             throw new Error('The underlying data context cannot be empty.');
 
@@ -1402,7 +1399,7 @@ class DataModel extends SequentialEventEmitter {
 
     /**
      * Gets an instance of DataField class based on the given name.
-     * @param {String} name - The name of the field.
+     * @param {string} name - The name of the field.
      * @return {DataField|*} - Returns a data field if exists. Otherwise returns null.
      */
     field(name) {
@@ -1640,14 +1637,14 @@ class DataModel extends SequentialEventEmitter {
     validateForUpdate(obj, callback) {
         if (typeof callback !== 'function') {
             const d = Q.defer();
-            validate_.call(this, obj, 2, (err, result) => {
+            _validate.call(this, obj, 2, (err, result) => {
                 if (err) { return d.reject(err); }
                 d.resolve(result);
             });
             return d.promise;
         }
         else {
-            return validate_.call(this, obj, callback);
+            return _validate.call(this, obj, callback);
         }
     }
 
@@ -1662,14 +1659,14 @@ class DataModel extends SequentialEventEmitter {
     validateForInsert(obj, callback) {
         if (typeof callback !== 'function') {
             const d = Q.defer();
-            validate_.call(this, obj, 1, (err, result) => {
+            _validate.call(this, obj, 1, (err, result) => {
                 if (err) { return d.reject(err); }
                 d.resolve(result);
             });
             return d.promise;
         }
         else {
-            return validate_.call(this, obj, callback);
+            return _validate.call(this, obj, callback);
         }
     }
 
@@ -1853,7 +1850,7 @@ class DataModel extends SequentialEventEmitter {
  * @this DataModel
  * @private
  */
-function unregisterContextListeners() {
+function _unregisterContextListeners() {
     //unregister event listeners
     this.removeAllListeners('before.save');
     this.removeAllListeners('after.save');
@@ -1867,7 +1864,7 @@ function unregisterContextListeners() {
  * @this DataModel
  * @private
  */
-function registerContextListeners() {
+function _registerContextListeners() {
 
    //description: change default max listeners (10) to 64 in order to avoid node.js message
    // for reaching the maximum number of listeners
@@ -1875,7 +1872,7 @@ function registerContextListeners() {
    if (typeof this.setMaxListeners === 'function') {
        this.setMaxListeners(64);
    }
-   const DataStateValidatorListener = require('./data-state-validator').DataStateValidatorListener;
+   const DataStateValidatorListener = require('./DataStateValidatorListener').DataStateValidatorListener;
 
    //1. State validator listener
    this.on('before.save', DataStateValidatorListener.prototype.beforeSave);
@@ -1958,7 +1955,7 @@ function registerContextListeners() {
  * @param {Function} callback
  * @returns {*}
  */
-function filterInternal(params, callback) {
+function _filterInternal(params, callback) {
     const self = this;
     const parser = OpenDataParser.create();
     const $joinExpressions = [];
@@ -2109,7 +2106,7 @@ function filterInternal(params, callback) {
                     }
                     if (expand) {
 
-                        const resolver = require('./data-expand-resolver');
+                        const resolver = require('./DataExpandResolver');
                         const matches = resolver.testExpandExpression(expand);
                         if (matches && matches.length>0) {
                             q.expand.apply(q, matches);
@@ -2179,73 +2176,6 @@ function _convertInternal(obj) {
             }
         }
     });
-}
-
-function dasherize(data) {
-    if (typeof data === 'string')
-    {
-        return data.replace(/(^\s*|\s*$)/g, '').replace(/[_\s]+/g, '-').replace(/([A-Z])/g, '-$1').replace(/-+/g, '-').replace(/^-/,'').toLowerCase();
-    }
-}
-
-/**
- * @this DataModel
- * @returns {*}
- * @constructor
- * @private
- */
-function getDataObjectClass_() {
-    const self = this;
-    let DataObjectClass = self['DataObjectClass'];
-    if (typeof DataObjectClass === 'undefined')
-    {
-        if (typeof self.classPath === 'string') {
-            DataObjectClass = require(self.classPath);
-        }
-        else {
-            //try to find class file with data model's name in lower case
-            // e.g. OrderDetail -> orderdetail-model.js (backward compatibility naming convention)
-            let classPath = path.join(process.cwd(),'app','models',self.name.toLowerCase().concat('-model.js'));
-            try {
-                DataObjectClass = require(classPath);
-            }
-            catch(e) {
-                if (e.code === 'MODULE_NOT_FOUND') {
-                    try {
-                        //if the specified class file was not found try to dasherize model name
-                        // e.g. OrderDetail -> order-detail-model.js
-                        classPath = path.join(process.cwd(),'app','models',dasherize(self.name).concat('-model.js'));
-                        DataObjectClass = require(classPath);
-                    }
-                    catch(e) {
-                        if (e.code === 'MODULE_NOT_FOUND') {
-                            if (_.isNil(self.inherits)) {
-                                //if , finally, we are unable to find class file, load default DataObject class
-                                DataObjectClass = require('./data-object').DataObject;
-                            }
-                            else {
-                                DataObjectClass = getDataObjectClass_.call(self.base());
-                            }
-                        }
-                        else {
-                            throw e;
-                        }
-                    }
-                }
-                else {
-                    throw e;
-                }
-            }
-        }
-        //cache DataObject class property
-        /**
-         * @type {DataConfigurationStrategy}
-         */
-        const strategy = self.context.getConfiguration().getStrategy(DataConfigurationStrategy);
-        const modelDefinition = strategy.getModelDefinition(self.name);
-        modelDefinition['DataObjectClass'] = self['DataObjectClass'] = DataObjectClass;
-    }
-    return DataObjectClass;
 }
 
 /**
@@ -2353,11 +2283,6 @@ function _castForValidation(obj, state) {
                 (x.readonly && (typeof x.value!=='undefined') && state===1) ||
                 (x.readonly && (typeof x.calculation!=='undefined') && state===1);
         }).filter(y => {
-            /*
-             change: 2016-02-27
-             author:k.barbounakis@gmail.com
-             description:exclude non editable attributes on update operation
-             */
             return (state===2) ? (y.hasOwnProperty('editable') ? y.editable : true) : true;
         }).forEach(x => {
             name = obj.hasOwnProperty(x.property) ? x.property : x.name;
@@ -2386,7 +2311,7 @@ function _castForValidation(obj, state) {
  * @param {Function} callback
  * @private
  */
-function save_(obj, callback) {
+function _save(obj, callback) {
     const self = this;
     if (_.isNil(obj)) {
         callback.call(self, null);
@@ -2407,7 +2332,7 @@ function save_(obj, callback) {
         let res = [];
         db.executeInTransaction(cb => {
             async.eachSeries(arr, (item, saveCallback) => {
-                saveSingleObject_.call(self, item, (err, result) => {
+                _saveSingleObject.call(self, item, (err, result) => {
                     if (err) {
                         saveCallback.call(self, err);
                         return;
@@ -2435,7 +2360,7 @@ function save_(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function saveBaseObject_(obj, callback) {
+function _saveBaseObject(obj, callback) {
     //ensure callback
     callback = callback || (() => {});
     const self = this;
@@ -2453,7 +2378,7 @@ function saveBaseObject_(obj, callback) {
     else {
         base.silent();
         //perform operation
-        saveSingleObject_.call(base, obj, (err, result) => {
+        _saveSingleObject.call(base, obj, (err, result) => {
             callback.call(self, err, result);
         });
     }
@@ -2464,7 +2389,7 @@ function saveBaseObject_(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function saveSingleObject_(obj, callback) {
+function _saveSingleObject(obj, callback) {
     const self = this;
     callback = callback || (() => {});
     if (obj==null) {
@@ -2523,7 +2448,7 @@ function saveSingleObject_(obj, callback) {
         //otherwise execute save operation
         else {
             //save base object if any
-            saveBaseObject_.call(self, e.target, (err, result) => {
+            _saveBaseObject.call(self, e.target, (err, result) => {
                 if (err) {
                     callback.call(self, err);
                     return;
@@ -2654,7 +2579,7 @@ function saveSingleObject_(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function update_(obj, callback) {
+function _update(obj, callback) {
     const self = this;
     //ensure callback
     callback = callback || (() => {});
@@ -2677,7 +2602,7 @@ function update_(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function insert_(obj, callback) {
+function _insert(obj, callback) {
     const self = this;
     //ensure callback
     callback = callback || (() => {});
@@ -2700,7 +2625,7 @@ function insert_(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function remove_(obj, callback) {
+function _remove(obj, callback) {
     const self = this;
     if (obj==null)
     {
@@ -2789,7 +2714,7 @@ function _removeSingleObject(obj, callback) {
                return callback(err);
            }
            //remove base object
-           removeBaseObject_.call(self, e.target, (err, result) => {
+           _removeBaseObject.call(self, e.target, (err, result) => {
                if (err) {
                    return callback(err);
                }
@@ -2813,7 +2738,7 @@ function _removeSingleObject(obj, callback) {
  * @param {Function} callback
  * @private
  */
-function removeBaseObject_(obj, callback) {
+function _removeBaseObject(obj, callback) {
     //ensure callback
     callback = callback || (() => {});
     const self = this;
@@ -2862,7 +2787,7 @@ function inferDefaultMapping(conf, name) {
     {
         if (typeof field.many === 'boolean' && field.many) {
             //validate primitive type mapping
-            const tagMapping = inferTagMapping_.call(self, field);
+            const tagMapping = _inferTagMapping.call(self, field);
             if (tagMapping) {
                 //apply data association mapping to definition
                 const definitionField = conf.fields.find(x => {
@@ -2968,7 +2893,7 @@ function inferDefaultMapping(conf, name) {
  * @param {Function} callback
  * @private
  */
-function validate_(obj, state, callback) {
+function _validate(obj, state, callback) {
     /**
      * @type {DataModel|*}
      */
@@ -3019,18 +2944,18 @@ function validate_(obj, state, callback) {
                 arrValidators.push(new MaxLengthValidator(attr.size));
         }
         //-- CustomValidator
-        if (attr.validation && attr.validation['validator'] && objCopy.hasOwnProperty(attr.name)) {
+        if (attr.validation && attr.validation.validator && objCopy.hasOwnProperty(attr.name)) {
             let validatorModule;
             try {
-                validatorModule = moduleLoader.require(attr.validation['validator']);
+                validatorModule = moduleLoader.require(attr.validation.validator);
             }
             catch (err) {
-                TraceUtils.debug(sprintf('Data validator module (%s) cannot be loaded', attr.validation['validator']));
+                TraceUtils.debug(`Data validator module (${attr.validation.validator}) cannot be loaded`);
                 TraceUtils.debug(err);
                 return cb(err);
             }
             if (typeof validatorModule.createInstance !== 'function') {
-                TraceUtils.debug(sprintf('Data validator module (%s) does not export createInstance() method.', attr.validation.type));
+                TraceUtils.debug(`Data validator module (${attr.validation.type}) does not export createInstance() method.`);
                 return cb(new Error('Invalid data validator type.'));
             }
             arrValidators.push(validatorModule.createInstance(attr));
@@ -3087,7 +3012,7 @@ function validate_(obj, state, callback) {
                     });
                 }
                 else {
-                    TraceUtils.debug(sprintf('Data validator (%s) does not have either validate() or validateSync() methods.', attr.validation.type));
+                    TraceUtils.debug(`Data validator (${attr.validation.type}) does not have either validate() or validateSync() methods.`);
                     return cb(new Error('Invalid data validator type.'));
                 }
             }

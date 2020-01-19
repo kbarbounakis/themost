@@ -13,7 +13,7 @@ import pluralize from 'pluralize';
 import _ from 'lodash';
 import moment from 'moment';
 const parseBoolean = require('./types').parsers.parseBoolean;
-import {DataModel} from './data-model';
+import {DataModel} from './DataModel';
 import {DataContext} from './DataContext';
 import {XDocument} from '@themost/xml';
 // noinspection JSUnusedLocalSymbols
@@ -26,9 +26,9 @@ const entityTypeProperty = Symbol('entityType');
 // noinspection JSUnusedLocalSymbols
 const edmProperty = Symbol('edm');
 const initializeProperty = Symbol('initialize');
-import {DataConfigurationStrategy} from './data-configuration';
-import {SchemaLoaderStrategy} from './data-configuration';
-import {DefaultSchemaLoaderStrategy} from './data-configuration';
+import {DataConfigurationStrategy} from './DataConfiguration';
+import {SchemaLoaderStrategy} from './DataConfiguration';
+import {DefaultSchemaLoaderStrategy} from './DataConfiguration';
 import {instanceOf} from './instance-of';
 
 class Args {

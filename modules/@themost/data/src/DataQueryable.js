@@ -852,7 +852,6 @@ class DataQueryable {
         });
      */
     equal(obj) {
-
         this.query.equal(resolveValue.bind(this)(obj));
         return this;
     }
@@ -1312,7 +1311,7 @@ class DataQueryable {
                 }
                 //select a field from a joined entity
                 else {
-                    expr = select_.call(self, arg);
+                    expr = _select.call(self, arg);
                     if (expr) {
                         arr = arr || [];
                         arr.push(expr);
@@ -1350,7 +1349,7 @@ class DataQueryable {
                         }
                         //test nested attribute and simple attribute expression
                         else {
-                            expr = select_.call(self, x);
+                            expr = _select.call(self, x);
                             if (expr) {
                                 arr = arr || [];
                                 arr.push(expr);
@@ -1799,7 +1798,7 @@ class DataQueryable {
             if (!self.query.hasFields()) {
                 self.select();
             }
-            execute_.call(self,(err, result) => {
+            _execute.call(self,(err, result) => {
                 if (err) {
                     return d.reject(err);
                 }
@@ -1942,14 +1941,14 @@ class DataQueryable {
     average(attr, callback) {
         if (typeof callback !== 'function') {
             const d = Q.defer();
-            averageInternal_.call(this, attr, (err, result) => {
+            _averageInternal.call(this, attr, (err, result) => {
                 if (err) { return d.reject(err); }
                 d.resolve(result);
             });
             return d.promise;
         }
         else {
-            return averageInternal_.call(this, attr, callback);
+            return _averageInternal.call(this, attr, callback);
         }
     }
 
@@ -2804,7 +2803,7 @@ class DataQueryable {
 
 /**
  * @private
- * @memberof DataQueryable#
+ * @this DataQueryable
  * @param {*} obj
  * @returns {*}
  */
@@ -2826,12 +2825,12 @@ function resolveValue(obj) {
 }
 
 /**
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param arg
  * @returns {*}
  * @private
  */
-function select_(arg) {
+function _select(arg) {
     const self = this;
     if (typeof arg === 'string' && arg.length===0) {
         return;
@@ -2859,7 +2858,7 @@ function select_(arg) {
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {Function} callback
  */
 function firstInternal(callback) {
@@ -2881,7 +2880,7 @@ function firstInternal(callback) {
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {Function} callback
  */
 function allInternal(callback) {
@@ -2895,11 +2894,11 @@ function allInternal(callback) {
     }
     callback = callback || (() => {});
     //execute select
-    execute_.call(self, callback);
+    _execute.call(self, callback);
 }
 
 /**
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @private
  * @param {Number} n - Defines the number of items to take
  * @param {Function} callback
@@ -2914,12 +2913,12 @@ function takeInternal(n, callback) {
         self.select();
     }
     //execute select
-    execute_.call(self,callback);
+    _execute.call(self,callback);
 }
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {Function} callback
  */
 function listInternal(callback) {
@@ -2961,8 +2960,8 @@ function listInternal(callback) {
 }
 
 /**
- * @this DataQueryable
  * @private
+ * @this DataQueryable
  * @param callback {Function}
  * @returns {*} - A collection of objects that meet the query provided
  */
@@ -2978,7 +2977,7 @@ function countInternal(callback) {
     if (cloned.query.hasOwnProperty('$order')) {
         delete cloned.query.$order;
     }
-    return execute_.bind(cloned)((err, result) => {
+    return _execute.bind(cloned)((err, result) => {
         if (err) {
             return callback(err);
         }
@@ -2994,7 +2993,7 @@ function countInternal(callback) {
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {string} attr
  * @param {Function} callback
  */
@@ -3010,7 +3009,7 @@ function maxInternal(attr, callback) {
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {string} attr
  * @param {Function} callback
  */
@@ -3030,7 +3029,7 @@ function minInternal(attr, callback) {
  * @param {string} attr
  * @param {Function} callback
  */
-function averageInternal_(attr, callback) {
+function _averageInternal(attr, callback) {
     const self = this;
     delete self.query.$skip;
     const field = DataAttributeResolver.prototype.selectAggregatedAttribute.call(self, 'avg', attr);
@@ -3046,12 +3045,12 @@ function averageInternal_(attr, callback) {
  * @param {Function} callback
  * @private
  */
-function execute_(callback) {
+function _execute(callback) {
    const self = this;
    self.migrate(err => {
        if (err) { callback(err); return; }
        try {
-           var event = { model:self.model, query:self.query, type:'select' };
+           let event = { model:self.model, query:self.query, type:'select' };
            const flatten = self.$flatten || (self.getLevels()===0);
            if (!flatten) {
                //get expandable fields
@@ -3133,13 +3132,13 @@ function execute_(callback) {
                        }
                    }
                    //execute query
-                   return finalExecuteInternal_.call(self, event, callback);
+                   return _finalExecuteInternal.call(self, event, callback);
                }
            });
        }
        else {
            //execute query
-           return finalExecuteInternal_.call(self, event, callback);
+           return _finalExecuteInternal.call(self, event, callback);
        }
    });
 }
@@ -3150,7 +3149,7 @@ function execute_(callback) {
  * @param {*} event
  * @param {Function} callback
  */
-function finalExecuteInternal_(event, callback) {
+function _finalExecuteInternal(event, callback) {
     const self = this;
     const context = self.ensureContext();
     //pass data queryable to event
@@ -3165,7 +3164,7 @@ function finalExecuteInternal_(event, callback) {
             if (typeof event['result'] !== 'undefined') {
                 //call after execute
                 const result = event['result'];
-                return afterExecute_.call(self, result, (err, result) => {
+                return _afterExecute.call(self, result, (err, result) => {
                     if (err) { return callback(err); }
                     if (afterListenerCount===0) { return callback(null, result); }
                     //raise after execute event
@@ -3177,7 +3176,7 @@ function finalExecuteInternal_(event, callback) {
             }
             context.db.execute(event.query, null, (err, result) => {
                 if (err) { return callback(err); }
-                afterExecute_.call(self, result, (err, result) => {
+                _afterExecute.call(self, result, (err, result) => {
                     if (err) { return callback(err); }
                     if (afterListenerCount===0) { return callback(null, result); }
                     //raise after execute event
@@ -3199,7 +3198,7 @@ function finalExecuteInternal_(event, callback) {
  * @param {Function} callback
  * @private
  */
-function afterExecute_(result, callback) {
+function _afterExecute(result, callback) {
     const self = this;
     let field;
     if (self.query.$count) {
@@ -3229,9 +3228,8 @@ function afterExecute_(result, callback) {
                  * get mapping
                  * @type {DataAssociationMapping|*}
                  */
-                var mapping = null;
-
-                var options = { };
+                let mapping = null;
+                let options = { };
                 if (expand instanceof DataAssociationMapping) {
                     mapping = expand;
                     if (typeof expand.select !== 'undefined' && expand.select !== null) {
@@ -3382,7 +3380,7 @@ function afterExecute_(result, callback) {
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {Array|*} result
  * @param {Function} callback
  */
@@ -3423,7 +3421,7 @@ function toArrayCallback(result, callback) {
 
 /**
  * @private
- * @memberOf DataQueryable#
+ * @this DataQueryable
  * @param {Function} callback
  */
 function valueInternal(callback) {

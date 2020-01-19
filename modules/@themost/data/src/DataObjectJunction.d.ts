@@ -6,11 +6,11 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {DataQueryable} from "./data-queryable";
-import {DataObject} from "./data-object";
+import {DataQueryable} from "./DataQueryable";
+import {DataObject} from "./DataObject";
 import {DataAssociationMapping} from "./DataAssociationMapping";
 import {DataField} from './DataField';
-import {DataModel} from "./data-model";
+import {DataModel} from "./DataModel";
 
 export declare class DataObjectJunction extends DataQueryable {
     parent: DataObject;

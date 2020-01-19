@@ -86,7 +86,7 @@ const mappingExtensions = {
                             .map(x => { return x[mapping.childField]
                             });
                     //query junction model
-                    const HasParentJunction = require('./has-parent-junction').HasParentJunction;
+                    const HasParentJunction = require('./HasParentJunction').HasParentJunction;
                     const junction = new HasParentJunction(thisQueryable.model.convert({ }), mapping);
                     junction.getBaseModel().where(mapping.associationValueField).in(values).flatten().silent().all((err, junctions) => {
                         if (err) { return deferred.reject(err); }
@@ -154,7 +154,7 @@ const mappingExtensions = {
                     if ((mapping.childModel !== thisQueryable.model.name) || (mapping.associationType!=='junction')) {
                         return deferred.resolve();
                     }
-                    const HasParentJunction = require('./has-parent-junction').HasParentJunction;
+                    const HasParentJunction = require('./HasParentJunction').HasParentJunction;
                     const junction = new HasParentJunction(thisQueryable.model.convert({ }), mapping);
                     return junction.migrate(err => {
                         if (err) { return deferred.reject(err); }
@@ -223,7 +223,7 @@ const mappingExtensions = {
                         return x[mapping.parentField];
                     });
                     if (_.isNil(mapping.childModel)) {
-                        const DataObjectTag = require('./data-object-tag').DataObjectTag;
+                        const DataObjectTag = require('./DataObjectTag').DataObjectTag;
                         junction = new DataObjectTag(thisQueryable.model.convert({ }), mapping);
                         return junction.getBaseModel().where('object').in(values).flatten().silent().select('object', 'value').all().then(items => {
                             arr.forEach(x => {
@@ -239,7 +239,7 @@ const mappingExtensions = {
                         });
                     }
                     //create a dummy object
-                    const DataObjectJunction = require('./data-object-junction').DataObjectJunction;
+                    const DataObjectJunction = require('./DataObjectJunction').DataObjectJunction;
                     let junction = new DataObjectJunction(thisQueryable.model.convert({ }), mapping);
                     //query junction model
                     return junction.getBaseModel().where(mapping.associationObjectField).in(values).silent().flatten().getItems().then(junctions => {
@@ -314,7 +314,7 @@ const mappingExtensions = {
                     if ((mapping.parentModel !== thisQueryable.model.name) || (mapping.associationType!=='junction')) {
                         return deferred.resolve();
                     }
-                    const DataObjectJunction = require('./data-object-junction').DataObjectJunction;
+                    const DataObjectJunction = require('./DataObjectJunction').DataObjectJunction;
                     const junction = new DataObjectJunction(thisQueryable.model.convert({ }), mapping);
                     return junction.migrate(err => {
                         if (err) { return deferred.reject(err); }

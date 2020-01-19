@@ -9,9 +9,9 @@
 import {QueryEntity, QueryUtils} from '@themost/query';
 import async from 'async';
 import {AccessDeniedError} from '@themost/common';
-import {DataConfigurationStrategy} from './data-configuration';
+import {DataConfigurationStrategy} from './DataConfiguration';
 import _ from 'lodash';
-import {DataCacheStrategy} from './data-cache';
+import {DataCacheStrategy} from './DataCache';
 import Q from 'q';
 /**
  * @class

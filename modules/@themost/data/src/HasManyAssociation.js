@@ -5,10 +5,9 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import _ from 'lodash';
 import {QueryUtils} from '@themost/query';
 import {DataAssociationMapping} from './DataAssociationMapping';
-import {DataQueryable} from './data-queryable';
+import {DataQueryable} from './DataQueryable';
 
 /**
  * @classdesc Represents a one-to-many association between two models.
@@ -120,7 +119,7 @@ class HasManyAssociation extends DataQueryable {
             if (association instanceof DataAssociationMapping)
                 self.mapping = association;
             else
-                self.mapping = _.assign(new DataAssociationMapping(), association);
+                self.mapping = Object.assign(new DataAssociationMapping(), association);
         }
     
         let q = null;

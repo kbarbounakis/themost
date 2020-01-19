@@ -4,7 +4,9 @@
     "**/*[sS]pec.js"
   ],
   "helpers": [
-    "../spec/helpers/babel.js"
+    "helpers/babel.js",
+    "helpers/env.js",
+    "helpers/reporter.js"
   ],
   "stopSpecOnExpectationFailure": false,
   "random": true

@@ -7,7 +7,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import { DataContext } from "./DataContext";
-import {DataModel} from "./data-model";
+import {DataModel} from "./DataModel";
 
 export declare class FunctionContext {
     constructor(context?: DataContext, model?: DataModel, target?: any);

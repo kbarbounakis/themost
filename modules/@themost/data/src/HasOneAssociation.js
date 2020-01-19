@@ -9,7 +9,7 @@ import _ from 'lodash';
 import {QueryExpression} from '@themost/query';
 import {QueryField} from '@themost/query';
 import {DataAssociationMapping} from './DataAssociationMapping';
-import {DataQueryable} from './data-queryable';
+import {DataQueryable} from './DataQueryable';
 
 /**
  * @classdesc Represents a foreign key association between two models.
