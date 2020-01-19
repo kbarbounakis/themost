@@ -185,12 +185,6 @@ function beforeSaveMany_(attr, event, callback) {
     }
 }
 
-
-/**
- * @module @themost/data/data-nested-object-listener
- * @ignore
- */
-
 /**
  * @class
  * @constructor

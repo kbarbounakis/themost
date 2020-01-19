@@ -11,8 +11,6 @@ import {TraceUtils} from '@themost/common';
 import _ from 'lodash';
 import Q from 'q';
 
-const functions = { };
-
 /**
  * @class
  * @classdesc A utility class which offers a set of methods for calculating the default values of a data model
@@ -351,77 +349,4 @@ function newGuidInternal() {
     return uuid.join('');
 }
 
-functions.FunctionContext = FunctionContext;
-/**
- * Creates a new instance of FunctionContext class
- * @param {DataContext|*=} context
- * @param {DataModel|*=} model
- * @param {*=} target
- * @returns FunctionContext
- */
-// eslint-disable-next-line no-unused-vars
-functions.createContext = (context, model, target) => {
-    return new FunctionContext();
-};
-/**
- * Gets the current date and time
- * @param {FunctionContext} e The current function context
- * @param {Function} callback The callback function to be called
- */
-functions.now = function(e, callback) {
-    callback.call(this, null, new Date());
-};
-/**
- * Gets the current date
- * @param {FunctionContext} e
- * @param {Function} callback
- */
-functions.today = function(e, callback) {
-    const d = new Date();
-    callback.call(this, d.getDate());
-};
-/**
- * Gets new identity key for a primary key column
- * @param {FunctionContext} e
- * @param {Function} callback
- */
-functions.newid = (e, callback) => {
-    e.model.context.db.selectIdentity(e.model.sourceAdapter, e.model.primaryKey, callback);
-};
-
-/**
- * Gets the current user
- * @param {FunctionContext} e The current function context
- * @param {Function} callback The callback function to be called
- */
-functions.user = (e, callback) => {
-    callback = callback || (() => {});
-    const user = e.model.context.interactiveUser || e.model.context.user || {  };
-    //ensure user name (or anonymous)
-    user.name = user.name || 'anonymous';
-    if (user['id']) {
-        return callback(null, user['id']);
-    }
-    const userModel = e.model.context.model('User');
-    userModel.where('name').equal(user.name).silent().select('id','name').first((err, result) => {
-        if (err) {
-            callback();
-        }
-        else {
-            //filter result to exclude anonymous user
-            const filtered = result.filter(x => { return x.name!=='anonymous'; }, result);
-            //if user was found
-            if (filtered.length>0) {
-                e.model.context.user.id = result[0].id;
-                callback(null, result[0].id);
-            }
-            //if anonymous was found
-            else if (result.length>0) {
-                callback(null, result[0].id);
-            }
-            else
-                callback();
-        }
-    });
-};
-export default functions;
+export {FunctionContext};

@@ -8,7 +8,7 @@
 import async from 'async';
 import {sprintf} from 'sprintf';
 import _ from 'lodash';
-import mappingExtensions from './data-mapping-extensions';
+import {DataAssociationMappingExtensions} from './DataAssociationMappingExtensions';
 import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataError} from '@themost/common';
 import {QueryField} from '@themost/query';
@@ -3222,14 +3222,13 @@ function _afterExecute(result, callback) {
 
         //expands = self.$expand.distinct(function(x) { return x; });
         async.eachSeries(expands, (expand, cb) => {
-
+            /**
+             * get mapping
+             * @type {DataAssociationMapping|*}
+             */
+            let mapping = null;
+            let options = { };
             try {
-                /**
-                 * get mapping
-                 * @type {DataAssociationMapping|*}
-                 */
-                let mapping = null;
-                let options = { };
                 if (expand instanceof DataAssociationMapping) {
                     mapping = expand;
                     if (typeof expand.select !== 'undefined' && expand.select !== null) {
@@ -3325,7 +3324,7 @@ function _afterExecute(result, callback) {
                 thisMapping.options = options;
                 if (mapping.associationType==='association' || mapping.associationType==='junction') {
                     if ((mapping.parentModel===self.model.name) && (mapping.associationType==='association')) {
-                        return mappingExtensions.extend(thisMapping).for(self).getAssociatedChilds_v1(result)
+                        return DataAssociationMappingExtensions.extend(thisMapping).for(self).getAssociatedChildren_v1(result)
                             .then(() => {
                                 return cb();
                             }).catch(err => {
@@ -3333,7 +3332,7 @@ function _afterExecute(result, callback) {
                             });
                     }
                     else if (mapping.childModel===self.model.name && mapping.associationType==='junction') {
-                        return mappingExtensions.extend(thisMapping).for(self).getParents_v1(result)
+                        return DataAssociationMappingExtensions.extend(thisMapping).for(self).getParents_v1(result)
                             .then(() => {
                                 return cb();
                         }).catch(err => {
@@ -3341,7 +3340,7 @@ function _afterExecute(result, callback) {
                         });
                     }
                     else if (mapping.parentModel===self.model.name && mapping.associationType==='junction') {
-                        return mappingExtensions.extend(thisMapping).for(self).getChilds_v1(result)
+                        return DataAssociationMappingExtensions.extend(thisMapping).for(self).getChildren_v1(result)
                             .then(() => {
                                 return cb();
                             }).catch(err => {
@@ -3349,7 +3348,7 @@ function _afterExecute(result, callback) {
                             });
                     }
                     else if ((mapping.childModel===self.model.name) && (mapping.associationType==='association')) {
-                        return mappingExtensions.extend(thisMapping).for(self).getAssociatedParents_v1(result)
+                        return DataAssociationMappingExtensions.extend(thisMapping).for(self).getAssociatedParents_v1(result)
                             .then(() => {
                                 return cb();
                             }).catch(err => {

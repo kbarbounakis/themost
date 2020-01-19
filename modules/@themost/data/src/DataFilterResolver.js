@@ -5,7 +5,7 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import functions from './functions';
+import {FunctionContext} from './FunctionContext';
 
 /**
  * @ignore
@@ -45,7 +45,7 @@ class DataFilterResolver {
      * @param {Function} callback
      */
     me(callback) {
-        const fx = new functions.FunctionContext(this.context, this);
+        const fx = new FunctionContext(this.context, this);
         fx.user().then(value => {
             callback(null, value)
         }).catch(err => {

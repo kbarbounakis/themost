@@ -13,13 +13,6 @@ import {OpenDataParser} from '@themost/query';
 import {parsers} from './types';
 import {DataModelMigration} from './DataModelMigration';
 import {DataAssociationMapping} from './DataAssociationMapping';
-import {CalculatedValueListener, 
-    DefaultValueListener,
-    DataCachingListener,
-    DataModelCreateViewListener,
-    DataModelSeedListener,
-    NotNullConstraintListener,
-    UniqueConstraintListener} from './data-listeners';
 import {
     DataValidatorListener,
     RequiredValidator,
@@ -43,7 +36,13 @@ import {ModuleLoaderStrategy as ModuleLoader} from '@themost/common';
 const mappingsProperty = Symbol('mappings');
 import {DataPermissionEventListener} from './DataPermissionEventListener';
 
-
+import {DefaultValueListener} from './DefaultValueListener';
+import {CalculatedValueListener} from './CalculatedValueListener';
+import {DataCachingListener} from './DataCachingListener';
+import {DataModelCreateViewListener} from './DataModelCreateViewListener';
+import {DataModelSeedListener} from './DataModelSeedListener';
+import {UniqueConstraintListener} from './UniqueConstraintListener';
+import {NotNullConstraintListener} from './NotNullConstraintListener';
 /**
  * @this DataModel
  * @param {DataField} field
