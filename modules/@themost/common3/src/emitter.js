@@ -21,8 +21,8 @@ export class SequentialEventEmitter extends EventEmitter {
      * @param {String} event - The event that is going to be executed.
      * @param {...*} args - An object that contains the event arguments.
      */
-    // eslint-disable-next-line no-unused-vars
     // tslint:disable-nex-lineb no-unused-variable
+    // eslint-disable-next-line no-unused-vars
     emit(event, _args) {
         //get listeners
         if (typeof this.listeners !== 'function') {
@@ -33,8 +33,8 @@ export class SequentialEventEmitter extends EventEmitter {
         const argsAndCallback = [].concat(Array.prototype.slice.call(arguments, 1));
         if (argsAndCallback.length > 0) {
             //check the last argument (expected callback function)
-            if (typeof argsAndCallback[argsAndCallback.length - 1] !== "function") {
-                throw new TypeError("Expected event callback");
+            if (typeof argsAndCallback[argsAndCallback.length - 1] !== 'function') {
+                throw new TypeError('Expected event callback');
             }
         }
         //get callback function (the last argument of arguments list)

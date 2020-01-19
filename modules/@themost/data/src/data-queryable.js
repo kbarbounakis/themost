@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -9,11 +9,11 @@ import async from 'async';
 
 import {sprintf} from 'sprintf';
 import Symbol from 'symbol';
-import _ from "lodash";
-import {TextUtils} from "@themost/common";
+import _ from 'lodash';
+import {TextUtils} from '@themost/common';
 import mappingExtensions from './data-mapping-extensions';
 import {DataAssociationMapping} from './types';
-import {DataError} from "@themost/common";
+import {DataError} from '@themost/common';
 import {QueryField} from '@themost/query';
 import {QueryEntity} from '@themost/query';
 import {QueryUtils} from '@themost/query';
@@ -32,11 +32,11 @@ class DataAttributeResolver {
         if (nestedAttribute) {
             let matches = /^(\w+)\((\w+)\/(\w+)\)$/i.exec(nestedAttribute.name);
             if (matches)   {
-                return DataAttributeResolver.prototype.selectAggregatedAttribute.call(this, matches[1], matches[2] + "/" + matches[3]);
+                return DataAttributeResolver.prototype.selectAggregatedAttribute.call(this, matches[1], matches[2] + '/' + matches[3]);
             }
             matches = /^(\w+)\((\w+)\/(\w+)\/(\w+)\)$/i.exec(nestedAttribute.name);
             if (matches)   {
-                return DataAttributeResolver.prototype.selectAggregatedAttribute.call(this, matches[1], matches[2] + "/" + matches[3] + "/" + matches[4]);
+                return DataAttributeResolver.prototype.selectAggregatedAttribute.call(this, matches[1], matches[2] + '/' + matches[3] + '/' + matches[4]);
             }
         }
         return DataAttributeResolver.prototype.resolveNestedAttribute.call(this, attr);
@@ -473,11 +473,11 @@ class DataAttributeResolver {
      */
     resolveJunctionAttributeJoin(attr) {
         const self = this;
-        const member = attr.split("/");
+        const member = attr.split('/');
         //get the data association mapping
         const mapping = self.inferMapping(member[0]);
         //if mapping defines a junction between two models
-        if (mapping && mapping.associationType === "junction") {
+        if (mapping && mapping.associationType === 'junction') {
             //get field
             const field = self.field(member[0]);
 
@@ -516,10 +516,10 @@ class DataAttributeResolver {
                     //get child model
                     const childModel = self.context.model(mapping.childModel);
                     if (_.isNil(childModel)) {
-                        throw new DataError("EJUNC","The associated model cannot be found.");
+                        throw new DataError('EJUNC','The associated model cannot be found.');
                     }
                     //create new join
-                    const alias = field.name + "_" + childModel.name;
+                    const alias = field.name + '_' + childModel.name;
                     entity = new QueryEntity(childModel.viewAdapter).as(alias);
                     expr = QueryUtils.query().where(QueryField.select(mapping.associationValueField).from(field.name))
                         .equal(QueryField.select(mapping.childField).from(alias));
@@ -553,10 +553,10 @@ class DataAttributeResolver {
                     //get parent model
                     const parentModel = self.context.model(mapping.parentModel);
                     if (_.isNil(parentModel)) {
-                        throw new DataError("EJUNC","The associated model cannot be found.");
+                        throw new DataError('EJUNC','The associated model cannot be found.');
                     }
                     //create new join
-                    const parentAlias = field.name + "_" + parentModel.name;
+                    const parentAlias = field.name + '_' + parentModel.name;
                     entity = new QueryEntity(parentModel.viewAdapter).as(parentAlias);
                     expr = QueryUtils.query().where(QueryField.select(mapping.associationObjectField).from(field.name))
                         .equal(QueryField.select(mapping.parentField).from(parentAlias));
@@ -570,7 +570,7 @@ class DataAttributeResolver {
             }
         }
         else {
-            throw new DataError("EJUNC","The target model does not have a many to many association defined by the given attribute.","", self.name, attr);
+            throw new DataError('EJUNC','The target model does not have a many to many association defined by the given attribute.','', self.name, attr);
         }
     }
 }
@@ -738,7 +738,7 @@ class DataQueryable {
             return self;
         }
         self.prepare();
-        const stringTypes = [ "Text", "URL", "Note" ];
+        const stringTypes = [ 'Text', 'URL', 'Note' ];
         self.model.attributes.forEach(x => {
             if (x.many) { return; }
             const mapping = self.model.inferMapping(x.name);
@@ -778,10 +778,10 @@ class DataQueryable {
         const joinModel = self.model.context.model(model);
         //validate joined model
         if (_.isNil(joinModel))
-            throw new Error(sprintf("The %s model cannot be found", model));
+            throw new Error(sprintf('The %s model cannot be found', model));
         const arr = self.model.attributes.filter(x => { return x.type===joinModel.name; });
         if (arr.length===0)
-            throw new Error(sprintf("An internal error occurred. The association between %s and %s cannot be found", this.model.name ,model));
+            throw new Error(sprintf('An internal error occurred. The association between %s and %s cannot be found', this.model.name ,model));
         const mapping = self.model.inferMapping(arr[0].name);
         const expr = QueryUtils.query();
         expr.where(self.fieldOf(mapping.childField)).equal(joinModel.fieldOf(mapping.parentField));
@@ -1248,7 +1248,7 @@ class DataQueryable {
         const arg = (arguments.length>1) ? Array.prototype.slice.call(arguments): attr;
 
         if (typeof arg === 'string') {
-            if (arg==="*") {
+            if (arg==='*') {
                 //delete select
                 delete self.query.$select;
                 return this;
@@ -1343,8 +1343,8 @@ class DataQueryable {
                         if (field) {
                             if (field.many || (field.mapping && field.mapping.associationType === 'junction')) {
                                 self.expand({
-                                    "name":field.name,
-                                    "options":field.options
+                                    'name':field.name,
+                                    'options':field.options
                                 });
                             }
                             else {
@@ -1426,7 +1426,7 @@ class DataQueryable {
                 if (nestedAttr) {
                     if (_.isNil(alias)) {
                         const nestedMatches = /as\s([\u0020-\u007F\u0080-\uFFFF]+)$/i.exec(attr);
-                        alias = _.isNil(nestedMatches) ? aggr.concat('Of_', matches[2].replace(/\//g, "_")) : nestedMatches[1];
+                        alias = _.isNil(nestedMatches) ? aggr.concat('Of_', matches[2].replace(/\//g, '_')) : nestedMatches[1];
                     }
                     /**
                      * @type {Function}
@@ -2185,7 +2185,7 @@ class DataQueryable {
                     }
                 }
                 else {
-                    throw new Error("Expand option may be a string or a named object.")
+                    throw new Error('Expand option may be a string or a named object.')
                 }
             });
         }
@@ -2201,7 +2201,7 @@ class DataQueryable {
         if (typeof attr === 'string') {
             expand = attr;
         }
-        else if (typeof attr.name === "string") {
+        else if (typeof attr.name === 'string') {
             expand = attr.name;
         }
 
@@ -2212,7 +2212,7 @@ class DataQueryable {
             else if (x instanceof DataAssociationMapping) {
                 return x === expand;
             }
-            else if (typeof x.name === "string") {
+            else if (typeof x.name === 'string') {
                 return x.name === expand;
             }
             return false;
@@ -2717,7 +2717,7 @@ class DataQueryable {
                 options: this
             }
         }
-        throw new Error("Invalid parameter. Expected not empty string.")
+        throw new Error('Invalid parameter. Expected not empty string.')
     }
 
     /**
@@ -2974,7 +2974,7 @@ function countInternal(callback) {
     callback = callback || (() => {});
     //clone query
     const cloned = self.clone();
-    cloned.query.count("__count__");
+    cloned.query.count('__count__');
     if (cloned.query.hasFields() === false) {
         cloned.select();
     }
@@ -2989,7 +2989,7 @@ function countInternal(callback) {
         if (_.isArray(result)) {
             //get first value
             if (result.length>0)
-                value = result[0]["__count__"];
+                value = result[0]['__count__'];
         }
         return callback(null, value);
     });
@@ -3218,7 +3218,7 @@ function afterExecute_(result, callback) {
            else if (x instanceof DataAssociationMapping) {
                 return x;
            }
-           else if (typeof x.name === "string") {
+           else if (typeof x.name === 'string') {
                return x.name;
            }
            return x;
@@ -3239,9 +3239,9 @@ function afterExecute_(result, callback) {
                     mapping = expand;
                     if (typeof expand.select !== 'undefined' && expand.select !== null) {
                         if (typeof expand.select === 'string')
-                            options["$select"] = expand.select;
+                            options['$select'] = expand.select;
                         else if (_.isArray(expand.select))
-                            options["$select"] = expand.select.join(",");
+                            options['$select'] = expand.select.join(',');
                     }
                     //get expand options
                     if (typeof expand.options !== 'undefined' && expand.options !== null) {
@@ -3265,7 +3265,7 @@ function afterExecute_(result, callback) {
                     }
                     else {
                         //invalid expand parameter
-                        return callback(new Error("Invalid expand option. Expected string or a named object."));
+                        return callback(new Error('Invalid expand option. Expected string or a named object.'));
                     }
                     field = self.model.field(expandAttr);
                     if (typeof field === 'undefined')
@@ -3286,7 +3286,7 @@ function afterExecute_(result, callback) {
                                 _.assign(options, mapping.options);
                             }
                             else if (_.isArray(mapping.select) && mapping.select.length>0) {
-                                options['$select'] = mapping.select.join(",");
+                                options['$select'] = mapping.select.join(',');
                             }
                             // check data view attribute mapping options
                             if (self.$view) {
@@ -3309,13 +3309,13 @@ function afterExecute_(result, callback) {
                 }
                 else {
                     //set default $top option to -1 (backward compatibility issue)
-                    if (!options.hasOwnProperty("$top")) {
-                        options["$top"] = -1;
+                    if (!options.hasOwnProperty('$top')) {
+                        options['$top'] = -1;
                     }
                     //set default $levels option to 1 (backward compatibility issue)
-                    if (!options.hasOwnProperty("$levels")) {
+                    if (!options.hasOwnProperty('$levels')) {
                         if (typeof self.$levels === 'number') {
-                            options["$levels"] = self.getLevels() - 1;
+                            options['$levels'] = self.getLevels() - 1;
                         }
                     }
                 }
@@ -3363,11 +3363,11 @@ function afterExecute_(result, callback) {
                     }
                 }
                 else {
-                    return cb(new Error("Not yet implemented"));
+                    return cb(new Error('Not yet implemented'));
                 }
             }
             else {
-                return cb(new DataError("EASSOC", sprintf('Data association mapping (%s) for %s cannot be found or the association between these two models defined more than once.', expand, self.model.title)));
+                return cb(new DataError('EASSOC', sprintf('Data association mapping (%s) for %s cannot be found or the association between these two models defined more than once.', expand, self.model.title)));
             }
         }, err => {
             if (err) {

@@ -1,14 +1,14 @@
 /**
  * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 import _ from 'lodash';
 import {QueryUtils} from '@themost/query';
-import async from "async";
+import async from 'async';
 import {DataError} from '@themost/common';
 /**
  * 
@@ -96,7 +96,7 @@ function beforeSaveMany_(attr, event, callback) {
     //if nested object is not an array
     if (!_.isArray(nestedObj)) {
         //throw exception
-        return callback(new DataError("EJUNCT","Invalid argument type. Expected array.",null, event.model.name, name));
+        return callback(new DataError('EJUNCT','Invalid argument type. Expected array.',null, event.model.name, name));
     }
     //if nested array does not have any data
     if (nestedObj.length===0) {
@@ -481,7 +481,7 @@ function afterSaveMany_(attr, event, callback) {
     //if nested object is not an array
     if (!_.isArray(nestedObj)) {
         //throw exception
-        return callback(new DataError("EASSOCIATION","Invalid argument type. Expected array.",null, event.model.name, name));
+        return callback(new DataError('EASSOCIATION','Invalid argument type. Expected array.',null, event.model.name, name));
     }
     //get mapping
     const mapping = event.model.inferMapping(attr.name);

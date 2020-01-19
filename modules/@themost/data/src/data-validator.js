@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -116,7 +116,7 @@ class PatternValidator extends DataValidator {
             const timezone = (offset>=0 ? '+' : '') + zeroPad_(Math.floor(offset/60),2) + ':' + zeroPad_(offset%60,2);
             valueTo = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond + timezone;
         }
-        const re = new RegExp(this.pattern, "ig");
+        const re = new RegExp(this.pattern, 'ig');
         if  (!re.test(valueTo)) {
             let innerMessage = null;
             let message = this.message || PatternValidator.DefaultMessage;
@@ -126,15 +126,15 @@ class PatternValidator extends DataValidator {
             }
 
             return {
-                code:"EPATTERN",
-                "message":message,
-                "innerMessage":innerMessage
+                code:'EPATTERN',
+                'message':message,
+                'innerMessage':innerMessage
             }
         }
     }
 }
 
-PatternValidator.DefaultMessage = "The value seems to be invalid.";
+PatternValidator.DefaultMessage = 'The value seems to be invalid.';
 
 /**
  * @class
@@ -206,7 +206,7 @@ class MinLengthValidator extends DataValidator {
                 }
 
                 return {
-                    code:"EMINLEN",
+                    code:'EMINLEN',
                     minLength:this.minLength,
                     message:message,
                     innerMessage:innerMessage
@@ -216,7 +216,7 @@ class MinLengthValidator extends DataValidator {
     }
 }
 
-MinLengthValidator.DefaultMessage = "The value is too short. It should have %s characters or more.";
+MinLengthValidator.DefaultMessage = 'The value is too short. It should have %s characters or more.';
 
 /**
  * @class
@@ -299,7 +299,7 @@ class MaxLengthValidator extends DataValidator {
         if (val.hasOwnProperty('length')) {
             if (val.length>this.maxLength) {
                 return {
-                    code:"EMAXLEN",
+                    code:'EMAXLEN',
                     maxLength:this.maxLength,
                     message: message,
                     innerMessage:innerMessage
@@ -309,7 +309,7 @@ class MaxLengthValidator extends DataValidator {
     }
 }
 
-MaxLengthValidator.DefaultMessage = "The value is too long. It should have %s characters or fewer.";
+MaxLengthValidator.DefaultMessage = 'The value is too long. It should have %s characters or fewer.';
 
 /**
  * @class
@@ -381,7 +381,7 @@ class MinValueValidator extends DataValidator {
             }
 
             return {
-                code:"EMINVAL",
+                code:'EMINVAL',
                 minValue:this.minValue,
                 message:message,
                 innerMessage:innerMessage
@@ -390,7 +390,7 @@ class MinValueValidator extends DataValidator {
     }
 }
 
-MinValueValidator.DefaultMessage = "The value should be greater than or equal to %s.";
+MinValueValidator.DefaultMessage = 'The value should be greater than or equal to %s.';
 
 /**
  * @class
@@ -462,7 +462,7 @@ class MaxValueValidator extends DataValidator {
             }
 
             return {
-                code:"EMAXVAL",
+                code:'EMAXVAL',
                 maxValue:this.maxValue,
                 message:message,
                 innerMessage:innerMessage
@@ -471,7 +471,7 @@ class MaxValueValidator extends DataValidator {
     }
 }
 
-MaxValueValidator.DefaultMessage = "The value should be lower or equal to %s.";
+MaxValueValidator.DefaultMessage = 'The value should be lower or equal to %s.';
 
 /**
  * @class
@@ -558,7 +558,7 @@ class RangeValidator extends DataValidator {
                 message = sprintf.sprintf(this.getContext().translate(this.message || RangeValidator.DefaultMessage), this.minValue, this.maxValue);
             }
             return {
-                code:"ERANGE",
+                code:'ERANGE',
                 maxValue:this.maxValue,
                 message:message,
                 innerMessage:innerMessage
@@ -573,7 +573,7 @@ class RangeValidator extends DataValidator {
     }
 }
 
-RangeValidator.DefaultMessage = "The value should be between %s to %s.";
+RangeValidator.DefaultMessage = 'The value should be between %s to %s.';
 
 /**
  * @class
@@ -1065,14 +1065,14 @@ class RequiredValidator extends DataValidator {
         }
         if (invalid) {
             let innerMessage = null;
-            let message = "A value is required.";
+            let message = 'A value is required.';
             if (this.getContext() && (typeof this.getContext().translate === 'function')) {
                 innerMessage = message;
-                message = this.getContext().translate("A value is required.");
+                message = this.getContext().translate('A value is required.');
             }
 
             return {
-                code:"EREQUIRED",
+                code:'EREQUIRED',
                 message:message,
                 innerMessage:innerMessage
             }
@@ -1083,6 +1083,7 @@ class RequiredValidator extends DataValidator {
 export {
     PatternValidator,
     DataValidator,
+    MaxLengthValidator,
     MaxValueValidator,
     MinValueValidator,
     MinLengthValidator,

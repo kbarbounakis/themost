@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -186,25 +186,25 @@ class DataObjectJunction {
                 if (_.isNil(baseModel)) {
                     const associationObjectField = self.mapping.associationObjectField || DataObjectJunction.DEFAULT_OBJECT_FIELD;
                     const associationValueField = self.mapping.associationValueField || DataObjectJunction.DEFAULT_VALUE_FIELD;
-                    modelDefinition = { name:adapter, title: adapter, source:adapter, type:"hidden", hidden:true, sealed:false, view:adapter, version:'1.0', fields:[
-                            { name: "id", type:"Counter", primary: true },
+                    modelDefinition = { name:adapter, title: adapter, source:adapter, type:'hidden', hidden:true, sealed:false, view:adapter, version:'1.0', fields:[
+                            { name: 'id', type:'Counter', primary: true },
                             { name: associationObjectField, indexed: true, nullable:false, type: (parentField.type === 'Counter') ? 'Integer' : parentField.type },
                             { name: associationValueField, indexed: true, nullable:false, type: (childField.type === 'Counter') ? 'Integer' : childField.type } ],
-                        "constraints": [
+                        'constraints': [
                             {
-                                "description": "The relation between two objects must be unique.",
-                                "type":"unique",
-                                "fields": [ associationObjectField, associationValueField ]
+                                'description': 'The relation between two objects must be unique.',
+                                'type':'unique',
+                                'fields': [ associationObjectField, associationValueField ]
                             }
-                        ], "privileges": self.mapping.privileges || [
+                        ], 'privileges': self.mapping.privileges || [
                             {
-                                "mask":15,
-                                "type":"global"
+                                'mask':15,
+                                'type':'global'
                             },
                             {
-                                "mask": 15,
-                                "type": "global",
-                                "account": "Administrators"
+                                'mask': 15,
+                                'type': 'global',
+                                'account': 'Administrators'
                             }
                         ]};
 
@@ -286,23 +286,6 @@ class DataObjectJunction {
             return attr.name;
         }
         return DataObjectJunction.DEFAULT_VALUE_FIELD;
-    }
-
-    /**
-     * Migrates the underlying data association adapter.
-     * @param callback - A callback function where the first argument will contain the Error object if an error occurred, or null otherwise.
-     */
-    migrate(callback) {
-        const self = this;
-        const model = this.getBaseModel();
-        model.migrate(err => {
-            if (err) {
-                return callback(err);
-            }
-            //migrate related model
-            const childModel = self.parent.context.model(self.mapping.childModel);
-            return childModel.migrate(callback);
-        });
     }
 
     /**
@@ -416,7 +399,7 @@ class DataObjectJunction {
     migrate(callback) {
         const self = this;
         //get migration model
-        const migrationModel = self.parent.context.model("Migration");
+        const migrationModel = self.parent.context.model('Migration');
         //get related model
         const relationModel = self.getBaseModel();
         migrationModel.find({ appliesTo:relationModel.source, version: relationModel.version }).first((err, result) => {

@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -9,7 +9,7 @@
 import {parsers} from './types';
 import {TraceUtils} from '@themost/common';
 import _ from 'lodash';
-import Q from "q";
+import Q from 'q';
 
 const functions = { };
 
@@ -57,10 +57,10 @@ class FunctionContext {
             let expr2eval;
             //check parameters (match[3])
             if (match[3].length===0) {
-                expr2eval = expr1.replace(/(fn:)\s?(.*?)\s?\((.*?)\)/, "(function() { return this.$2(); });");
+                expr2eval = expr1.replace(/(fn:)\s?(.*?)\s?\((.*?)\)/, '(function() { return this.$2(); });');
             }
             else {
-                expr2eval = expr1.replace(/(fn:)\s?(.*?)\s?\((.*?)\)/, "(function() { return this.$2($3); });");
+                expr2eval = expr1.replace(/(fn:)\s?(.*?)\s?\((.*?)\)/, '(function() { return this.$2($3); });');
             }
             //evaluate expression
             try {
@@ -203,10 +203,10 @@ class FunctionContext {
             try {
                 length = length || 8;
                 if (length<0) {
-                    return deferred.reject(new Error("Number sequence length must be greater than zero."));
+                    return deferred.reject(new Error('Number sequence length must be greater than zero.'));
                 }
                 if (length>255) {
-                    return deferred.reject(new Error("Number sequence length exceeds the maximum of 255 characters."));
+                    return deferred.reject(new Error('Number sequence length exceeds the maximum of 255 characters.'));
                 }
                 const times = Math.ceil(length / 10);
                 let res = '';
@@ -232,8 +232,8 @@ class FunctionContext {
         process.nextTick(() => {
             try {
                 length = length || 8;
-                const chars = "abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ";
-                let str = "";
+                const chars = 'abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ';
+                let str = '';
                 for(let i = 0; i < length; i++) {
                     str += chars.substr(_.random(0, chars.length-1),1);
                 }
@@ -255,8 +255,8 @@ class FunctionContext {
         process.nextTick(() => {
             try {
                 length = length || 8;
-                const chars = "abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ";
-                let str = "";
+                const chars = 'abcdefghkmnopqursuvwxz2456789ABCDEFHJKLMNPQURSTUVWXYZ';
+                let str = '';
                 for(let i = 0; i < length; i++) {
                     str += chars.substr(_.random(0, chars.length-1),1);
                 }

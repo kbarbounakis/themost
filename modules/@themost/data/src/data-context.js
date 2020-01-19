@@ -1,16 +1,14 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import _ from "lodash";
+import _ from 'lodash';
 import {TraceUtils} from '@themost/common';
-import {LangUtils} from '@themost/common';
 import {DataContext} from './types';
 import {DataConfigurationStrategy, DataConfiguration} from './data-configuration';
-import Symbol from 'symbol';
 const nameProperty = Symbol('name');
 
 /**
@@ -80,7 +78,7 @@ class DefaultDataContext extends DataContext {
             //otherwise load database options from configuration
             const strategy = self.getConfiguration().getStrategy(DataConfigurationStrategy);
             const adapter = _.find(strategy.adapters, x => {
-                return x["default"];
+                return x['default'];
             });
             if (_.isNil(adapter)) {
                 er = new Error('The default data adapter is missing.'); er.code = 'EADAPTER';
@@ -177,8 +175,6 @@ class DefaultDataContext extends DataContext {
         cb.call(this);
     }
 }
-
-LangUtils.inherits(DefaultDataContext, DataContext);
 
 /**
  * @classdesc Represents a data context based on a data adapter's name.

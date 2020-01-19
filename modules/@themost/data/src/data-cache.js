@@ -1,21 +1,17 @@
 /**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-///
 import _ from 'lodash';
-import {LangUtils} from "@themost/common";
-import {Args} from "@themost/common";
-import {SequentialEventEmitter} from "@themost/common";
+import {LangUtils} from '@themost/common';
+import {Args} from '@themost/common';
+import {SequentialEventEmitter} from '@themost/common';
 import {AbstractMethodError} from '@themost/common';
 import {ConfigurationStrategy} from '@themost/common';
-import Symbol from "symbol";
-import Q from 'q';
-const currentProperty = Symbol("current");
+const currentProperty = Symbol('current');
 const CACHE_ABSOLUTE_EXPIRATION = 1200;
 
 /**
@@ -27,8 +23,9 @@ const CACHE_ABSOLUTE_EXPIRATION = 1200;
  * @augments SequentialEventEmitter
  * @deprecated
  */
-class DataCache {
+class DataCache extends SequentialEventEmitter {
     constructor() {
+        super();
         // noinspection JSUnusedGlobalSymbols
         this.initialized = false;
     }
@@ -50,7 +47,7 @@ class DataCache {
                 callback();
                 return;
             }
-            const NodeCache = require( "node-cache" );
+            const NodeCache = require( 'node-cache' );
             this.rawCache = new NodeCache();
             this.initialized = true;
             callback();
@@ -243,17 +240,15 @@ class DataCache {
     }
 }
 
-LangUtils.inherits(DataCache, SequentialEventEmitter);
-
 /**
  *
  * @param {ConfigurationBase} config
  * @constructor
  *
  */
-class DataCacheStrategy {
+class DataCacheStrategy extends ConfigurationStrategy {
     constructor(config) {
-        DataCacheStrategy.super_.bind(this)(config);
+        super(config);
     }
 
     /**
@@ -312,18 +307,16 @@ class DataCacheStrategy {
     }
 }
 
-LangUtils.inherits(DataCacheStrategy, ConfigurationStrategy);
-
 /**
  *
  * @param {ConfigurationBase} config
  * @constructor
  *
  */
-class DefaultDataCacheStrategy {
+class DefaultDataCacheStrategy extends DataCacheStrategy {
     constructor(config) {
-        DefaultDataCacheStrategy.super_.bind(this)(config);
-        const NodeCache = require( "node-cache" );
+        super(config);
+        const NodeCache = require( 'node-cache' );
         let expiration = CACHE_ABSOLUTE_EXPIRATION;
         const absoluteExpiration = LangUtils.parseInt(config.getSourceAt('settings/cache/absoluteExpiration'));
         if (absoluteExpiration>0) {
@@ -344,7 +337,7 @@ class DefaultDataCacheStrategy {
     // eslint-disable-next-line no-unused-vars
     add(key, value, absoluteExpiration) {
         const self = this;
-        return Q.Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             self.rawCache.set(key, value, absoluteExpiration, err => {
                 if (err) {
                     return reject(err);
@@ -362,7 +355,7 @@ class DefaultDataCacheStrategy {
     // eslint-disable-next-line no-unused-vars
     get(key) {
         const self = this;
-        return Q.Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             self.rawCache.get(key, (err, res) => {
                 if (err) {
                     return reject(err);
@@ -380,7 +373,7 @@ class DefaultDataCacheStrategy {
     // eslint-disable-next-line no-unused-vars
     remove(key) {
         const self = this;
-        return Q.Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             self.rawCache.del(key, (err, count) => {
                 if (err) {
                     return reject(err);
@@ -396,7 +389,7 @@ class DefaultDataCacheStrategy {
      */
     clear() {
         const self = this;
-        return Q.Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             self.rawCache.flushAll((err, count) => {
                 if (err) {
                     return reject(err);
@@ -416,13 +409,13 @@ class DefaultDataCacheStrategy {
     // eslint-disable-next-line no-unused-vars
     getOrDefault(key, getFunc, absoluteExpiration) {
         const self = this;
-        return Q.Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             //try to get from cache
             self.rawCache.get(key, (err, result) => {
                 if (err) {
                     return reject(err);
                 }
-                else if (typeof result !== 'undefined' && result.hasOwnProperty(key)) {
+                else if (typeof result !== 'undefined' && Object.prototype.hasOwnProperty.call(result, key)) {
                     return resolve(result[key]);
                 }
                 else {
@@ -450,7 +443,5 @@ class DefaultDataCacheStrategy {
         });
     }
 }
-
-LangUtils.inherits(DefaultDataCacheStrategy, DataCacheStrategy);
 
 export {DataCache, DataCacheStrategy, DefaultDataCacheStrategy};

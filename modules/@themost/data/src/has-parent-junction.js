@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -186,24 +186,24 @@ class HasParentJunction extends DataQueryable {
                 if (_.isNil(baseModel)) {
                     const associationObjectField = self.mapping.associationObjectField || DataObjectJunction.DEFAULT_OBJECT_FIELD;
                     const associationValueField = self.mapping.associationValueField || DataObjectJunction.DEFAULT_VALUE_FIELD;
-                    const modelDefinition = { name:adapter, title: adapter, sealed:false, hidden:true, type:"hidden", source:adapter, view:adapter, version:'1.0', fields:[
-                            { name: "id", type:"Counter", primary: true },
+                    const modelDefinition = { name:adapter, title: adapter, sealed:false, hidden:true, type:'hidden', source:adapter, view:adapter, version:'1.0', fields:[
+                            { name: 'id', type:'Counter', primary: true },
                             { name: associationObjectField, indexed: true, nullable:false, type: (parentField.type==='Counter') ? 'Integer' : parentField.type },
                             { name: associationValueField, indexed: true, nullable:false, type: (childField.type==='Counter') ? 'Integer' : childField.type } ],
                         constraints: [
                             {
-                                description: "The relation between two objects must be unique.",
-                                type:"unique",
+                                description: 'The relation between two objects must be unique.',
+                                type:'unique',
                                 fields: [ associationObjectField, associationValueField ]
                             }
-                        ], "privileges": self.mapping.privileges || [
+                        ], 'privileges': self.mapping.privileges || [
                             {
-                                "mask":15,
-                                "type":"global"
+                                'mask':15,
+                                'type':'global'
                             },
-                            { "mask":15,
-                                "type":"global",
-                                "account": "Administrators"
+                            { 'mask':15,
+                                'type':'global',
+                                'account': 'Administrators'
                             }
                         ]};
                     conf.setModelDefinition(modelDefinition);

@@ -1,12 +1,9 @@
 /**
- * MOST Web Framework
- * A JavaScript Web Framework
- * http://themost.io
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
- * Copyright (c) 2019, THEMOST LP
- *
- * Released under the BSD3-Clause license
- * Date: 2014-07-16
+ * Use of this source code is governed by an BSD-3-Clause license that can be
+ * found in the LICENSE file at https://themost.io/license
  */
 /**
  * @param {*} any

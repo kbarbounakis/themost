@@ -9,7 +9,7 @@
 ![Snyk Vulnerabilities for npm package](https://img.shields.io/snyk/vulnerabilities/npm/@themost/data)
 
 # @themost/data
-MOST Web Framework 2.0 Codename Blueshift Data Module
+MOST Web Framework 3.0 Codename Zero Gravity Data Module
 
 License: [BSD-3-Clause](https://github.com/themost-framework/themost/blob/master/LICENSE)
 

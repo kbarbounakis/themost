@@ -1,15 +1,15 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import _ from "lodash";
+import _ from 'lodash';
 import Symbol from 'symbol';
 import {TraceUtils} from '@themost/common';
-import path from "path";
+import path from 'path';
 import pluralize from 'pluralize';
 import {LangUtils} from '@themost/common';
 import {Args} from '@themost/common';
@@ -326,8 +326,8 @@ class DataConfiguration {
       if (_.isNil(name)) {
           return DataConfiguration.getCurrent();
       }
-      Args.notString(name, "Configuration Name");
-      Args.notEmpty(name, "Configuration name");
+      Args.notString(name, 'Configuration Name');
+      Args.notEmpty(name, 'Configuration name');
         if (/^current$/i.test(name)) {
             return DataConfiguration.getCurrent();
         }
@@ -364,7 +364,7 @@ class DataConfigurationStrategy {
 
         if (!config.hasStrategy(DataCacheStrategy)) {
             //process is running under node js
-            if (typeof process !== "undefined" && process.nextTick) {
+            if (typeof process !== 'undefined' && process.nextTick) {
                 //add default cache strategy (using node-cache)
                 config.useStrategy(DataCacheStrategy, DefaultDataCacheStrategy);
             }
@@ -441,14 +441,14 @@ class DataConfigurationStrategy {
                     }
                     else {
                         //adapter type does not export a createInstance(options) function
-                        TraceUtils.log("The specified data adapter type (%s) does not have the appropriate constructor. Adapter type cannot be loaded.", x.invariantName);
+                        TraceUtils.log('The specified data adapter type (%s) does not have the appropriate constructor. Adapter type cannot be loaded.', x.invariantName);
                     }
                 }
                 catch(err) {
                     //catch error
                     TraceUtils.error(err);
                     //and log a specific error for this adapter type
-                    TraceUtils.log("The specified data adapter type (%s) cannot be instantiated. Adapter type cannot be loaded.", x.invariantName);
+                    TraceUtils.log('The specified data adapter type (%s) cannot be instantiated. Adapter type cannot be loaded.', x.invariantName);
                 }
                 if (valid) {
                     //register adapter
@@ -460,7 +460,7 @@ class DataConfigurationStrategy {
                 }
             }
             else {
-                TraceUtils.log("The specified data adapter type (%s) does not have a type defined. Adapter type cannot be loaded.", x.invariantName);
+                TraceUtils.log('The specified data adapter type (%s) does not have a type defined. Adapter type cannot be loaded.', x.invariantName);
             }
         });
 
@@ -475,8 +475,9 @@ class DataConfigurationStrategy {
                     return this[dataTypesProperty];
                 }
                 //get data types from configuration file
+                let dataTypes;
                 try {
-                    var dataTypes = require(path.join(this.getConfiguration().getConfigurationPath(), 'dataTypes.json'));
+                    dataTypes = require(path.join(this.getConfiguration().getConfigurationPath(), 'dataTypes.json'));
                     if (_.isNil(dataTypes)) {
                         TraceUtils.log('Data: Application data types are empty. The default data types will be loaded instead.');
                         dataTypes = require('./dataTypes.json');
@@ -637,17 +638,17 @@ class SchemaLoaderStrategy {
         SchemaLoaderStrategy.super_.bind(this)(config);
         this[modelsProperty] = {};
         this.setModelDefinition({
-            "name":"Migration", "title":"Data Model Migrations", "id": 14,
-            "source":"migrations", "view":"migrations", "hidden": true, "sealed":true,
-            "fields":[
-                { "name":"id", "type":"Counter", "primary":true },
-                { "name":"appliesTo", "type":"Text", "size":180, "nullable":false },
-                { "name":"model", "type":"Text", "size":120 },
-                { "name":"description", "type":"Text", "size":512},
-                { "name":"version", "type":"Text", "size":40, "nullable":false }
+            'name':'Migration', 'title':'Data Model Migrations', 'id': 14,
+            'source':'migrations', 'view':'migrations', 'hidden': true, 'sealed':true,
+            'fields':[
+                { 'name':'id', 'type':'Counter', 'primary':true },
+                { 'name':'appliesTo', 'type':'Text', 'size':180, 'nullable':false },
+                { 'name':'model', 'type':'Text', 'size':120 },
+                { 'name':'description', 'type':'Text', 'size':512},
+                { 'name':'version', 'type':'Text', 'size':40, 'nullable':false }
             ],
-            "constraints":[
-                { "type":"unique", "fields":[ "appliesTo", "version" ] }
+            'constraints':[
+                { 'type':'unique', 'fields':[ 'appliesTo', 'version' ] }
             ]
         });
         
@@ -678,11 +679,11 @@ class SchemaLoaderStrategy {
      */
     setModelDefinition(data) {
         if (_.isNil(data)) {
-            throw new Error("Invalid model definition. Expected object.")
+            throw new Error('Invalid model definition. Expected object.')
         }
         if (typeof data === 'object') {
             if (typeof data.name === 'undefined' || data.name === null) {
-                throw new Error("Invalid model definition. Expected model name.")
+                throw new Error('Invalid model definition. Expected model name.')
             }
             this[modelsProperty][data.name] = data;
         }
@@ -942,7 +943,7 @@ LangUtils.inherits(DefaultModelClassLoaderStrategy,ModelClassLoaderStrategy);
  */
 function getCurrent() {
     return DataConfiguration.getCurrent();
-};
+}
 /**
  * Sets the current data configuration
  * @param {DataConfiguration} configuration
@@ -950,7 +951,7 @@ function getCurrent() {
  */
 function setCurrent(configuration) {
     return DataConfiguration.setCurrent(configuration);
-};
+}
 
 /**
  * Gets an instance of DataConfiguration class based on the given name.
@@ -960,7 +961,7 @@ function setCurrent(configuration) {
  */
 function getNamedConfiguration(name) {
     return DataConfiguration.getNamedConfiguration(name);
-};
+}
 
 export {
     getCurrent,

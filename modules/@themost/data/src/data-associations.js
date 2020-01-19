@@ -1,15 +1,16 @@
 /**
  * MOST Web Framework 3.0 Codename Zero Gravity
- * Copyright (c) 2014-2019, THEMOST LP All rights reserved
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
-export const parseBoolean = require('./types').parsers.parseBoolean;
+import {parsers} from './types';
 import async from 'async';
 import { DataError } from '@themost/common';
 import _ from 'lodash';
+
+const parseBoolean = parsers.parseBoolean;
 
 class DataObjectAssociationListener {
     /**
@@ -26,7 +27,7 @@ class DataObjectAssociationListener {
                 const keys = Object.keys(event.target);
                 const mappings = [];
                 keys.forEach(x => {
-                    if (event.target.hasOwnProperty(x) && typeof event.target[x] === 'object' && event.target[x] !== null) {
+                    if (Object.prototype.hasOwnProperty.call(event.target, x) && typeof event.target[x] === 'object' && event.target[x] !== null) {
                         //try to find field mapping, if any
                         const mapping = event.model.inferMapping(x);
                         if (mapping && mapping.associationType === 'association' && mapping.childModel === event.model.name)
@@ -49,7 +50,7 @@ class DataObjectAssociationListener {
                             if (typeof event.target[childField] !== 'object') {
                                 return cb();
                             }
-                            if (event.target[childField].hasOwnProperty(mapping.parentField)) {
+                            if (Object.prototype.hasOwnProperty.call(event.target[childField], mapping.parentField)) {
                                 return cb();
                             }
                             //change:21-Mar 2016
@@ -109,7 +110,7 @@ class DataObjectAssociationListener {
                 const keys = Object.keys(event.target);
                 const mappings = [];
                 keys.forEach(x => {
-                    if (event.target.hasOwnProperty(x)) {
+                    if (Object.prototype.hasOwnProperty.call(event.target, x)) {
                         /**
                          * @type DataAssociationMapping
                          */

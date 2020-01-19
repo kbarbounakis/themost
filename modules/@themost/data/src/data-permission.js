@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -9,11 +9,11 @@
 import {QueryEntity} from '@themost/query';
 import {QueryUtils} from '@themost/query';
 import async from 'async';
-import {AccessDeniedError} from "@themost/common";
-import {RandomUtils} from "@themost/common";
-import {DataConfigurationStrategy} from "./data-configuration";
-import _ from "lodash";
-import {DataCacheStrategy} from "./data-cache";
+import {AccessDeniedError} from '@themost/common';
+import {RandomUtils} from '@themost/common';
+import {DataConfigurationStrategy} from './data-configuration';
+import _ from 'lodash';
+import {DataCacheStrategy} from './data-cache';
 import Q from 'q';
 /**
  * @class
@@ -236,7 +236,7 @@ class DataPermissionEventListener {
                                 event.result = true;
                                 return cb();
                             }
-                            else if (item.hasOwnProperty("account")) {
+                            else if (item.hasOwnProperty('account')) {
                                 if (accounts.findIndex(x => { return x.name === item.account })>=0) {
                                     cancel=true;
                                     event.result = true;
@@ -594,7 +594,7 @@ class DataPermissionEventListener {
                                 assigned=true;
                                 return cb(new EachSeriesCancelled());
                             }
-                            else if (item.hasOwnProperty("account")) {
+                            else if (item.hasOwnProperty('account')) {
                                 if (accounts.findIndex(x => { return x.name === item.account })>=0) {
                                     assigned=true;
                                     return cb(new EachSeriesCancelled());
@@ -766,7 +766,7 @@ function queryUser(context, username, callback) {
         if (_.isNil(users)) {
             return callback();
         }
-        users.where('name').equal(username).silent().select('id','name').expand("groups").getTypedItem().then(result => {
+        users.where('name').equal(username).silent().select('id','name').expand('groups').getTypedItem().then(result => {
             return callback(null, result);
         }).catch(err => {
             return callback(err);
@@ -807,9 +807,9 @@ function effectiveAccounts(context, callback) {
         }).then(result => {
             const arr = [];
             if (result) {
-                arr.push({ "id": result.id, "name": result.name });
+                arr.push({ 'id': result.id, 'name': result.name });
                 result.groups = result.groups || [];
-                result.groups.forEach(x => { arr.push({ "id": x.id, "name": x.name }); });
+                result.groups.forEach(x => { arr.push({ 'id': x.id, 'name': x.name }); });
             }
             if (arr.length===0)
                 arr.push({ id: null });
@@ -830,14 +830,14 @@ function effectiveAccounts(context, callback) {
             }).then(anonymous => {
                 const arr = [ ];
                 if (user) {
-                    arr.push({ "id": user.id, "name": user.name });
+                    arr.push({ 'id': user.id, 'name': user.name });
                     if (_.isArray(user.groups))
-                        user.groups.forEach(x => { arr.push({ "id": x.id, "name": x.name }); });
+                        user.groups.forEach(x => { arr.push({ 'id': x.id, 'name': x.name }); });
                 }
                 if (anonymous) {
-                    arr.push({ "id": anonymous.id, "name": "anonymous" });
+                    arr.push({ 'id': anonymous.id, 'name': 'anonymous' });
                     if (_.isArray(anonymous.groups))
-                        anonymous.groups.forEach(x => { arr.push({ "id": x.id, "name": x.name }); });
+                        anonymous.groups.forEach(x => { arr.push({ 'id': x.id, 'name': x.name }); });
                 }
                 if (arr.length===0)
                     arr.push({ id: null });

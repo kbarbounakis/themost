@@ -1,12 +1,12 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 import {sprintf} from 'sprintf';
-import _ from "lodash";
+import _ from 'lodash';
 import Q from 'q';
 import Symbol from 'symbol';
 import {DataObjectJunction} from './data-object-junction';
@@ -14,8 +14,8 @@ import {DataObjectTag} from './data-object-tag';
 import {HasManyAssociation} from './has-many-association';
 import {HasOneAssociation} from './has-one-association';
 import {HasParentJunction} from './has-parent-junction';
-import {SequentialEventEmitter} from "@themost/common";
-import {DataError} from "@themost/common";
+import {SequentialEventEmitter} from '@themost/common';
+import {DataError} from '@themost/common';
 
 const selectorsProperty = Symbol('selectors');
 const typeProperty = Symbol('type');
@@ -711,7 +711,7 @@ class DataObject extends SequentialEventEmitter {
         return Q.promise((resolve, reject) => {
             try {
                 const model = self.getModel();
-                const attr = self.getModel().attributes.find(x => { return x.name === "additionalType"; });
+                const attr = self.getModel().attributes.find(x => { return x.name === 'additionalType'; });
                 if (typeof attr === 'undefined') {
                     return resolve();
                 }

@@ -1,14 +1,14 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import _ from "lodash";
-import {DataNotFoundError} from "@themost/common";
-import async from "async";
+import _ from 'lodash';
+import {DataNotFoundError} from '@themost/common';
+import async from 'async';
 
 /**
  * @class
@@ -147,7 +147,7 @@ class DataStateValidatorListener {
                     }
                     // otherwise throw error not found
                     return callback(_.assign(new DataNotFoundError('The target object cannot be found or is inaccessible.',null, model.name), {
-                        "key": target[model.primaryKey]
+                        'key': target[model.primaryKey]
                     }));
                 }).catch(err => {
                     return callback(err);
@@ -232,7 +232,7 @@ function mapKey_(obj, callback) {
                             const parentConstraint = parentModel.constraintCollection.find(x => { return x.type==='unique' });
                             if (parentConstraint) {
                                 parentConstraint.fields.forEach(x => {
-                                    fnAppendQuery(attr + "/" + x, parentObj[x]);
+                                    fnAppendQuery(attr + '/' + x, parentObj[x]);
                                 });
                             }
                             else {

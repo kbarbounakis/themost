@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -12,7 +12,7 @@ import {QueryField} from '@themost/query';
 import _ from 'lodash';
 import Q from 'q';
 import {DataAssociationMapping} from './types';
-import {DataObjectJunction} from "./data-object-junction";
+import {DataObjectJunction} from './data-object-junction';
 import {DataQueryable} from './data-queryable';
 
 /**
@@ -156,45 +156,45 @@ class DataObjectTag {
                     let objectFieldType = parentModel.getAttribute(self.mapping.parentField).type;
                     if (objectFieldType === 'Counter') { objectFieldType = 'Integer'; }
                     definition = {
-                        "name": self.mapping.associationAdapter,
-                        "hidden": true,
-                        "source": self.mapping.associationAdapter,
-                        "view": self.mapping.associationAdapter,
-                        "version": "1.0",
-                        "fields": [
+                        'name': self.mapping.associationAdapter,
+                        'hidden': true,
+                        'source': self.mapping.associationAdapter,
+                        'view': self.mapping.associationAdapter,
+                        'version': '1.0',
+                        'fields': [
                             {
-                                "name": "id",
-                                "type": "Counter",
-                                "nullable": false,
-                                "primary": true
+                                'name': 'id',
+                                'type': 'Counter',
+                                'nullable': false,
+                                'primary': true
                             },
                             {
-                                "name": associationObjectField,
-                                "type": objectFieldType,
-                                "nullable": false,
-                                "many": false,
-                                "indexed": true
+                                'name': associationObjectField,
+                                'type': objectFieldType,
+                                'nullable': false,
+                                'many': false,
+                                'indexed': true
                             },
                             {
-                                "name": associationValueField,
-                                "type": refersToType,
-                                "nullable": false,
-                                "many": false,
-                                "indexed": true
+                                'name': associationValueField,
+                                'type': refersToType,
+                                'nullable': false,
+                                'many': false,
+                                'indexed': true
                             }
                         ],
-                        "constraints": [
-                            { "type":"unique", "fields": [ associationObjectField, associationValueField ] }
+                        'constraints': [
+                            { 'type':'unique', 'fields': [ associationObjectField, associationValueField ] }
                         ],
-                        "privileges": self.mapping.privileges || [
+                        'privileges': self.mapping.privileges || [
                             {
-                                "mask": 15,
-                                "type": "global"
+                                'mask': 15,
+                                'type': 'global'
                             },
                             {
-                                "mask": 15,
-                                "type": "global",
-                                "account": "Administrators"
+                                'mask': 15,
+                                'type': 'global',
+                                'account': 'Administrators'
                             }
                         ]
                     };
@@ -400,8 +400,8 @@ class DataObjectTag {
 
 LangUtils.inherits(DataObjectTag, DataQueryable);
 
-DataObjectTag.DEFAULT_OBJECT_FIELD = "object";
-DataObjectTag.DEFAULT_VALUE_FIELD = "value";
+DataObjectTag.DEFAULT_OBJECT_FIELD = 'object';
+DataObjectTag.DEFAULT_VALUE_FIELD = 'value';
 
 /**
  * @this DataObjectTag
@@ -454,7 +454,7 @@ function clear_(callback) {
         if (err) {
             return callback(err);
         }
-        self.getBaseModel().silent(self.$silent).where(self.getObjectField()).equal(self.parent[self.mapping.parentField]).select("id").getAllItems().then(result => {
+        self.getBaseModel().silent(self.$silent).where(self.getObjectField()).equal(self.parent[self.mapping.parentField]).select('id').getAllItems().then(result => {
             if (result.length===0) { return callback(); }
             return self.getBaseModel().remove(result).then(() => {
                return callback();

@@ -1,6 +1,5 @@
 import {DataQueryable} from "./data-queryable";
 import {DataContext} from "./types";
-import {DataModel} from "./data-model";
 
 export declare class DataObject {
     context:DataContext;
@@ -12,8 +11,8 @@ export declare class DataObject {
     query(attr:string):DataQueryable;
     save(context?: DataContext, callback?:(err:Error) => void):Promise<any>|void;
     remove(context?: DataContext, callback?:(err:Error) => void):Promise<any>|void;
-    getModel(): DataModel;
-    getAdditionalModel():Promise<DataModel>;
+    getModel(): any;
+    getAdditionalModel():Promise<any>;
     getAdditionalObject():Promise<DataObject|any>;
     attr(name: string, callback?:(err?: Error,res?: any) => void);
     property(name: string);

@@ -1,13 +1,12 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 import _ from 'lodash';
-import {SequentialEventEmitter} from "@themost/common";
-import {LangUtils} from "@themost/common";
+import {SequentialEventEmitter} from '@themost/common';
 import {AbstractClassError} from '@themost/common';
 import {AbstractMethodError} from '@themost/common';
 
@@ -307,9 +306,9 @@ function DataEventArgs() {
  * @constructor
  * @abstract
  */
-class DataContext {
+class DataContext extends SequentialEventEmitter {
     constructor() {
-        DataContext.super_.bind(this)();
+        super();
         //throw abstract class error
         if (this.constructor === DataContext.prototype.constructor) {
             throw new AbstractClassError();
@@ -359,8 +358,6 @@ class DataContext {
         throw new AbstractMethodError();
     }
 }
-
-LangUtils.inherits(DataContext, SequentialEventEmitter);
 
 /**
  * @classdesc Represents a data model's listener
@@ -714,22 +711,22 @@ const PrivilegeType = {
      * Self Privilege (self).
      * @type {string}
      */
-    Self: "self",
+    Self: 'self',
     /**
      * Parent Privilege (parent)
      * @type {string}
      */
-    Parent: "parent",
+    Parent: 'parent',
     /**
      * Item Privilege (child)
      * @type {string}
      */
-    Item: "item",
+    Item: 'item',
     /**
      * Global Privilege (global)
      * @type {string}
      */
-    Global: "global"
+    Global: 'global'
 };
 
 /**

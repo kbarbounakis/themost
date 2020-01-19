@@ -1,15 +1,15 @@
 
 /**
  * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
 import {DataModel} from "./data-model";
 import {DataObject} from "./data-object";
-import {ConfigurationBase, SequentialEventEmitter} from "../common";
+import {ConfigurationBase, SequentialEventEmitter} from "@themost/common";
 
 export declare function DataAdapterCallback(err?:Error, result?:any);
 
@@ -73,29 +73,12 @@ export declare class DataAdapter {
 }
 
 export declare class DataContext extends SequentialEventEmitter {
-    /**
-     *
-     * @param {string} name
-     * @returns {DataModel}
-     */
+    
     model(name:string):DataModel
-
-    /**
-     *
-     */
     db:DataAdapter;
-
-    /**
-     *
-     * @returns {ConfigurationBase}
-     */
     getConfiguration():ConfigurationBase;
+    finalize(callback?:(err?: Error) => void);
 
-    /**
-     *
-     * @param {(err?: Error) => void} callback
-     */
-    finalize(callback?:(err?:Error) => void);
 }
 
 export declare class DataContextEmitter {

@@ -1,6 +1,6 @@
 /**
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
+ * MOST Web Framework 3.0 Codename Zero Gravity
+ * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
@@ -11,10 +11,10 @@ import _ from 'lodash';
 import {QueryUtils} from '@themost/query';
 import {QueryField} from '@themost/query';
 import {QueryFieldRef} from '@themost/query';
-import {NotNullError} from "@themost/common";
-import {UniqueConstraintError} from "@themost/common";
-import {TraceUtils} from "@themost/common";
-import {TextUtils} from "@themost/common";
+import {NotNullError} from '@themost/common';
+import {UniqueConstraintError} from '@themost/common';
+import {TraceUtils} from '@themost/common';
+import {TextUtils} from '@themost/common';
 /**
  * @classdesc Represents an event listener for validating not nullable fields. This listener is automatically  registered in all data models.
  * @class
@@ -139,7 +139,7 @@ class UniqueConstraintListener {
                                 er = new UniqueConstraintError(constraint.description, null, event.model.name);
                             }
                             else {
-                                er = new UniqueConstraintError("Object already exists. A unique constraint violated.", null, event.model.name);
+                                er = new UniqueConstraintError('Object already exists. A unique constraint violated.', null, event.model.name);
                             }
                             TraceUtils.debug(er);
                             return cb(er);
@@ -369,7 +369,7 @@ class DataCachingListener {
                 dataCache = event.emitter.data('cache');
             }
             // if caching is enabled and cache attribute is defined
-            if (caching && typeof dataCache === "boolean" && cache === false) {
+            if (caching && typeof dataCache === 'boolean' && cache === false) {
                 return callback();
             }
             //validate conditional caching
@@ -461,7 +461,7 @@ class DataCachingListener {
                 dataCache = event.emitter.data('cache');
             }
             // if caching is enabled and cache attribute is defined
-            if (caching && typeof dataCache === "boolean" && cache === false) {
+            if (caching && typeof dataCache === 'boolean' && cache === false) {
                 return callback();
             }
             //validate conditional caching
