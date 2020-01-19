@@ -2,51 +2,10 @@ import sprintf from 'sprintf';
 import _ from 'lodash';
 import { TraceUtils } from '@themost/common';
 import { TextUtils } from '@themost/common';
+import { DataCacheStrategy } from './DataCacheStrategy';
 /**
  * @classdesc Represents a data caching listener which is going to be used while executing queries against
  * data models where data caching is enabled. This listener is registered by default.
- <p>
-      Data caching may be disabled when <a href="DataModel.html">DataModel</a>.caching property is set to 'none'. This is the default behaviour of a data model.
- </p>
- <pre class="prettyprint"><code>
- {
-     "name": "Order", ... , "caching":"none"
-     ...
- }
- </code></pre>
- <p>
- Data caching may be used when <a href="DataModel.html">DataModel</a>.caching property is set to 'always'.
- </p>
- <pre class="prettyprint"><code>
- {
-     "name": "OrderStatus", ... , "caching":"always"
-     ...
- }
- </code></pre>
- <p>
- Data caching may be conditionally enabled when <a href="DataModel.html">DataModel</a>.caching property is set to 'conditional'.
- </p>
- <pre class="prettyprint"><code>
- {
-     "name": "Product", ... , "caching":"conditional"
-     ...
- }
- </code></pre>
- <p>
- In this case, data caching will be used when an instance of <a href="DataQueryable.html">DataQueryable</a> class requests data with cache equal to true:
- </p>
- <pre class="prettyprint"><code>
-    context.model('Product')
-            .where('category').is('Laptops')
-            .cache(true)
-            .orderBy('name')
-            .list().then(function(result) {
-                done(null, result);
-            }).catch(function(err) {
-                done(err);
-            });
- </code></pre>
- * @class
  * @constructor
  */
 class DataCachingListener {
@@ -85,7 +44,7 @@ class DataCachingListener {
             /**
              * @type {DataCacheStrategy}
              */
-            var cache = event.model.context.getConfiguration().getStrategy(DataCacheStrategy);
+            let cache = event.model.context.getConfiguration().getStrategy(DataCacheStrategy);
             if (typeof cache === 'undefined' || cache === null) {
                 return callback();
             }
@@ -177,7 +136,7 @@ class DataCachingListener {
             /**
              * @type {DataCacheStrategy}
              */
-            var cache = event.model.context.getConfiguration().getStrategy(DataCacheStrategy);
+            let cache = event.model.context.getConfiguration().getStrategy(DataCacheStrategy);
             if (typeof cache === 'undefined' || cache === null) {
                 return callback();
             }

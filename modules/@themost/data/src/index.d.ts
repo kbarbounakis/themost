@@ -1,5 +1,4 @@
 /**
- * @license
  * MOST Web Framework 3.0 Codename Zero Gravity
  * Copyright (c) 2014-2020, THEMOST LP All rights reserved
  *
@@ -20,6 +19,7 @@ export * from './DataQueryable';
 export * from './DataObject';
 export * from './DefaultDataContext';
 export * from './FunctionContext';
+export * from './DataCacheStrategy';
 export * from './DataCache';
 export * from './DataValidator';
 export * from './odata';
@@ -38,3 +38,4 @@ export * from './DataModelSeedListener';
 export * from './UniqueConstraintListener';
 export * from './NotNullConstraintListener';
 export * from './DataObjectAssociationListener';
+export * from './PreviousStateListener';
