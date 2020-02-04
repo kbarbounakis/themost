@@ -11,7 +11,7 @@ import async from 'async';
 import {AccessDeniedError} from '@themost/common';
 import {DataConfigurationStrategy} from './DataConfiguration';
 import _ from 'lodash';
-import {DataCacheStrategy} from './DataCache';
+import {DataCacheStrategy} from './DataCacheStrategy';
 import Q from 'q';
 /**
  * @class

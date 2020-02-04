@@ -15,7 +15,7 @@ import {ConfigurationStrategy} from '@themost/common';
 import {PathUtils} from '@themost/common';
 import {RandomUtils} from '@themost/common';
 import {AbstractMethodError} from '@themost/common';
-import {DataCacheStrategy} from './DataCache';
+import {DataCacheStrategy} from './DataCacheStrategy';
 import {DefaultDataCacheStrategy} from './DataCache';
 
 const modelsProperty = Symbol('models');

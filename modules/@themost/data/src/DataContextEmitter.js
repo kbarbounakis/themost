@@ -17,3 +17,4 @@ class DataContextEmitter {
         throw new AbstractMethodError();
     }
 }
+export {DataContextEmitter};

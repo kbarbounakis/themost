@@ -21,6 +21,8 @@ export * from './DefaultDataContext';
 export * from './FunctionContext';
 export * from './DataCacheStrategy';
 export * from './DataCache';
+export * from './ModuleLoader';
+export * from './DefaultModuleLoader';
 export * from './DataValidator';
 export * from './odata';
 export * from './DataPermissionEventListener';

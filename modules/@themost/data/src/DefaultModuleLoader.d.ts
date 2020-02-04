@@ -5,7 +5,9 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-export declare abstract class ModuleLoader {
-    abstract require(modulePath: string): any; 
+import { ModuleLoader } from "./ModuleLoader";
+export declare class DefaultModuleLoader extends ModuleLoader {
+    constructor(executionPath: string);
+    getExecutionPath(): string;
+    require(modulePath: string): any;
 }
-
