@@ -6,7 +6,7 @@ import autoExternal from 'rollup-plugin-auto-external';
 import dts from "rollup-plugin-dts";
 
 const dist = './dist/';
-const name = 'themost_common';
+const name = 'index';
 const production = !process.env.ROLLUP_WATCH;
 
 module.exports = [{

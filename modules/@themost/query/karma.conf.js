@@ -89,6 +89,9 @@ module.exports = function (config) {
                         loader: 'babel-loader'
                     }
                 ]
+            },
+            node: {
+                fs: 'empty' // this fixes 'can not resolve module fs'
             }
         },
         preprocessors: {

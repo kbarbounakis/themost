@@ -1,9 +1,8 @@
-import { QueryCollection } from './QueryCollection';
 import { QueryExpression } from './QueryExpression';
 // eslint-disable-next-line no-unused-vars
 import {add, subtract, multiply, divide, bitAnd } from 'mathjs';
-import { MemoryAdapter } from './TestMemoryAdapter.spec';
-import {initDatabase} from './TestMemoryDatabase.spec';
+import { MemoryAdapter } from './TestMemoryAdapter';
+import {initDatabase} from './TestMemoryDatabase';
 
 describe('Arithmetic Functions', () => {
     beforeAll(async () => {
@@ -137,7 +136,8 @@ describe('Arithmetic Functions', () => {
         });
     });
 
-    fit('should use bitwise and operator', async () => {
+    it('should use bitwise and operator', async () => {
+
         let a = new QueryExpression().select( x => {
             x.ProductID,
             x.ProductName,

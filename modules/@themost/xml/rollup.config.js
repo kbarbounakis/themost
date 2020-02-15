@@ -6,7 +6,7 @@ import autoExternal from 'rollup-plugin-auto-external';
 import dts from "rollup-plugin-dts";
 
 const dist = './dist/';
-const name = 'themost_query';
+const name = 'index';
 
 module.exports = [{
     input: './src/index.js',
@@ -20,7 +20,7 @@ module.exports = [{
             format: 'esm'
         },
         {
-            name: '@themost/query',
+            name: '@themost/xml',
             file: `${dist}${name}.js`,
             format: 'umd'
         }

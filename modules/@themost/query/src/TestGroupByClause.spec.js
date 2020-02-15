@@ -1,8 +1,8 @@
 import { QueryCollection } from './QueryCollection';
 import { QueryExpression } from './QueryExpression';
 // eslint-disable-next-line no-unused-vars
-import { MemoryAdapter } from './TestMemoryAdapter.spec';
-import {initDatabase} from './TestMemoryDatabase.spec';
+import { MemoryAdapter } from './TestMemoryAdapter';
+import {initDatabase} from './TestMemoryDatabase';
 
 describe('Aggregate Functions', () => {
     beforeAll(async () => {

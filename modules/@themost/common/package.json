@@ -2,7 +2,8 @@
   "name": "@themost/common",
   "version": "3.0.1-dev.1",
   "description": "MOST Web Framework Codename Zero Gravity Common",
-  "main": "dist/themost_common.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "rollup -c ./rollup.config.js -m",
     "watch": "rollup -c ./rollup.config.js -m -w",

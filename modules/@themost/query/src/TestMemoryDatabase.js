@@ -1,4 +1,4 @@
-import { MemoryAdapter } from './TestMemoryAdapter.spec';
+import { MemoryAdapter } from './TestMemoryAdapter';
 import { QueryExpression } from './QueryExpression';
 import Customers from './test/config/models/Customer.json';
 import Categories from './test/config/models/Category.json';

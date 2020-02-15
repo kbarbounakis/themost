@@ -9,7 +9,7 @@ import initSqlJs from 'sql.js';
 import {SqlUtils} from './SqlUtils';
 import {QueryExpression} from './QueryExpression';
 import {QueryField} from './QueryField';
-import {MemoryFormatter} from './TestMemoryFormatter.spec';
+import {MemoryFormatter} from './TestMemoryFormatter';
 import {TraceUtils} from '@themost/common';
 
 const INSTANCE_DB = new Map();

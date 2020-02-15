@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 module.exports = function (api) {
     api.cache(false);
     return {
@@ -10,9 +11,7 @@ module.exports = function (api) {
                         "node": "6.9.0",
                         "browsers": "> 0.25%, not dead"
                     },
-                    "modules": false,
-                    "useBuiltIns": "usage",
-                    "corejs": 2
+                    "modules": false
                 }
             ]
         ],

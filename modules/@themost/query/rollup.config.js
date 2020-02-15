@@ -3,10 +3,10 @@ import rollupResolve from 'rollup-plugin-node-resolve';
 import rollupCommon from 'rollup-plugin-commonjs';
 // import rollupSourceMaps from 'rollup-plugin-sourcemaps';
 import autoExternal from 'rollup-plugin-auto-external';
-import dts from "rollup-plugin-dts";
+import dts from 'rollup-plugin-dts';
 
 const dist = './dist/';
-const name = 'themost_xml';
+const name = 'index';
 
 module.exports = [{
     input: './src/index.js',
@@ -20,7 +20,7 @@ module.exports = [{
             format: 'esm'
         },
         {
-            name: '@themost/xml',
+            name: '@themost/query',
             file: `${dist}${name}.js`,
             format: 'umd'
         }

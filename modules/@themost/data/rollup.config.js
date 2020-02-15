@@ -6,7 +6,7 @@ import autoExternal from 'rollup-plugin-auto-external';
 import dts from 'rollup-plugin-dts';
 
 const dist = './dist/';
-const name = 'themost_data';
+const name = 'index';
 
 module.exports = [{
     input: './src/index.js',
