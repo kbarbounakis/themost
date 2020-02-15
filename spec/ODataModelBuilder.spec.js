@@ -1,5 +1,6 @@
 import {getApplication} from '@themost/test';
 import {ODataModelBuilder} from '@themost/data';
+import {ExpressDataApplication} from '@themost/express';
 describe('ODataModelBuilder', ()=> {
     let app;
     beforeAll(() => {
@@ -9,7 +10,7 @@ describe('ODataModelBuilder', ()=> {
         /**
          * @type {IApplication}
          */
-        const application = app.get('ExpressDataApplication');
+        const application = app.get(ExpressDataApplication.name);
         expect(application).toBeTruthy();
         // noinspection JSValidateTypes
         /**

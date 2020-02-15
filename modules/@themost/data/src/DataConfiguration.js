@@ -17,6 +17,7 @@ import {RandomUtils} from '@themost/common';
 import {AbstractMethodError} from '@themost/common';
 import {DataCacheStrategy} from './DataCacheStrategy';
 import {DefaultDataCacheStrategy} from './DataCache';
+import {DataObject} from './DataObject';
 
 const modelsProperty = Symbol('models');
 const modelPathProperty = Symbol('modelPath');
@@ -344,7 +345,7 @@ class DataConfiguration extends ConfigurationBase {
  * @param {ConfigurationBase} config
  * @augments {ConfigurationStrategy}
  */
-class DataConfigurationStrategy extends DataConfigurationStrategy {
+class DataConfigurationStrategy extends ConfigurationStrategy {
     constructor(config) {
 
         super(config);
@@ -475,11 +476,11 @@ class DataConfigurationStrategy extends DataConfigurationStrategy {
                     dataTypes = require(path.join(this.getConfiguration().getConfigurationPath(), 'dataTypes.json'));
                     if (_.isNil(dataTypes)) {
                         TraceUtils.log('Data: Application data types are empty. The default data types will be loaded instead.');
-                        dataTypes = require('./dataTypes.json');
+                        dataTypes = require('./resources/dataTypes.json');
                     }
                     else {
                         //append default data types which are not defined in application data types
-                        const defaultDataTypes = require('./dataTypes.json');
+                        const defaultDataTypes = require('./resources/dataTypes.json');
                         //enumerate default data types and replace or append application specific data types
                         _.forEach(_.keys(defaultDataTypes), key => {
                             if (dataTypes.hasOwnProperty(key)) {
@@ -509,7 +510,7 @@ class DataConfigurationStrategy extends DataConfigurationStrategy {
                         TraceUtils.log('Data: An error occurred while loading application data types.');
                         throw err;
                     }
-                    dataTypes = require('./dataTypes.json');
+                    dataTypes = require('./resources/dataTypes.json');
                 }
                 this[dataTypesProperty] = dataTypes;
                 return this[dataTypesProperty];
@@ -732,7 +733,7 @@ class DefaultSchemaLoaderStrategy extends SchemaLoaderStrategy {
      * @returns {*}
      */
     getModelDefinition(name) {
-        const getModelDefinitionSuper = DefaultSchemaLoaderStrategy.super_.prototype.getModelDefinition;
+        const getModelDefinitionSuper = super.getModelDefinition;
         let i;
         if (typeof name !== 'string')
             return;
@@ -898,7 +899,7 @@ class DefaultModelClassLoaderStrategy extends ModelClassLoaderStrategy {
                             if (_.isNil(model['inherits'])) {
                                 if (_.isNil(model['implements'])) {
                                     //use default DataObject class
-                                    modelDefinition[dataObjectClassProperty] = DataObjectClass = interopRequireDefault('./DataObject').DataObject;
+                                    modelDefinition[dataObjectClassProperty] = DataObjectClass = DataObject;
                                 }
                                 else {
                                     //use implemented data model class

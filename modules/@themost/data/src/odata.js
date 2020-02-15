@@ -5,16 +5,16 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {LangUtils} from '@themost/common';
-import {sprintf} from 'sprintf';
 import Q from 'q';
 import pluralize from 'pluralize';
+import {Args} from '@themost/common';
 import _ from 'lodash';
 import moment from 'moment';
 const parseBoolean = require('./types').parsers.parseBoolean;
 import {DataModel} from './DataModel';
 import {DataContext} from './DataContext';
 import {XDocument} from '@themost/xml';
+import {hasOwnProperty} from './has-own-property';
 // noinspection JSUnusedLocalSymbols
 const entityTypesProperty = Symbol('entityTypes');
 // noinspection JSUnusedLocalSymbols
@@ -30,120 +30,6 @@ import {SchemaLoaderStrategy} from './DataConfiguration';
 import {DefaultSchemaLoaderStrategy} from './DataConfiguration';
 import {instanceOf} from './instance-of';
 
-class Args {
-    /**
-     * Checks the expression and throws an exception if the condition is not met.
-     * @param {*} expr
-     * @param {string} message
-     */
-    static check(expr, message) {
-        Args.notNull(expr,'Expression');
-        if (typeof expr === 'function') {
-            expr.call()
-        }
-        let res;
-        if (typeof expr === 'function') {
-            res = !(expr.call());
-        }
-        else {
-            res = (!expr);
-        }
-        if (res) {
-            const err = new Error(message);
-            err.code = 'ECHECK';
-            throw err;
-        }
-    }
-
-    /**
-     *
-     * @param {*} arg
-     * @param {string} name
-     */
-    static notNull(arg, name) {
-        if (typeof arg === 'undefined' || arg === null) {
-            const err = new Error(name + ' may not be null or undefined');
-            err.code = 'ENULL';
-            throw err;
-        }
-    }
-
-    /**
-     * @param {*} arg
-     * @param {string} name
-     */
-    static notString(arg, name) {
-        if (typeof arg !== 'string') {
-            const err = new Error(name + ' must be a string');
-            err.code = 'EARG';
-            throw err;
-        }
-    }
-
-    /**
-     * @param {*} arg
-     * @param {string} name
-     */
-    static notFunction(arg, name) {
-        if (typeof arg !== 'function') {
-            const err = new Error(name + ' must be a function');
-            err.code = 'EARG';
-            throw err;
-        }
-    }
-
-    /**
-     * @param {*} arg
-     * @param {string} name
-     */
-    static notNumber(arg, name) {
-        if (typeof arg !== 'string') {
-            const err = new Error(name + ' must be number');
-            err.code = 'EARG';
-            throw err;
-        }
-    }
-
-    /**
-     * @param {string|*} arg
-     * @param {string} name
-     */
-    static notEmpty(arg, name) {
-        Args.notNull(arg,name);
-        Args.notString(arg,name);
-        if (arg.length === 0) {
-            const err = new Error(name + ' may not be empty');
-            err.code = 'EEMPTY';
-            return err;
-        }
-    }
-
-    /**
-     * @param {number|*} arg
-     * @param {string} name
-     */
-    static notNegative(arg, name) {
-        Args.notNumber(arg,name);
-        if (arg<0) {
-            const err = new Error(name + ' may not be negative');
-            err.code = 'ENEG';
-            return err;
-        }
-    }
-
-    /**
-     * @param {number|*} arg
-     * @param {string} name
-     */
-    static positive(arg, name) {
-        Args.notNumber(arg,name);
-        if (arg<=0) {
-            const err = new Error(name + ' may not be negative or zero');
-            err.code = 'EPOS';
-            return err;
-        }
-    }
-}
 
 /**
  * @enum
@@ -289,32 +175,29 @@ class ProcedureConfiguration {
     }
 }
 
-/**
- * @class
- * @constructor
- * @param {string} name
- * @augments ProcedureConfiguration
- * @extends ProcedureConfiguration
- */
-function ActionConfiguration(name) {
-    ActionConfiguration.super_.bind(this)(name);
-    // noinspection JSUnusedGlobalSymbols
-    this.isBound = false;
+class ActionConfiguration extends ProcedureConfiguration {
+    /**
+     * @constructor
+     * @param {string} name 
+     */
+    constructor(name) {
+        super(name);
+        // noinspection JSUnusedGlobalSymbols
+        this.isBound = false;
+    }
 }
-LangUtils.inherits(ActionConfiguration, ProcedureConfiguration);
 
-/**
- * @class
- * @constructor
- * @param {string} name
- * @augments ProcedureConfiguration
- */
-function FunctionConfiguration(name) {
-    FunctionConfiguration.super_.bind(this)(name);
-    // noinspection JSUnusedGlobalSymbols
-    this.isBound = false;
+class FunctionConfiguration extends ProcedureConfiguration {
+    /**
+     * @constructor
+     * @param {string} name 
+     */
+    constructor(name) {
+        super(name);
+        // noinspection JSUnusedGlobalSymbols
+        this.isBound = false;
+    }
 }
-LangUtils.inherits(FunctionConfiguration, ProcedureConfiguration);
 
 /**
  * @class
@@ -589,7 +472,7 @@ class EntityTypeConfiguration {
 
         const p = {
             'name':name,
-            'type': (multiplicity==='Many') ? sprintf('Collection(%s)', type) : type
+            'type': (multiplicity==='Many') ? `Collection(${type})` : type
         };
         if ((multiplicity===EdmMultiplicity.ZeroOrOne) || (multiplicity===EdmMultiplicity.Many)) {
             p.nullable = true;
@@ -756,10 +639,10 @@ class EntityTypeConfiguration {
             }
         }
         //search for total property for backward compatibility issues
-        if (any.hasOwnProperty('total') && /^\+?\d+$/.test(any['total'])) {
+        if (hasOwnProperty(any,'total') && /^\+?\d+$/.test(any['total'])) {
             result['@odata.count'] = parseInt(any['total']);
         }
-        if (any.hasOwnProperty('count') && /^\+?\d+$/.test(any['count'])) {
+        if (hasOwnProperty(any,'count') && /^\+?\d+$/.test(any['count'])) {
             result['@odata.count'] = parseInt(any['count']);
         }
         result['value'] = [];
@@ -1061,13 +944,13 @@ class EntitySetConfiguration {
             }
         }
         //search for total property for backward compatibility issues
-        if (any.hasOwnProperty('total') && /^\+?\d+$/.test(any['total'])) {
+        if (hasOwnProperty(any,'total') && /^\+?\d+$/.test(any['total'])) {
             result['@odata.count'] = parseInt(any['total']);
         }
-        else if (any.hasOwnProperty('count') && /^\+?\d+$/.test(any['count'])) {
+        else if (hasOwnProperty(any,'count') && /^\+?\d+$/.test(any['count'])) {
             result['@odata.count'] = parseInt(any['count']);
         }
-        if (any.hasOwnProperty('skip') && /^\+?\d+$/.test(any['skip'])) {
+        if (hasOwnProperty(any,'skip') && /^\+?\d+$/.test(any['skip'])) {
             result['@odata.skip'] = parseInt(any['skip']);
         }
         result['value'] = [];
@@ -1086,20 +969,18 @@ class EntitySetConfiguration {
 }
 
 
-/**
- * @class
- * @param {*} builder
- * @param {string} entityType
- * @param {string} name
- * @constructor
- * @augments EntitySetConfiguration
- * @extends EntitySetConfiguration
- */
-function SingletonConfiguration(builder, entityType, name) {
-    SingletonConfiguration.super_.bind(this)(builder, entityType, name);
-    this.kind = EntitySetKind.Singleton;
+class SingletonConfiguration extends EntitySetConfiguration {
+    /**
+     * @param {*} builder
+     * @param {string} entityType
+     * @param {string} name
+     * @constructor
+     */
+    constructor(builder, entityType, name) {
+        super(builder, entityType, name);
+        this.kind = EntitySetKind.Singleton;
+    }
 }
-LangUtils.inherits(SingletonConfiguration, EntitySetConfiguration);
 
 /**
  * Converts schema configuration to an edm document
@@ -1155,7 +1036,7 @@ function schemaToEdmDocument(schema) {
                     let returnType = action.returnType;
                     if (action.returnCollectionType) {
                         returnType = action.returnCollectionType;
-                        returnTypeElement.setAttribute('Type', sprintf('Collection(%s)', returnType));
+                        returnTypeElement.setAttribute('Type', `Collection(${returnType})`);
                     }
                     else {
                         returnTypeElement.setAttribute('Type', returnType);
@@ -1190,7 +1071,7 @@ function schemaToEdmDocument(schema) {
                     let returnType = func.returnType;
                     if (func.returnCollectionType) {
                         returnType = func.returnCollectionType;
-                        returnTypeElement.setAttribute('Type', sprintf('Collection(%s)', returnType));
+                        returnTypeElement.setAttribute('Type', `Collection(${returnType})`);
                     }
                     else {
                         returnTypeElement.setAttribute('Type', returnType);
@@ -1489,7 +1370,7 @@ class ODataModelBuilder {
      * @returns {boolean}
      */
     hasEntity(name) {
-        return this[entityTypesProperty].hasOwnProperty(name);
+        return hasOwnProperty(this[entityTypesProperty], name);
     }
 
     /**
@@ -1645,7 +1526,7 @@ class ODataModelBuilder {
             const result = {};
             _.forEach(_.keys(instance), key => {
                 if (ignoredProperty.indexOf(key)<0) {
-                    if (entityProperty.hasOwnProperty(key)) {
+                    if (hasOwnProperty(entityProperty, key)) {
                         const p = entityProperty[key];
                         if (p.type === EdmType.EdmBoolean) {
                             result[key] = parseBoolean(instance[key]);
@@ -1664,7 +1545,7 @@ class ODataModelBuilder {
                             result[key] = instance[key];
                         }
                     }
-                    else if (entityNavigationProperty.hasOwnProperty(key)) {
+                    else if (hasOwnProperty(entityNavigationProperty, key)) {
                         if (_.isObject(instance[key])) {
                             const match = /^Collection\((.*?)\)$/.exec(entityNavigationProperty[key].type);
                             const entityType = match ? match[1] : entityNavigationProperty[key].type;
@@ -1717,9 +1598,9 @@ class ODataModelBuilder {
  * @augments DataContext
  * @extends DataContext
  */
-class EntityDataContext {
+class EntityDataContext extends DataContext {
     constructor(configuration) {
-        EntityDataContext.super_.bind(this)();
+        super();
         /**
          * @returns {ConfigurationBase}
          */
@@ -1730,7 +1611,7 @@ class EntityDataContext {
 
     model(name) {
         const strategy = this.getConfiguration().getStrategy(DataConfigurationStrategy);
-        if (strategy.dataTypes.hasOwnProperty(name)) {
+        if (hasOwnProperty(strategy.dataTypes, name)) {
             return;
         }
         const definition = strategy.model(name);
@@ -1743,19 +1624,13 @@ class EntityDataContext {
     }
 }
 
-LangUtils.inherits(EntityDataContext, DataContext);
 
-/**
- * @class
- * @param {DataConfiguration} configuration
- * @augments ODataModelBuilder
- * @extends ODataModelBuilder
- */
-class ODataConventionModelBuilder {
+class ODataConventionModelBuilder extends ODataModelBuilder {
+    /**
+     * @param {DataConfiguration} configuration
+     */
     constructor(configuration) {
-
-        ODataConventionModelBuilder.super_.bind(this)(configuration);
-
+        super(configuration);
     }
 
     /**
@@ -1767,7 +1642,7 @@ class ODataConventionModelBuilder {
     addEntitySet(entityType, name) {
         const self = this;
         // noinspection JSPotentiallyInvalidConstructorUsage
-        const superAddEntitySet = ODataConventionModelBuilder.super_.prototype.addEntitySet;
+        const superAddEntitySet = super.addEntitySet;
         /**
          * @type {EntityTypeConfiguration}
          */
@@ -1823,8 +1698,8 @@ class ODataConventionModelBuilder {
                         //find data type
                         const dataType = strategy.dataTypes[x.type];
                         //add property
-                        const edmType = _.isObject(dataType) ? (dataType.hasOwnProperty('edmtype') ? dataType['edmtype']: 'Edm.' + x.type) : x.type;
-                        modelEntityType.addProperty(name, edmType, x.hasOwnProperty('nullable') ? x.nullable : true);
+                        const edmType = _.isObject(dataType) ? (hasOwnProperty(dataType, 'edmtype') ? dataType['edmtype']: 'Edm.' + x.type) : x.type;
+                        modelEntityType.addProperty(name, edmType, hasOwnProperty(x, 'nullable') ? x.nullable : true);
                         if (x.primary) {
                             modelEntityType.hasKey(name, edmType);
                         }
@@ -1855,7 +1730,7 @@ class ODataConventionModelBuilder {
                     else {
                         const namespacedType = x.type;
                         //add navigation property
-                        const isNullable = x.hasOwnProperty('nullable') ? x.nullable : true;
+                        const isNullable = hasOwnProperty(x, 'nullable') ? x.nullable : true;
                         // add an exception for one-to-one association
                         if (x.multiplicity === EdmMultiplicity.ZeroOrOne || x.multiplicity === EdmMultiplicity.One) {
                             modelEntityType.addNavigationProperty(name, namespacedType, x.multiplicity);
@@ -1864,7 +1739,7 @@ class ODataConventionModelBuilder {
                             modelEntityType.addNavigationProperty(name, namespacedType, x.many ? EdmMultiplicity.Many: (isNullable ? EdmMultiplicity.ZeroOrOne : EdmMultiplicity.One));
                         }
                         //add navigation property entity (if type is not a primitive type)
-                        if (!strategy.dataTypes.hasOwnProperty(x.type)) {
+                        if (hasOwnProperty(strategy.dataTypes, x.type) === false) {
                             self.addEntitySet(x.type, pluralize(x.type));
                         }
                     }
@@ -2024,14 +1899,14 @@ class ODataConventionModelBuilder {
                 files = fs.readdirSync(modelPath);
             }
             // enumerate models
-            const models = _.map(_.filter(files, x => {
+            const models = files.filter( x => {
                 return /\.json$/.test(x);
-            }), x => {
+            }).map( x => {
                 return /(.*?)\.json$/.exec(x)[1];
             });
             // add entity set
-            _.forEach(models, x => {
-                if (!_.isNil(x)) {
+            models.forEach(x => {
+                if ( x != null) {
                     self.addEntitySet(x, pluralize(x));
                 }
             });
@@ -2061,7 +1936,7 @@ class ODataConventionModelBuilder {
         // noinspection JSPotentiallyInvalidConstructorUsage
         const self = this;
 
-        const superGetEdm = ODataConventionModelBuilder.super_.prototype.getEdm;
+        const superGetEdm = super.getEdm;
         try{
             if (_.isObject(self[edmProperty])) {
                 return Q.resolve(self[edmProperty]);
@@ -2084,7 +1959,7 @@ class ODataConventionModelBuilder {
      */
     getEdmSync() {
         // noinspection JSPotentiallyInvalidConstructorUsage
-        const superGetEdmSync = ODataConventionModelBuilder.super_.prototype.getEdmSync;
+        const superGetEdmSync = super.getEdmSync;
         if (_.isObject(this[edmProperty])) {
             return this[edmProperty];
         }
@@ -2096,12 +1971,6 @@ class ODataConventionModelBuilder {
         return this[edmProperty];
     }
 }
-
-LangUtils.inherits(ODataConventionModelBuilder, ODataModelBuilder);
-
-
-
-
 
 /**
  *

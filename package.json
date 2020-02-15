@@ -57,17 +57,18 @@
     "@babel/register": "^7.7.4",
     "@babel/runtime": "^7.7.6",
     "@themost/client": "^2.4.1",
-    "@themost/common": "file:./modules/@themost/common",
+    "@themost/common": "file:modules/@themost/common",
     "@themost/data": "file:modules/@themost/data",
     "@themost/express": "^1.5.3",
     "@themost/node": "^2.5.0",
-    "@themost/query": "file:./modules/@themost/query",
-    "@themost/sqlite": "^2.2.1",
-    "@themost/test": "^1.0.5",
+    "@themost/query": "file:modules/@themost/query",
+    "@themost/sqlite": "^2.2.2",
+    "@themost/test": "^1.0.7",
     "@themost/web": "file:modules/@themost/web3",
     "@themost/xml": "file:modules/@themost/xml",
     "@types/jasmine": "^3.5.0",
     "babel-eslint": "^10.0.3",
+    "core-js": "^2.6.11",
     "eslint": "^6.7.2",
     "express": "^4.16.4",
     "gulp": "^4.0.0",
@@ -84,6 +85,7 @@
     "karma-webpack": "^4.0.2",
     "mathjs": "^6.2.3",
     "mocha": "^5.2.0",
+    "module-alias": "^2.2.2",
     "nodemon": "^1.19.4",
     "puppeteer-core": "^1.20.0",
     "rollup": "^1.27.13",
@@ -99,5 +101,11 @@
     "typescript": "^3.7.3",
     "webpack": "^4.41.0",
     "webpack-karma-jasmine": "^3.0.8"
+  },
+  "_moduleAliases": {
+    "@themost/common": "./modules/@themost/common/src/",
+    "@themost/xml": "./modules/@themost/xml/src/",
+    "@themost/query": "./modules/@themost/query/src/",
+    "@themost/data": "./modules/@themost/data/src/"
   }
 }

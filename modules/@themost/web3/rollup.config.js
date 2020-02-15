@@ -3,10 +3,10 @@ import rollupResolve from 'rollup-plugin-node-resolve';
 import rollupCommon from 'rollup-plugin-commonjs';
 // import rollupSourceMaps from 'rollup-plugin-sourcemaps';
 import autoExternal from 'rollup-plugin-auto-external';
-import dts from "rollup-plugin-dts";
+import dts from 'rollup-plugin-dts';
 
 const dist = './dist/';
-const name = 'themost_web';
+const name = 'index';
 
 module.exports = [{
     input: './src/index.js',
