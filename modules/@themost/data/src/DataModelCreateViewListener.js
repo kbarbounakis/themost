@@ -1,4 +1,4 @@
-import { QueryUtils, QueryField, QueryFieldRef } from '@themost/query';
+import { QueryExpression, QueryField, QueryFieldRef } from '@themost/query';
 /**
  * @class
  * @constructor
@@ -33,7 +33,7 @@ class DataModelCreateViewListener {
         /**
          * @type {QueryExpression}
          */
-        const q = QueryUtils.query(adapter).select(fields);
+        const q = new QueryExpression().from(adapter).select(fields);
         let baseAdapter = null;
         const baseFields = [];
         // enumerate attributes of base model (if any)

@@ -9,8 +9,7 @@ module.exports = function (api) {
                 {
                     "targets": {
                         "node": "current"
-                    },
-                     "modules": "commonjs"
+                    }
                 }
             ]
         ],

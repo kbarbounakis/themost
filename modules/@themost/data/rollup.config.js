@@ -4,6 +4,7 @@ import rollupCommon from 'rollup-plugin-commonjs';
 // import rollupSourceMaps from 'rollup-plugin-sourcemaps';
 import autoExternal from 'rollup-plugin-auto-external';
 import dts from 'rollup-plugin-dts';
+import copy from 'rollup-plugin-copy';
 
 const dist = './dist/';
 const name = 'index';
@@ -32,7 +33,12 @@ module.exports = [{
         }),
         rollupResolve(),
         rollupCommon(),
-        autoExternal()
+        autoExternal(),
+        copy({
+            targets: [
+              { src: './src/resources', dest: './dist/' }
+            ]
+          })
     ]
 }, {
     input: './src/index.d.ts',

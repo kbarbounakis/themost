@@ -13,6 +13,7 @@
     "beforeEach": false,
     "beforeAll": false,
     "after": false,
+    "afterAll": false,
     "expect": false,
     "spyOn": false,
     "jasmine":false

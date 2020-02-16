@@ -8,7 +8,7 @@
 import _ from 'lodash';
 import pluralize from 'pluralize';
 import async from 'async';
-import {QueryUtils} from '@themost/query';
+import {QueryExpression} from '@themost/query';
 import {OpenDataParser} from '@themost/query';
 import {parsers} from './types';
 import {DataModelMigration} from './DataModelMigration';
@@ -43,6 +43,10 @@ import {DataModelCreateViewListener} from './DataModelCreateViewListener';
 import {DataModelSeedListener} from './DataModelSeedListener';
 import {UniqueConstraintListener} from './UniqueConstraintListener';
 import {NotNullConstraintListener} from './NotNullConstraintListener';
+
+import {DataStateValidatorListener} from './DataStateValidatorListener';
+import {testExpandExpression} from './DataExpandResolver';
+
 /**
  * @this DataModel
  * @param {DataField} field
@@ -1150,7 +1154,6 @@ class DataModel extends SequentialEventEmitter {
      */
     inferState(obj, callback) {
         const self = this;
-        const DataStateValidatorListener = require('./DataStateValidatorListener').DataStateValidatorListener;
         const e = { model:self, target:obj };
         DataStateValidatorListener.prototype.beforeSave(e, err => {
             //if error return error
@@ -1871,8 +1874,7 @@ function _registerContextListeners() {
    if (typeof this.setMaxListeners === 'function') {
        this.setMaxListeners(64);
    }
-   const DataStateValidatorListener = require('./DataStateValidatorListener').DataStateValidatorListener;
-
+   
    //1. State validator listener
    this.on('before.save', DataStateValidatorListener.prototype.beforeSave);
    this.on('before.remove', DataStateValidatorListener.prototype.beforeRemove);
@@ -2104,9 +2106,7 @@ function _filterInternal(params, callback) {
                         });
                     }
                     if (expand) {
-
-                        const resolver = require('./DataExpandResolver');
-                        const matches = resolver.testExpandExpression(expand);
+                        const matches = testExpandExpression(expand);
                         if (matches && matches.length>0) {
                             q.expand.apply(q, matches);
                         }
@@ -2464,14 +2464,14 @@ function _saveSingleObject(obj, callback) {
                 const key = target[self.primaryKey];
                 if (e.state===1)
                     //create insert statement
-                    q = QueryUtils.insert(target).into(self.sourceAdapter);
+                    q = new QueryExpression().insert(target).into(self.sourceAdapter);
                 else
                 {
                     //create update statement
                     if (key)
                         delete target[self.primaryKey];
                     if (Object.keys(target).length>0)
-                        q = QueryUtils.update(self.sourceAdapter).set(target).where(self.primaryKey).equal(e.target[self.primaryKey]);
+                        q = new QueryExpression().update(self.sourceAdapter).set(target).where(self.primaryKey).equal(e.target[self.primaryKey]);
                     else
                         //object does not have any properties other than primary key. do nothing
                         q = new EmptyQueryExpression();
@@ -2706,7 +2706,7 @@ function _removeSingleObject(obj, callback) {
        //get db context
        const db = self.context.db;
        //create delete query
-       const q = QueryUtils.delete(self.sourceAdapter).where(self.primaryKey).equal(obj[self.primaryKey]);
+       const q = new QueryExpression().delete(self.sourceAdapter).where(self.primaryKey).equal(obj[self.primaryKey]);
        //execute delete query
        db.execute(q, null, err => {
            if (err) {

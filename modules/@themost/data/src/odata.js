@@ -10,11 +10,12 @@ import pluralize from 'pluralize';
 import {Args} from '@themost/common';
 import _ from 'lodash';
 import moment from 'moment';
-const parseBoolean = require('./types').parsers.parseBoolean;
+import {parsers} from './types';
 import {DataModel} from './DataModel';
 import {DataContext} from './DataContext';
 import {XDocument} from '@themost/xml';
 import {hasOwnProperty} from './has-own-property';
+const parseBoolean = parsers.parseBoolean;
 // noinspection JSUnusedLocalSymbols
 const entityTypesProperty = Symbol('entityTypes');
 // noinspection JSUnusedLocalSymbols

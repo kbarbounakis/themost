@@ -4,9 +4,9 @@
     "**/*[sS]pec.js"
   ],
   "helpers": [
+    "helpers/env.js",
     "helpers/module-alias.js",
     "helpers/babel.js",
-    "helpers/env.js",
     "helpers/reporter.js"
   ],
   "stopSpecOnExpectationFailure": true,

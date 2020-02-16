@@ -7,7 +7,6 @@
  */
 ///
 import {LangUtils} from '@themost/common';
-import {DataConfigurationStrategy} from './DataConfiguration';
 import {QueryField} from '@themost/query';
 import _ from 'lodash';
 import Q from 'q';
@@ -144,7 +143,9 @@ class DataObjectTag {
                 /**
                  * @type {DataConfigurationStrategy}
                  */
-                const strategy = context.getConfiguration().getStrategy(DataConfigurationStrategy);
+                const strategy = context.getConfiguration().getStrategy(function DataConfigurationStrategy() {
+
+                });
                 let definition = strategy.getModelDefinition(self.mapping.associationAdapter);
                 if (_.isNil(definition)) {
                     const associationObjectField = self.mapping.associationObjectField || DataObjectTag.DEFAULT_OBJECT_FIELD;

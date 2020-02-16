@@ -7,7 +7,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import _ from 'lodash';
-import {QueryUtils} from '@themost/query';
+import {QueryExpression} from '@themost/query';
 import async from 'async';
 import {DataError} from '@themost/common';
 /**
@@ -310,7 +310,7 @@ function beforeRemove_(attr, event, callback) {
             //This operation must be done before trying to remove nested object otherwise the operation will fail with foreign key reference error
             const updated = {};
             updated[name] = null;
-            const q = QueryUtils.update(event.model.sourceAdapter).set(updated).where(event.model.primaryKey).equal(result[event.model.primaryKey]);
+            const q = new QueryExpression().update(event.model.sourceAdapter).set(updated).where(event.model.primaryKey).equal(result[event.model.primaryKey]);
             return context.db.execute(q, null, err => {
                 if (err) {
                     return callback(err);

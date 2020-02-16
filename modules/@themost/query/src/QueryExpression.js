@@ -388,7 +388,7 @@ export class QueryExpression {
      * @returns {QueryExpression}
      */
     from(collection) {
-        Args.check(this.$select != null, new Error('Items to select must be defined. Use select() method first.'));
+        // Args.check(this.$select != null, new Error('Items to select must be defined. Use select() method first.'));
         Args.check( Array.isArray(collection) === false, new Error('Target collection cannot be an array.'));
         // clear collection
         this.$collection = { };

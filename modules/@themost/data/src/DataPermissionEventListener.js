@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-import {QueryEntity, QueryUtils} from '@themost/query';
+import {QueryEntity, QueryExpression} from '@themost/query';
 import async from 'async';
 import {AccessDeniedError} from '@themost/common';
 import {DataConfigurationStrategy} from './DataConfiguration';
@@ -350,7 +350,7 @@ class DataPermissionEventListener {
                             }
                         }
                         if (requestMask===PermissionMask.Create) {
-                            const query = QueryUtils.query(model.viewAdapter);
+                            const query = new QueryExpression().from(model.viewAdapter);
                             const fields=[];
                             let field;
 
@@ -624,7 +624,7 @@ class DataPermissionEventListener {
                                 return cb();
                             }
                             if (_.isNil(expr))
-                                expr = QueryUtils.query();
+                                expr = new QueryExpression().from();
                             expr.where(entity.select(mapping.childField)).equal(perms1.select('target')).
                                 and(perms1.select('privilege')).equal(mapping.childModel).
                                 and(perms1.select('parentPrivilege')).equal(mapping.parentModel).
@@ -636,7 +636,7 @@ class DataPermissionEventListener {
                         }
                         else if (item.type==='item') {
                             if (_.isNil(expr))
-                                expr = QueryUtils.query();
+                                expr = new QueryExpression().from();
                             expr.where(entity.select(model.primaryKey)).equal(perms1.select('target')).
                                 and(perms1.select('privilege')).equal(model.name).
                                 and(perms1.select('parentPrivilege')).equal(null).
@@ -662,7 +662,7 @@ class DataPermissionEventListener {
                                     else {
                                         if (q.query.$prepared) {
                                             if (_.isNil(expr))
-                                                expr = QueryUtils.query();
+                                                expr = new QueryExpression().from();
                                             expr.$where = q.query.$prepared;
                                             if (q.query.$expand) { expand = q.query.$expand; }
                                             expr.prepare(true);
@@ -702,7 +702,7 @@ class DataPermissionEventListener {
                     else if (expr) {
                         return context.model('Permission').migrate(err => {
                             if (err) { return callback(err); }
-                            const q = QueryUtils.query(model.viewAdapter).select([model.primaryKey]).distinct();
+                            const q = new QueryExpression().from(model.viewAdapter).select([model.primaryKey]).distinct();
                             if (expand) {
                                 const arrExpand=[].concat(expand);
                                 _.forEach(arrExpand, x => {
@@ -713,7 +713,7 @@ class DataPermissionEventListener {
                             // set static alias
                             event.query.$lastIndex += 1;
                             const pqAlias = context.model('Permission').viewAdapter + event.query.$lastIndex.toString();
-                            event.query.join(q.as(pqAlias)).with(QueryUtils.where(entity.select(model.primaryKey)).equal(new QueryEntity(pqAlias).select(model.primaryKey)));
+                            event.query.join(q.as(pqAlias)).with(new QueryExpression().where(entity.select(model.primaryKey)).equal(new QueryEntity(pqAlias).select(model.primaryKey)));
                             return callback();
                         });
                     }

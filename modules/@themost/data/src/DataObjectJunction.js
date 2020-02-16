@@ -12,7 +12,6 @@ import async from 'async';
 import {QueryField} from '@themost/query';
 import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataQueryable} from './DataQueryable';
-import {DataConfigurationStrategy} from './DataConfiguration';
 
 /**
  * @classdesc Represents a many-to-many association between two data models.
@@ -168,7 +167,9 @@ class DataObjectJunction {
                 /**
                  * @type {*|DataConfigurationStrategy}
                  */
-                const conf = context.getConfiguration().getStrategy(DataConfigurationStrategy);
+                const conf = context.getConfiguration().getStrategy(function DataConfigurationStrategy() {
+
+                });
                 //search in cache (configuration.current.cache)
                 let modelDefinition = conf.getModelDefinition(self.mapping.associationAdapter);
                 if (modelDefinition) {

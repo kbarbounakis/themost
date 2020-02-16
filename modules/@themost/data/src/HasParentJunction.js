@@ -10,7 +10,6 @@ import Q from 'q';
 import async from 'async';
 import {QueryField} from '@themost/query';
 import {DataAssociationMapping} from './DataAssociationMapping';
-import {DataConfigurationStrategy} from './DataConfiguration';
 import {DataQueryable} from './DataQueryable';
 import {DataObjectJunction} from './DataObjectJunction';
 
@@ -169,7 +168,9 @@ class HasParentJunction extends DataQueryable {
                 /**
                  * @type {*|DataConfigurationStrategy}
                  */
-                const conf = self.parent.context.getConfiguration().getStrategy(DataConfigurationStrategy);
+                const conf = self.parent.context.getConfiguration().getStrategy(function DataConfigurationStrategy() {
+
+                });
                 //search in cache (configuration.current.cache)
                 if (conf.getModelDefinition(self.mapping.associationAdapter)) {
                     baseModel = new DataModel(conf.getModelDefinition(self.mapping.associationAdapter));

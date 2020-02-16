@@ -6,8 +6,7 @@
  * found in the LICENSE file at https://themost.io/license
  */
 import _ from 'lodash';
-import {QueryUtils} from '@themost/query';
-import {QueryEntity} from '@themost/query';
+import {QueryEntity, QueryExpression} from '@themost/query';
 import {QueryField} from '@themost/query';
 import Q from 'q';
 
@@ -154,13 +153,13 @@ class DataAssociationMappingExtensions {
                         parentModel.filter(mapping.options, (err, q) => {
                             if (err) { return deferred.reject(err); }
                             //get junction sub-query
-                            const junctionQuery = QueryUtils.query(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
+                            const junctionQuery = new QueryExpression().from(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
                                 .join(thisQueryable.query.as('j0'))
-                                .with(QueryUtils.where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationValueField))
+                                .with(new QueryExpression().where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationValueField))
                                     .equal(new QueryEntity('j0').select(mapping.childField)));
                             //append join statement with sub-query
                             q.query.join(junctionQuery.as('g0'))
-                                .with(QueryUtils.where(new QueryEntity(parentModel.viewAdapter).select(mapping.parentField))
+                                .with(new QueryExpression().where(new QueryEntity(parentModel.viewAdapter).select(mapping.parentField))
                                     .equal(new QueryEntity('g0').select(mapping.associationObjectField)));
                             if (!q.query.hasFields()) {
                                 q.select();
@@ -317,13 +316,13 @@ class DataAssociationMappingExtensions {
                                 q.select();
                             }
                             //get junction sub-query
-                            const junctionQuery = QueryUtils.query(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
+                            const junctionQuery = new QueryExpression().from(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
                                 .join(thisQueryable.query.as('j0'))
-                                .with(QueryUtils.where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationObjectField))
+                                .with(new QueryExpression().where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationObjectField))
                                     .equal(new QueryEntity('j0').select(mapping.parentField)));
                             //append join statement with sub-query
                             q.query.join(junctionQuery.as('g0'))
-                                .with(QueryUtils.where(new QueryEntity(childModel.viewAdapter).select(mapping.childField))
+                                .with(new QueryExpression().where(new QueryEntity(childModel.viewAdapter).select(mapping.childField))
                                     .equal(new QueryEntity('g0').select(mapping.associationValueField)));
 
                             //inherit silent mode
@@ -385,7 +384,7 @@ class DataAssociationMappingExtensions {
                             q.query
                                .distinct()
                                .join(thisQueryable.query.as('j0'))
-                               .with(QueryUtils.where(new QueryEntity(thisArg.getParentModel().viewAdapter).select(mapping.parentField))
+                               .with(new QueryExpression().where(new QueryEntity(thisArg.getParentModel().viewAdapter).select(mapping.parentField))
                                    .equal(new QueryEntity('j0').select(mapping.childField)));
                             //inherit silent mode
                             if (thisQueryable.$silent)  { q.silent(); }
@@ -637,7 +636,7 @@ class DataAssociationMappingExtensions {
                             if (thisQueryable.$silent)  { q.silent(); }
                             //join parents
                             q.query.join(thisQueryable.query.as('j0'))
-                                .with(QueryUtils.where(new QueryEntity(thisArg.getChildModel().viewAdapter).select(mapping.childField))
+                                .with(new QueryExpression().where(new QueryEntity(thisArg.getChildModel().viewAdapter).select(mapping.childField))
                                     .equal(new QueryEntity('j0').select(mapping.parentField)));
                             q.prepare();
                             //final execute query
@@ -807,13 +806,13 @@ const mappingExtensions = {
                         parentModel.filter(mapping.options, (err, q) => {
                             if (err) { return deferred.reject(err); }
                             //get junction sub-query
-                            const junctionQuery = QueryUtils.query(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
+                            const junctionQuery = new QueryExpression().from(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
                                 .join(thisQueryable.query.as('j0'))
-                                .with(QueryUtils.where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationValueField))
+                                .with(new QueryExpression().where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationValueField))
                                     .equal(new QueryEntity('j0').select(mapping.childField)));
                             //append join statement with sub-query
                             q.query.join(junctionQuery.as('g0'))
-                                .with(QueryUtils.where(new QueryEntity(parentModel.viewAdapter).select(mapping.parentField))
+                                .with(new QueryExpression().where(new QueryEntity(parentModel.viewAdapter).select(mapping.parentField))
                                     .equal(new QueryEntity('g0').select(mapping.associationObjectField)));
                             if (!q.query.hasFields()) {
                                 q.select();
@@ -970,13 +969,13 @@ const mappingExtensions = {
                                 q.select();
                             }
                             //get junction sub-query
-                            const junctionQuery = QueryUtils.query(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
+                            const junctionQuery = new QueryExpression().from(junction.getBaseModel().name).select([mapping.associationObjectField, mapping.associationValueField])
                                 .join(thisQueryable.query.as('j0'))
-                                .with(QueryUtils.where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationObjectField))
+                                .with(new QueryExpression().where(new QueryEntity(junction.getBaseModel().name).select(mapping.associationObjectField))
                                     .equal(new QueryEntity('j0').select(mapping.parentField)));
                             //append join statement with sub-query
                             q.query.join(junctionQuery.as('g0'))
-                                .with(QueryUtils.where(new QueryEntity(childModel.viewAdapter).select(mapping.childField))
+                                .with(new QueryExpression().where(new QueryEntity(childModel.viewAdapter).select(mapping.childField))
                                     .equal(new QueryEntity('g0').select(mapping.associationValueField)));
 
                             //inherit silent mode
@@ -1038,7 +1037,7 @@ const mappingExtensions = {
                             q.query
                                .distinct()
                                .join(thisQueryable.query.as('j0'))
-                               .with(QueryUtils.where(new QueryEntity(thisArg.getParentModel().viewAdapter).select(mapping.parentField))
+                               .with(new QueryExpression().where(new QueryEntity(thisArg.getParentModel().viewAdapter).select(mapping.parentField))
                                    .equal(new QueryEntity('j0').select(mapping.childField)));
                             //inherit silent mode
                             if (thisQueryable.$silent)  { q.silent(); }
@@ -1290,7 +1289,7 @@ const mappingExtensions = {
                             if (thisQueryable.$silent)  { q.silent(); }
                             //join parents
                             q.query.join(thisQueryable.query.as('j0'))
-                                .with(QueryUtils.where(new QueryEntity(thisArg.getChildModel().viewAdapter).select(mapping.childField))
+                                .with(new QueryExpression().where(new QueryEntity(thisArg.getChildModel().viewAdapter).select(mapping.childField))
                                     .equal(new QueryEntity('j0').select(mapping.parentField)));
                             q.prepare();
                             //final execute query

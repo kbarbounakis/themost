@@ -5,7 +5,7 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {QueryUtils} from '@themost/query';
+import {QueryExpression} from '@themost/query';
 import {DataAssociationMapping} from './DataAssociationMapping';
 import {DataQueryable} from './DataQueryable';
 
@@ -133,7 +133,7 @@ class HasManyAssociation extends DataQueryable {
                 if (typeof self.mapping === 'undefined' || self.mapping==null)
                     throw new Error('Data association mapping cannot be empty at this context.');
                 //prepare query by selecting the foreign key of the related object
-                q = QueryUtils.query(self.model.viewAdapter).where(self.mapping.childField).equal(self.parent[self.mapping.parentField]).prepare();
+                q = new QueryExpression().from(self.model.viewAdapter).where(self.mapping.childField).equal(self.parent[self.mapping.parentField]).prepare();
                 return q;
             }, configurable:false, enumerable:false
         });

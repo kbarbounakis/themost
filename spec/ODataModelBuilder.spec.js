@@ -8,7 +8,7 @@ describe('ODataModelBuilder', ()=> {
     });
     it('should get metadata', async ()=> {
         /**
-         * @type {IApplication}
+         * @type {ExpressDataApplication}
          */
         const application = app.get(ExpressDataApplication.name);
         expect(application).toBeTruthy();
@@ -20,5 +20,5 @@ describe('ODataModelBuilder', ()=> {
         expect(builder).toBeTruthy();
         const document = builder.getEdmDocumentSync();
         expect(document).toBeTruthy();
-    })
+    });
 });
