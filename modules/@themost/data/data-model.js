@@ -609,11 +609,7 @@ function unregisterContextListeners() {
     if (this.caching==='always' || this.caching==='conditional') {
         this.on('before.execute', DataCachingListener.prototype.beforeExecute);
     }
-    //register after execute caching
-    if (this.caching==='always' || this.caching==='conditional') {
-        this.on('after.execute', DataCachingListener.prototype.afterExecute);
-    }
-
+    
     //migration listeners
     this.on('after.upgrade',DataModelCreateViewListener.prototype.afterUpgrade);
     this.on('after.upgrade',DataModelSeedListener.prototype.afterUpgrade);
@@ -668,6 +664,10 @@ function unregisterContextListeners() {
     }
     //before execute
     this.on('before.execute', DataPermissionEventListener.prototype.beforeExecute);
+    //finally register after execute caching
+    if (this.caching==='always' || this.caching==='conditional') {
+        this.on('after.execute', DataCachingListener.prototype.afterExecute);
+    }
 
 }
 

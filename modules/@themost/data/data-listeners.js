@@ -371,73 +371,94 @@ function DataCachingListener() {
  */
 DataCachingListener.prototype.beforeExecute = function(event, callback) {
     try {
-        if (_.isNil(event)) {
+        if (event == null) {
+            // exit because event is totally missing
             return callback();
         }
-        //validate caching
-        var caching = (event.model.caching==='always' || event.model.caching==='conditional');
-        if (!caching) { return callback(); }
-        // get cache attribute
-        var dataCache;
+        if (event.model == null) {
+            // exit because model is totally missing
+            return callback();
+        }
+        // validate caching
+        var caching = (event.model.caching === 'always' || event.model.caching === 'conditional');
+        // exit if caching is not enabled always or conditionally
+        if (caching === false) { 
+            // exit because caching is disabled
+            return callback(); 
+        }
+        // get cache attribute from event emitter (usually a data queryable instance)
+        // the default value of this attribute is true if model caching has been set to always
+        var useCache = (event.model.caching==='always');
+        // validate emitter.data() method
         if (event.emitter && typeof event.emitter.data === 'function') {
-            dataCache = event.emitter.data('cache');
-        }
-        // if caching is enabled and cache attribute is defined
-        if (caching && typeof dataCache === "boolean" && cache === false) {
-            return callback();
-        }
-        //validate conditional caching
-        if (event.model.caching==='conditional') {
-            if (event.emitter && typeof event.emitter.data === 'function') {
-                if (!event.emitter.data('cache')) {
-                    return callback();
-                }
+            // get emitter cache attribute
+            var v = event.emitter.data('cache');
+            // if cache attribute has been set
+            if (typeof v === 'boolean') {
+                // set local cache attribute
+                useCache = v;
             }
         }
+        // if caching is enabled and cache attribute is defined as false
+        if (useCache === false) {
+            // exit because caching is forcibly disabled
+            return callback();
+        }
         /**
+         * get cache strategy
          * @type {DataCacheStrategy}
          */
         var cache = event.model.context.getConfiguration().getStrategy(DataCacheStrategy);
-        if (typeof cache === 'undefined' || cache === null) {
+        // if caching strategy is not defined at all
+        if (cache == null) {
+            // exit because cache strategy is missing
             return callback();
         }
-
+        // use cache techniques for select queries only
         if (event.query && event.query.$select) {
-            //create hash
+            // create a hash code that is going to validate caching data
             var hash;
+            // if event emitter exports toMD5() method use this method to generate a hash code
             if (event.emitter && typeof event.emitter.toMD5 === 'function') {
-                //get hash from emitter (DataQueryable)
+                // get hash from emitter (DataQueryable)
                 hash = event.emitter.toMD5();
+                // assign hashCode to event emitter
+                _.assign(event.emitter, {
+                    hashCode: hash
+                });
             }
             else {
-                //else calculate hash
+                // else calculate a flat hash (this fallback is going to be used only 
+                // if event emitter is other than an instance of data queryable)
                 hash = TextUtils.toMD5({ query: event.query });
             }
-            //format cache key
+            // format cache key
             var key = '/' + event.model.name + '/?query=' + hash;
-            //calculate execution time (debug)
+            // calculate execution time (for debug)
             var logTime = new Date().getTime();
-            //query cache
-            cache.get(key).then(function(result) {
+            // query cache
+            return cache.get(key).then(function(result) {
+                // if an item exists in cached
                 if (typeof result !== 'undefined') {
-                    //delete expandables
+                    //prepare event emitter by removing expandables
                     if (event.emitter) {
                         delete event.emitter.$expand;
                     }
-                    //set cached flag
-                    event['cached'] = true;
-                    //set execution default
-                    event['result'] = result;
-                    //log execution time (debug)
-                    try {
-                        if (process.env.NODE_ENV==='development') {
-                            TraceUtils.log(sprintf.sprintf('Cache (Execution Time:%sms):%s', (new Date()).getTime()-logTime, key));
-                        }
-                    }
-                    catch(err) {
-                        //
-                    }
-                    //exit
+                    // assign cache attribute to event
+                    _.assign(event, {
+                        // query hgas been already cached
+                        cached: true,
+                        // query has a result
+                        result: result
+                    });
+                    // calculate execution time
+                    var executionTime = new Date().getTime() - logTime;
+                    //log execution time (for debug)
+                    TraceUtils.debug(_.template('DataCacheListener: GET ${key} ${executionTime}ms')({
+                        executionTime: executionTime,
+                        key: key
+                    }));
+                    // and finally exit
                     return callback();
                 }
                 else {
@@ -445,16 +466,18 @@ DataCachingListener.prototype.beforeExecute = function(event, callback) {
                     return callback();
                 }
             }).catch(function(err) {
-                TraceUtils.log('DataCacheListener: An error occurred while trying to get cached data.');
-                TraceUtils.log(err);
+                TraceUtils.error('DataCacheListener: An error occurred while trying to get cached data.');
+                TraceUtils.error(err);
                 return callback();
             });
         }
         else {
+            // exit because query is not a select query expression
             return callback();
         }
     }
     catch (err) {
+        // throw error
         return callback(err);
     }
 };
@@ -465,58 +488,76 @@ DataCachingListener.prototype.beforeExecute = function(event, callback) {
  */
 DataCachingListener.prototype.afterExecute = function(event, callback) {
     try {
-        //validate caching
-        var caching = (event.model.caching==='always' || event.model.caching==='conditional');
-        if (!caching) { return callback(); }
+        // validate caching
+        var caching = (event.model.caching === 'always' || event.model.caching === 'conditional');
+        if (caching == false) { 
+            // exit because caching is disabled
+            return callback(); 
+        }
         // get cache attribute
-        var dataCache;
+        var useCache = (event.model.caching === 'always');
         if (event.emitter && typeof event.emitter.data === 'function') {
-            dataCache = event.emitter.data('cache');
-        }
-        // if caching is enabled and cache attribute is defined
-        if (caching && typeof dataCache === "boolean" && cache === false) {
-            return callback();
-        }
-        //validate conditional caching
-        if (event.model.caching==='conditional') {
-            if (event.emitter && typeof event.emitter.data === 'function') {
-                if (!event.emitter.data('cache')) {
-                    return callback();
-                }
+            // get emitter cache attribute
+            var v = event.emitter.data('cache');
+            // if cache attribute has been set
+            if (typeof v === 'boolean') {
+                // set local cache attribute
+                useCache = v;
             }
         }
-
+        // if caching is enabled and cache attribute is defined as false
+        if (useCache === false) {
+            // exit because caching is forcibly disabled
+            return callback();
+        }
         /**
          * @type {DataCacheStrategy}
          */
         var cache = event.model.context.getConfiguration().getStrategy(DataCacheStrategy);
-        if (typeof cache === 'undefined' || cache === null) {
+        if (cache == null) {
+            // exit because cache strategy is not defined at all
             return callback();
         }
-
+        // validate type of event query
         if (event.query && event.query.$select) {
             if (typeof event.result !== 'undefined' && !event.cached) {
-                //create hash
-                var hash;
-                if (event.emitter && typeof event.emitter.toMD5 === 'function') {
-                    //get hash from emitter (DataQueryable)
-                    hash = event.emitter.toMD5();
+                // create hash
+                var hash = null;
+                // first of all try to find if event emitter has a hashCode defined
+                // if hashCode exists use this instead of calculating a new one
+                if (event.emitter && event.emitter.hashCode) {
+                    hash = event.emitter.hashCode;
                 }
-                else {
-                    //else calculate hash
-                    hash = TextUtils.toMD5({ query: event.query });
+                // otherwise calculate a new hash code
+                if (hash == null) {
+                    // event emitter is usually an instance a data queryable
+                    // but it's better to validate it to avoid errors
+                    if (event.emitter && typeof event.emitter.toMD5 === 'function') {
+                        // get hash from emitter (DataQueryable)
+                        hash = event.emitter.toMD5();
+                    }
+                    else {
+                        // else calculate hash
+                        hash = TextUtils.toMD5({ query: event.query });
+                    }
                 }
+                // format cache key
                 var key = '/' + event.model.name + '/?query=' + hash;
-                if (process.env.NODE_ENV==='development') {
-                    TraceUtils.debug('DataCacheListener: Setting data to cache [' + key + ']');
-                }
+                // add data to cache (use the default expiration timeout if any)
                 cache.add(key, event.result);
+                // debug cache listener
+                TraceUtils.debug(_.template('DataCacheListener: SET ${key}')({
+                    key: key
+                }));
+                // and exit
                 return callback();
             }
         }
+        // exit because query is not a select query expression
         return callback();
     }
     catch(err) {
+        // throw error
         return callback(err);
     }
 };
