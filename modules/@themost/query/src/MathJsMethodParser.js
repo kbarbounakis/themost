@@ -1,4 +1,4 @@
-import {MethodCallExpression} from "./expressions";
+import {MethodCallExpression} from './expressions';
 import {parse} from 'esprima';
 import {floor} from 'mathjs';
 
@@ -18,7 +18,7 @@ export class MathJsMethodParser {
         this.prefix = [];
         this.prefix.push(new RegExp(`^${callee.object.name}\\.(\\w+)`, 'g'));
         // add mathjs prefix
-        this.prefix.push(new RegExp(`^mathjs\\.(\\w+)`, 'g'));
+        this.prefix.push(new RegExp('^mathjs\\.(\\w+)', 'g'));
     }
 
     test(name) {

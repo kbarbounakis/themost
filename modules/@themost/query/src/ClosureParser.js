@@ -16,7 +16,6 @@ import {
     isArithmeticOperator,
     isComparisonOperator,
     isLiteralExpression,
-    MethodCallExpression,
     ObjectExpression,
     Operators,
     SequenceExpression,
@@ -24,10 +23,11 @@ import {
 } from './expressions';
 import {parse} from 'esprima';
 import {Args} from '@themost/common';
-import {MathJsMethodParser} from "./MathJsMethodParser";
-import {MathMethodParser} from "./MathMethodParser";
-import {DateMethodParser} from "./DateMethodParser";
-import {StringMethodParser} from "./StringMethodParser";
+import {MathJsMethodParser} from './MathJsMethodParser';
+import {MathMethodParser} from './MathMethodParser';
+import {DateMethodParser} from './DateMethodParser';
+import {StringMethodParser} from './StringMethodParser';
+import {hasOwnProperty} from './has-own-property';
 
 const ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -113,7 +113,7 @@ export class ClosureParser {
         }
         if (res && res instanceof ObjectExpression) {
             return Object.keys(res).map( key => {
-                if (res.hasOwnProperty(key)) {
+                if (hasOwnProperty(res, key)) {
                     const result = {};
                     Object.defineProperty(result, key, {
                         configurable: true,
@@ -210,7 +210,7 @@ export class ClosureParser {
             const value = self.parseCommon(property.value);
             let name;
             if (property.key == null) {
-                throw new Error(`Property key may not be null.`);
+                throw new Error('Property key may not be null.');
             }
             if (property.key && property.key.type === 'Literal') {
                 name = property.key.value;
@@ -530,6 +530,7 @@ export class ClosureParser {
      * @param args
      * @returns {MethodCallExpression}
      */
+    // eslint-disable-next-line no-unused-vars
     resolveMethod(method, args) {
         return null;
     }

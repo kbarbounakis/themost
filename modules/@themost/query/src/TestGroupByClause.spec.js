@@ -4,13 +4,14 @@ import { QueryExpression } from './QueryExpression';
 import { MemoryAdapter } from './TestMemoryAdapter';
 import {initDatabase} from './TestMemoryDatabase';
 
-describe('Aggregate Functions', () => {
+fdescribe('Aggregate Functions', () => {
     beforeAll(async () => {
         await initDatabase();
     });
     it('should use groupBy()', async () => {
         let a = new QueryExpression().select( x => {
             return {
+                // eslint-disable-next-line no-undef
                 TotalCustomers: count(x.CustomerID),
                 Country: x.Country
             }
@@ -27,6 +28,7 @@ describe('Aggregate Functions', () => {
         const Orders = new QueryCollection('Orders');
         let a = new QueryExpression().select( x => {
             return {
+                // eslint-disable-next-line no-undef
                 TotalOrders: count(x.OrderID),
                 ShipperName: Shippers.ShipperName
             }
@@ -36,6 +38,7 @@ describe('Aggregate Functions', () => {
         .from(Orders)
         .join(Shippers)
         .with( x => x.Shipper, y => y.ShipperID)
+        // eslint-disable-next-line no-unused-vars
         .groupBy ( x => {
             Shippers.ShipperName
         }, {

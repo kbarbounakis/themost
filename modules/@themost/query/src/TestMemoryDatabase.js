@@ -24,7 +24,7 @@ async function migrateAsync(model) {
 
 export async function initDatabase() {
     // change NODE_ENV (do not log statement while adding data)
-    process.env.NODE_ENV = 'devel';
+    //process.env.NODE_ENV = 'devel';
     await migrateAsync(Customers);
     await migrateAsync(Shippers);
     await migrateAsync(Categories);

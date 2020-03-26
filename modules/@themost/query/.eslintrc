@@ -9,6 +9,8 @@
   "globals": {
     "describe": false,
     "it": false,
+    "fdescribe": false,
+    "fit": false,
     "before": false,
     "beforeEach": false,
     "beforeAll": false,

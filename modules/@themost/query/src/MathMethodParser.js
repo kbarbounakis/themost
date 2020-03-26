@@ -5,7 +5,7 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {MethodCallExpression} from "./expressions";
+import {MethodCallExpression} from './expressions';
 
 /**
  * @class
@@ -13,7 +13,7 @@ import {MethodCallExpression} from "./expressions";
 export class MathMethodParser {
 
     constructor() {
-        this.prefix = [ new RegExp(`^Math\\.(\\w+)`, 'g') ];
+        this.prefix = [ new RegExp('^Math\\.(\\w+)', 'g') ];
     }
 
     test(name) {

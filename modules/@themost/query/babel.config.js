@@ -2,16 +2,15 @@
 module.exports = function (api) {
     api.cache(false);
     return {
-        "sourceMaps": "inline",
+        "sourceMaps": true,
+        "retainLines": true,
          "presets": [
             [
                 "@babel/preset-env",
                 {
                     "targets": {
-                        "node": "6.9.0",
-                        "browsers": "> 0.25%, not dead"
-                    },
-                    "modules": false
+                        "node": "6.9.0"
+                    }
                 }
             ]
         ],
